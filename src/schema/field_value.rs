@@ -1,4 +1,4 @@
-use super::Schema;
+use super::Document;
 use chrono::{DateTime, Utc};
 
 pub enum FieldValue {
@@ -12,5 +12,5 @@ pub enum FieldValue {
     String(String),
     ByteArray(Vec<u8>),
     Array(Vec<FieldValue>),
-    // Object(Box<Schema>),
+    Object(Box<Document>),
 }
