@@ -1,7 +1,7 @@
 use super::parse_error::ParseError;
 use crate::schema::{FieldType, FieldValue, Schema};
-use chrono::{DateTime, Utc};
-use num_traits::int::PrimInt;
+use crate::util::{FromByteSlice, PrimInt};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use std::iter::Iterator;
 use std::mem::size_of;
 
@@ -12,14 +12,8 @@ struct ArchiveParser {
 }
 
 impl ArchiveParser {
-    fn read_short(&mut self) -> u16 {
-        let value = (self.data[self.ptr] << 8) as u16 + self.data[self.ptr + 1] as u16;
-        self.ptr += 2;
-        value
-    }
-
     fn read_field(&mut self) -> Result<FieldValue, ParseError> {
-        let field_id = self.read_short();
+        let field_id = self.parse_int::<u16>();
         let field = (&self.schema.fields)
             .into_iter()
             .find(|x| x.id == field_id)
@@ -36,37 +30,56 @@ impl ArchiveParser {
                 self.parse_string().or(Err(ParseError::InvalidString))?,
             )),
             FieldType::ByteArray => Ok(FieldValue::ByteArray(self.parse_byte_array())),
-            FieldType::Array(value) => Ok(FieldValue::Array(self.parse_array())),
-            FieldType::Object(schema) => Ok(FieldValue::Array(self.parse_object())),
+            FieldType::Array(element) => {
+                let element_copy = (*element).clone();
+                Ok(FieldValue::Array(self.parse_array(element_copy)))
+            }
+            FieldType::Object(_schema) => Ok(FieldValue::Array(self.parse_object())),
         }
     }
 
     fn parse_int<T: PrimInt>(&mut self) -> T {
-        // let size = size_of::<T>();
-        T::from(1).unwrap()
+        let size = size_of::<T>();
+        let bytes: T::Array = T::Array::from_slice(&self.data[self.ptr..(self.ptr + size)]);
+        let value = T::from_be_bytes(bytes);
+        self.ptr += size;
+        value
     }
 
     fn parse_float(&mut self) -> f64 {
-        0.0
+        let value = f64::from_be_bytes(self.data[self.ptr..(self.ptr + 8)].try_into().unwrap());
+        self.ptr += 8;
+        value
     }
 
     fn parse_bool(&mut self) -> bool {
-        false
+        let value = self.data[self.ptr];
+        self.ptr += 1;
+        if value == 0 {
+            false
+        } else {
+            true
+        }
     }
 
     fn parse_datetime(&mut self) -> DateTime<Utc> {
-        Utc::now()
+        let timestamp = self.parse_int::<i64>();
+        let naieve_time = NaiveDateTime::from_timestamp(timestamp, 0);
+        DateTime::from_utc(naieve_time, Utc)
     }
 
     fn parse_byte_array(&mut self) -> Vec<u8> {
-        vec![]
+        let length = self.parse_int::<u32>() as usize;
+        let value = (&self.data[self.ptr..(self.ptr + length)]).to_vec();
+        self.ptr += length;
+        value
     }
 
     fn parse_string(&mut self) -> Result<String, std::string::FromUtf8Error> {
         String::from_utf8(self.parse_byte_array())
     }
 
-    fn parse_array(&mut self) -> Vec<FieldValue> {
+    fn parse_array(&mut self, element: Box<FieldType>) -> Vec<FieldValue> {
         vec![]
     }
 
