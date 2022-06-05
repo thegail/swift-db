@@ -1,7 +1,27 @@
 use std::mem::size_of;
 
+pub trait FromByteSlice {
+    fn from_slice(bytes: &[u8]) -> Self;
+}
+
+macro_rules! from_byte_slice_impl {
+    ($T:ty) => {
+        impl FromByteSlice for $T {
+            #[inline]
+            fn from_slice(bytes: &[u8]) -> $T {
+                bytes.try_into().unwrap()
+            }
+        }
+    };
+}
+
+from_byte_slice_impl!([u8; 1]);
+from_byte_slice_impl!([u8; 2]);
+from_byte_slice_impl!([u8; 4]);
+from_byte_slice_impl!([u8; 8]);
+
 pub trait PrimInt {
-    type Array;
+    type Array: FromByteSlice;
 
     fn from_be_bytes(bytes: Self::Array) -> Self;
     fn from_le_bytes(bytes: Self::Array) -> Self;
