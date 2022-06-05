@@ -1,5 +1,6 @@
 use super::FieldType;
 
+#[derive(Clone)]
 pub struct Field {
     pub name: String,
     pub id: u16,

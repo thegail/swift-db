@@ -1,5 +1,6 @@
 use super::Schema;
 
+#[derive(Clone)]
 pub enum FieldType {
     Int,
     UInt,
