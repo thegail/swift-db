@@ -1,5 +1,5 @@
 use super::parse_error::ParseError;
-use crate::schema::{FieldType, FieldValue, Schema};
+use crate::schema::{Document, FieldType, FieldValue, Schema};
 use crate::util::{FromByteSlice, PrimInt};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use std::iter::Iterator;
@@ -12,13 +12,26 @@ struct ArchiveParser {
 }
 
 impl ArchiveParser {
+    fn new(schema: Schema, data: Vec<u8>) -> Self {
+        ArchiveParser {
+            schema,
+            data,
+            ptr: 0usize,
+        }
+    }
+
     fn read_field(&mut self) -> Result<FieldValue, ParseError> {
         let field_id = self.parse_int::<u16>();
         let field = (&self.schema.fields)
             .into_iter()
             .find(|x| x.id == field_id)
-            .ok_or(ParseError::UnknownFieldIdentifier)?;
-        match &field.field_type {
+            .ok_or(ParseError::UnknownFieldIdentifier)?
+            .clone();
+        self.parse_value(&field.field_type)
+    }
+
+    fn parse_value(&mut self, field_type: &FieldType) -> Result<FieldValue, ParseError> {
+        match field_type {
             FieldType::Int => Ok(FieldValue::Int(self.parse_int::<i32>())),
             FieldType::UInt => Ok(FieldValue::UInt(self.parse_int::<u32>())),
             FieldType::Long => Ok(FieldValue::Long(self.parse_int::<i64>())),
@@ -30,11 +43,8 @@ impl ArchiveParser {
                 self.parse_string().or(Err(ParseError::InvalidString))?,
             )),
             FieldType::ByteArray => Ok(FieldValue::ByteArray(self.parse_byte_array())),
-            FieldType::Array(element) => {
-                let element_copy = (*element).clone();
-                Ok(FieldValue::Array(self.parse_array(element_copy)))
-            }
-            FieldType::Object(_schema) => Ok(FieldValue::Array(self.parse_object())),
+            FieldType::Array(element) => Ok(FieldValue::Array(self.parse_array(&*element)?)),
+            FieldType::Object(_schema) => Ok(FieldValue::Object(Box::new(self.parse_object()))),
         }
     }
 
@@ -79,11 +89,19 @@ impl ArchiveParser {
         String::from_utf8(self.parse_byte_array())
     }
 
-    fn parse_array(&mut self, element: Box<FieldType>) -> Vec<FieldValue> {
-        vec![]
+    fn parse_array(&mut self, element: &FieldType) -> Result<Vec<FieldValue>, ParseError> {
+        let length = self.parse_int::<u32>() as usize;
+        let original_ptr = self.ptr;
+        let mut values: Vec<FieldValue> = vec![];
+        while self.ptr - original_ptr < length {
+            values.push(self.parse_value(element)?);
+        }
+        Ok(values)
     }
 
-    fn parse_object(&mut self) -> Vec<FieldValue> {
-        vec![]
+    fn parse_object(&mut self) -> Document {
+        let bytes = self.parse_byte_array();
+        let mut parser = Self::new(self.schema.clone(), bytes);
+        parser.parse_object()
     }
 }
