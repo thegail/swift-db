@@ -1,6 +1,6 @@
-use super::{FieldValue, Schema};
+use super::{FieldInstance, Schema};
 
 pub struct Document {
-    schema: Schema,
-    fields: Vec<FieldValue>,
+    pub schema: Schema,
+    pub fields: Vec<FieldInstance>,
 }

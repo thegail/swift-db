@@ -1,6 +1,6 @@
 use super::FieldValue;
 
 pub struct FieldInstance {
-    name: String,
-    value: FieldValue,
+    pub name: String,
+    pub value: FieldValue,
 }

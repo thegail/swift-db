@@ -1,5 +1,5 @@
 use super::parse_error::ParseError;
-use crate::schema::{Document, FieldType, FieldValue, Schema};
+use crate::schema::{Document, FieldInstance, FieldType, FieldValue, Schema};
 use crate::util::{FromByteSlice, PrimInt};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use std::iter::Iterator;
@@ -20,14 +20,29 @@ impl ArchiveParser {
         }
     }
 
-    fn read_field(&mut self) -> Result<FieldValue, ParseError> {
+    fn read_document(&mut self) -> Result<Document, ParseError> {
+        let length = self.data.len();
+        let mut fields: Vec<FieldInstance> = vec![];
+        while self.ptr < length {
+            fields.push(self.read_field()?);
+        }
+        Ok(Document {
+            schema: self.schema.clone(),
+            fields,
+        })
+    }
+
+    fn read_field(&mut self) -> Result<FieldInstance, ParseError> {
         let field_id = self.parse_int::<u16>();
         let field = (&self.schema.fields)
             .into_iter()
             .find(|x| x.id == field_id)
             .ok_or(ParseError::UnknownFieldIdentifier)?
             .clone();
-        self.parse_value(&field.field_type)
+        Ok(FieldInstance {
+            name: field.name,
+            value: self.parse_value(&field.field_type)?,
+        })
     }
 
     fn parse_value(&mut self, field_type: &FieldType) -> Result<FieldValue, ParseError> {
@@ -44,7 +59,7 @@ impl ArchiveParser {
             )),
             FieldType::ByteArray => Ok(FieldValue::ByteArray(self.parse_byte_array())),
             FieldType::Array(element) => Ok(FieldValue::Array(self.parse_array(&*element)?)),
-            FieldType::Object(_schema) => Ok(FieldValue::Object(Box::new(self.parse_object()))),
+            FieldType::Object(_schema) => Ok(FieldValue::Object(Box::new(self.parse_object()?))),
         }
     }
 
@@ -99,9 +114,9 @@ impl ArchiveParser {
         Ok(values)
     }
 
-    fn parse_object(&mut self) -> Document {
+    fn parse_object(&mut self) -> Result<Document, ParseError> {
         let bytes = self.parse_byte_array();
         let mut parser = Self::new(self.schema.clone(), bytes);
-        parser.parse_object()
+        parser.read_document()
     }
 }
