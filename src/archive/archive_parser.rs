@@ -9,14 +9,16 @@ struct ArchiveParser {
     schema: Schema,
     data: Vec<u8>,
     ptr: usize,
+    fields_of_interest: Vec<u16>,
 }
 
 impl ArchiveParser {
-    fn new(schema: Schema, data: Vec<u8>) -> Self {
+    fn new(schema: Schema, data: Vec<u8>, fields_of_interest: Vec<u16>) -> Self {
         ArchiveParser {
             schema,
             data,
             ptr: 0usize,
+            fields_of_interest,
         }
     }
 
@@ -24,7 +26,10 @@ impl ArchiveParser {
         let length = self.data.len();
         let mut fields: Vec<FieldInstance> = vec![];
         while self.ptr < length {
-            fields.push(self.read_field()?);
+            match self.read_field()? {
+                Some(field_instance) => fields.push(field_instance),
+                None => {}
+            }
         }
         Ok(Document {
             schema: self.schema.clone(),
@@ -32,17 +37,22 @@ impl ArchiveParser {
         })
     }
 
-    fn read_field(&mut self) -> Result<FieldInstance, ParseError> {
+    fn read_field(&mut self) -> Result<Option<FieldInstance>, ParseError> {
         let field_id = self.parse_int::<u16>();
         let field = (&self.schema.fields)
             .into_iter()
             .find(|x| x.id == field_id)
             .ok_or(ParseError::UnknownFieldIdentifier)?
             .clone();
-        Ok(FieldInstance {
-            name: field.name,
-            value: self.parse_value(&field.field_type)?,
-        })
+        if !self.fields_of_interest.contains(&field_id) {
+            self.skip_field(&field.field_type);
+            return Ok(None);
+        } else {
+            Ok(Some(FieldInstance {
+                name: field.name,
+                value: self.parse_value(&field.field_type)?,
+            }))
+        }
     }
 
     fn parse_value(&mut self, field_type: &FieldType) -> Result<FieldValue, ParseError> {
@@ -60,6 +70,34 @@ impl ArchiveParser {
             FieldType::ByteArray => Ok(FieldValue::ByteArray(self.parse_byte_array())),
             FieldType::Array(element) => Ok(FieldValue::Array(self.parse_array(&*element)?)),
             FieldType::Object(_schema) => Ok(FieldValue::Object(Box::new(self.parse_object()?))),
+        }
+    }
+
+    fn skip_field(&mut self, field_type: &FieldType) {
+        match field_type {
+            FieldType::Int => self.ptr += size_of::<i32>(),
+            FieldType::UInt => self.ptr += size_of::<u32>(),
+            FieldType::Long => self.ptr += size_of::<i64>(),
+            FieldType::ULong => self.ptr += size_of::<u64>(),
+            FieldType::Float => self.ptr += size_of::<f64>(),
+            FieldType::Bool => self.ptr += size_of::<u8>(),
+            FieldType::DateTime => self.ptr += size_of::<i64>(),
+            FieldType::String => {
+                let length = self.parse_int::<u32>() as usize;
+                self.ptr += length;
+            }
+            FieldType::ByteArray => {
+                let length = self.parse_int::<u32>() as usize;
+                self.ptr += length;
+            }
+            FieldType::Array(_) => {
+                let length = self.parse_int::<u32>() as usize;
+                self.ptr += length;
+            }
+            FieldType::Object(_) => {
+                let length = self.parse_int::<u32>() as usize;
+                self.ptr += length;
+            }
         }
     }
 
@@ -116,7 +154,7 @@ impl ArchiveParser {
 
     fn parse_object(&mut self) -> Result<Document, ParseError> {
         let bytes = self.parse_byte_array();
-        let mut parser = Self::new(self.schema.clone(), bytes);
+        let mut parser = Self::new(self.schema.clone(), bytes, self.fields_of_interest.clone());
         parser.read_document()
     }
 }
