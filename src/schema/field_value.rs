@@ -13,4 +13,10 @@ pub enum FieldValue {
     ByteArray(Vec<u8>),
     Array(Vec<FieldValue>),
     Object(Box<Document>),
+    Enum(Box<EnumValue>),
+}
+
+pub struct EnumValue {
+    pub case_id: u16,
+    pub associated_value: Option<FieldValue>,
 }

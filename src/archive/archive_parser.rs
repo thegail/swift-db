@@ -1,5 +1,5 @@
 use super::parse_error::ParseError;
-use crate::schema::{Document, FieldInstance, FieldType, FieldValue, Schema};
+use crate::schema::*;
 use crate::util::{FromByteSlice, PrimInt};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use std::iter::Iterator;
@@ -45,7 +45,7 @@ impl ArchiveParser {
             .ok_or(ParseError::UnknownFieldIdentifier)?
             .clone();
         if !self.fields_of_interest.contains(&field_id) {
-            self.skip_field(&field.field_type);
+            self.skip_field(&field.field_type)?;
             return Ok(None);
         } else {
             Ok(Some(FieldInstance {
@@ -70,33 +70,50 @@ impl ArchiveParser {
             FieldType::ByteArray => Ok(FieldValue::ByteArray(self.parse_byte_array())),
             FieldType::Array(element) => Ok(FieldValue::Array(self.parse_array(&*element)?)),
             FieldType::Object(_schema) => Ok(FieldValue::Object(Box::new(self.parse_object()?))),
+            FieldType::Enum(cases) => Ok(FieldValue::Enum(Box::new(self.parse_enum(cases)?))),
         }
     }
 
-    fn skip_field(&mut self, field_type: &FieldType) {
+    fn skip_field(&mut self, field_type: &FieldType) -> Result<(), ParseError> {
         match field_type {
-            FieldType::Int => self.ptr += size_of::<i32>(),
-            FieldType::UInt => self.ptr += size_of::<u32>(),
-            FieldType::Long => self.ptr += size_of::<i64>(),
-            FieldType::ULong => self.ptr += size_of::<u64>(),
-            FieldType::Float => self.ptr += size_of::<f64>(),
-            FieldType::Bool => self.ptr += size_of::<u8>(),
-            FieldType::DateTime => self.ptr += size_of::<i64>(),
+            FieldType::Int => Ok(self.ptr += size_of::<i32>()),
+            FieldType::UInt => Ok(self.ptr += size_of::<u32>()),
+            FieldType::Long => Ok(self.ptr += size_of::<i64>()),
+            FieldType::ULong => Ok(self.ptr += size_of::<u64>()),
+            FieldType::Float => Ok(self.ptr += size_of::<f64>()),
+            FieldType::Bool => Ok(self.ptr += size_of::<u8>()),
+            FieldType::DateTime => Ok(self.ptr += size_of::<i64>()),
             FieldType::String => {
                 let length = self.parse_int::<u32>() as usize;
                 self.ptr += length;
+                Ok(())
             }
             FieldType::ByteArray => {
                 let length = self.parse_int::<u32>() as usize;
                 self.ptr += length;
+                Ok(())
             }
             FieldType::Array(_) => {
                 let length = self.parse_int::<u32>() as usize;
                 self.ptr += length;
+                Ok(())
             }
             FieldType::Object(_) => {
                 let length = self.parse_int::<u32>() as usize;
                 self.ptr += length;
+                Ok(())
+            }
+            FieldType::Enum(cases) => {
+                let case_id = self.parse_int::<u16>();
+                let enum_case = cases
+                    .into_iter()
+                    .find(|x| x.id == case_id)
+                    .ok_or(ParseError::UnknownCaseIdentifier)?
+                    .clone();
+                match enum_case.associated_value {
+                    Option::None => return Ok(()),
+                    Option::Some(value_type) => self.skip_field(&value_type),
+                }
             }
         }
     }
@@ -156,5 +173,26 @@ impl ArchiveParser {
         let bytes = self.parse_byte_array();
         let mut parser = Self::new(self.schema.clone(), bytes, self.fields_of_interest.clone());
         parser.read_document()
+    }
+
+    fn parse_enum(&mut self, cases: &Vec<EnumCase>) -> Result<EnumValue, ParseError> {
+        let case_id = self.parse_int::<u16>();
+        let enum_case = cases
+            .into_iter()
+            .find(|x| x.id == case_id)
+            .ok_or(ParseError::UnknownCaseIdentifier)?
+            .clone();
+        match enum_case.associated_value {
+            Option::None => {
+                return Ok(EnumValue {
+                    case_id,
+                    associated_value: None,
+                })
+            }
+            Option::Some(value_type) => Ok(EnumValue {
+                case_id,
+                associated_value: Some(self.parse_value(&value_type)?),
+            }),
+        }
     }
 }
