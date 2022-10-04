@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum ParseError {
+    SchemaMismatch,
     UnknownFieldIdentifier,
     UnknownCaseIdentifier,
     InvalidString,

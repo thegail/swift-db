@@ -23,6 +23,10 @@ impl ArchiveParser {
     }
 
     pub fn read_document(&mut self) -> Result<Document, ParseError> {
+        let schema_id = self.parse_int::<u64>();
+        if schema_id != self.schema.id {
+            return Err(ParseError::SchemaMismatch);
+        }
         let length = self.data.len();
         let mut fields: Vec<FieldInstance> = vec![];
         while self.ptr < length {
