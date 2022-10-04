@@ -1,6 +1,6 @@
 use super::FieldValue;
 
 pub struct FieldInstance {
-    pub name: String,
+    pub id: u16,
     pub value: FieldValue,
 }

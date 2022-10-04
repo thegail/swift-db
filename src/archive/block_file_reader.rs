@@ -6,6 +6,12 @@ pub struct BlockFileReader {
 }
 
 impl BlockFileReader {
+    pub fn new(file: File) -> Self {
+        Self {
+            reader: BufReader::new(file),
+        }
+    }
+
     fn next(&mut self) -> Result<Vec<u8>, Error> {
         loop {
             let mut buf = [0u8; 1];
@@ -13,7 +19,7 @@ impl BlockFileReader {
             if buf[0] == 69 {
                 break Ok(self.read_block()?);
             } else if buf[0] != 0 {
-                break Err(Error::new(std::io::ErrorKind::InvalidData, "sdkf"));
+                break Err(Error::new(std::io::ErrorKind::InvalidData, "Invalid byte"));
             }
         }
     }

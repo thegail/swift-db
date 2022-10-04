@@ -5,7 +5,7 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use std::iter::Iterator;
 use std::mem::size_of;
 
-struct ArchiveParser {
+pub struct ArchiveParser {
     schema: Schema,
     data: Vec<u8>,
     ptr: usize,
@@ -49,7 +49,7 @@ impl ArchiveParser {
             return Ok(None);
         } else {
             Ok(Some(FieldInstance {
-                name: field.name,
+                id: field_id,
                 value: self.parse_value(&field.field_type)?,
             }))
         }
