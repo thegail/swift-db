@@ -13,7 +13,7 @@ pub struct ArchiveParser {
 }
 
 impl ArchiveParser {
-    fn new(schema: Schema, data: Vec<u8>, fields_of_interest: Vec<u16>) -> Self {
+    pub fn new(schema: Schema, data: Vec<u8>, fields_of_interest: Vec<u16>) -> Self {
         ArchiveParser {
             schema,
             data,
@@ -22,7 +22,7 @@ impl ArchiveParser {
         }
     }
 
-    fn read_document(&mut self) -> Result<Document, ParseError> {
+    pub fn read_document(&mut self) -> Result<Document, ParseError> {
         let length = self.data.len();
         let mut fields: Vec<FieldInstance> = vec![];
         while self.ptr < length {

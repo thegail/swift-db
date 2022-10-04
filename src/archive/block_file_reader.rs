@@ -12,7 +12,7 @@ impl BlockFileReader {
         }
     }
 
-    fn next(&mut self) -> Result<Vec<u8>, Error> {
+    pub fn next(&mut self) -> Result<Vec<u8>, Error> {
         loop {
             let mut buf = [0u8; 1];
             self.reader.read_exact(&mut buf)?;
@@ -44,7 +44,7 @@ impl BlockFileReader {
         self.read_block()
     }
 
-    fn reset_position(&mut self) -> Result<(), Error> {
+    pub fn reset_position(&mut self) -> Result<(), Error> {
         self.reader.seek(SeekFrom::Start(0))?;
         Ok(())
     }
