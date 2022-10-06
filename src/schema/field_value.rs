@@ -1,6 +1,7 @@
 use super::Document;
 use chrono::{DateTime, Utc};
 
+#[derive(Clone)]
 pub enum FieldValue {
     Int(i32),
     UInt(u32),
@@ -16,6 +17,7 @@ pub enum FieldValue {
     Enum(Box<EnumValue>),
 }
 
+#[derive(Clone)]
 pub struct EnumValue {
     pub case_id: u16,
     pub associated_value: Option<FieldValue>,
