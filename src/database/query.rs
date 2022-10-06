@@ -22,12 +22,12 @@ pub enum Expression {
 }
 
 impl Document {
-    fn eval_expr(self, expr: Expression) -> Option<FieldValue> {
+    fn eval_expr(&self, expr: Expression) -> Option<FieldValue> {
         match expr {
             Expression::Value(value) => Some(value),
             Expression::Field(field_id) => {
-                if let Some(field_instance) = self.fields.into_iter().find(|x| x.id == field_id) {
-                    Some(field_instance.value)
+                if let Some(field_instance) = self.fields.iter().find(|x| x.id == field_id) {
+                    Some(field_instance.value.clone())
                 } else {
                     None
                 }
@@ -37,7 +37,7 @@ impl Document {
 }
 
 impl Condition {
-    pub fn evaluate(self, doc: Document) -> bool {
+    pub fn evaluate(self, doc: &Document) -> bool {
         match self {
             Condition::Equal(left, right) => {
                 let left_value = doc.eval_expr(left).expect("TODO: condition error handling");
@@ -114,7 +114,7 @@ impl Condition {
                     FieldValue::Object(_) => {
                         panic!("oh nooo")
                     }
-                    FieldValue::Enum(left_enum) => {
+                    FieldValue::Enum(_) => {
                         panic!("oh nooo")
                     }
                 }
@@ -194,7 +194,7 @@ impl Condition {
                     FieldValue::Object(_) => {
                         panic!("oh nooo")
                     }
-                    FieldValue::Enum(left_enum) => {
+                    FieldValue::Enum(_) => {
                         panic!("oh nooo")
                     }
                 }
@@ -240,7 +240,7 @@ impl Condition {
                             panic!("oh nooo")
                         }
                     }
-                    FieldValue::Bool(left_bool) => {
+                    FieldValue::Bool(_) => {
                         panic!("oh nooo")
                     }
                     FieldValue::DateTime(left_date) => {
@@ -257,7 +257,7 @@ impl Condition {
                             panic!("oh nooo")
                         }
                     }
-                    FieldValue::ByteArray(left_bytes) => {
+                    FieldValue::ByteArray(_) => {
                         panic!("oh nooo")
                     }
                     FieldValue::Array(_) => {
@@ -266,7 +266,7 @@ impl Condition {
                     FieldValue::Object(_) => {
                         panic!("oh nooo")
                     }
-                    FieldValue::Enum(left_enum) => {
+                    FieldValue::Enum(_) => {
                         panic!("oh nooo")
                     }
                 }
@@ -312,7 +312,7 @@ impl Condition {
                             panic!("oh nooo")
                         }
                     }
-                    FieldValue::Bool(left_bool) => {
+                    FieldValue::Bool(_) => {
                         panic!("oh nooo")
                     }
                     FieldValue::DateTime(left_date) => {
@@ -329,7 +329,7 @@ impl Condition {
                             panic!("oh nooo")
                         }
                     }
-                    FieldValue::ByteArray(left_bytes) => {
+                    FieldValue::ByteArray(_) => {
                         panic!("oh nooo")
                     }
                     FieldValue::Array(_) => {
@@ -338,7 +338,7 @@ impl Condition {
                     FieldValue::Object(_) => {
                         panic!("oh nooo")
                     }
-                    FieldValue::Enum(left_enum) => {
+                    FieldValue::Enum(_) => {
                         panic!("oh nooo")
                     }
                 }
