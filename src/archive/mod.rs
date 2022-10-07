@@ -1,5 +1,6 @@
 mod archive_parser;
 mod block_file_reader;
+mod document_serialize;
 mod parse_error;
 
 pub use archive_parser::ArchiveParser;
