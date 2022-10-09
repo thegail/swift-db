@@ -5,8 +5,11 @@ use crate::archive::ArchiveParser;
 use crate::schema::Document;
 
 impl Database {
-    pub fn create(&mut self, _document: Document) {
-        ()
+    pub fn create(&mut self, document: Document) -> Result<(), OperationError> {
+        let bytes = document.serialize();
+        self.reader
+            .write_block(bytes)
+            .map_err(|e| OperationError::IOError(e))
     }
 
     pub fn find(&mut self, collection: u64, query: Query) -> Result<Document, OperationError> {
