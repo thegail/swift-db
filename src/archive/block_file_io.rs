@@ -1,11 +1,11 @@
 use std::fs::File;
 use std::io::{BufReader, Error, Read, Seek, SeekFrom};
 
-pub struct BlockFileReader {
+pub struct BlockFileIO {
     reader: BufReader<File>,
 }
 
-impl BlockFileReader {
+impl BlockFileIO {
     pub fn new(file: File) -> Self {
         Self {
             reader: BufReader::new(file),
