@@ -1,14 +1,16 @@
 use std::fs::File;
-use std::io::{BufReader, Error, Read, Seek, SeekFrom};
+use std::io::{BufReader, Error, Read, Seek, SeekFrom, Write};
 
 pub struct BlockFileIO {
     reader: BufReader<File>,
+    writer: File,
 }
 
 impl BlockFileIO {
     pub fn new(file: File) -> Self {
         Self {
-            reader: BufReader::new(file),
+            reader: BufReader::new(file.try_clone().expect("File clone failed")),
+            writer: file,
         }
     }
 
@@ -46,6 +48,16 @@ impl BlockFileIO {
 
     pub fn reset_position(&mut self) -> Result<(), Error> {
         self.reader.seek(SeekFrom::Start(0))?;
+        Ok(())
+    }
+
+    pub fn write_block(&mut self, block: Vec<u8>) -> Result<(), Error> {
+        let mut block = block;
+        self.writer.seek(SeekFrom::End(0))?;
+        let mut buf = vec![69u8];
+        buf.extend_from_slice(&(buf.len() as u64).to_be_bytes());
+        buf.append(&mut block);
+        self.writer.write(&buf)?;
         Ok(())
     }
 }
