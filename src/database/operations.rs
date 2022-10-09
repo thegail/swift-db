@@ -17,12 +17,9 @@ impl Database {
             .ok_or(OperationError::UnknownSchemaIdentifier)?;
         self.reader
             .reset_position()
-            .map_err(|e| OperationError::ReadError(e))?;
+            .map_err(|e| OperationError::IOError(e))?;
         loop {
-            let block = self
-                .reader
-                .next()
-                .map_err(|o| OperationError::ReadError(o))?;
+            let block = self.reader.next().map_err(|o| OperationError::IOError(o))?;
             let mut parser =
                 ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
             return parser

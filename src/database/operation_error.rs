@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug)]
 pub enum OperationError {
     ParseError(ParseError),
-    ReadError(std::io::Error),
+    IOError(std::io::Error),
     UnknownSchemaIdentifier,
 }
 
