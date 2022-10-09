@@ -9,7 +9,7 @@ pub struct Database {
 }
 
 impl Database {
-    fn new(path: String, collections: Vec<Schema>) -> Result<Self, io::Error> {
+    pub fn new(path: String, collections: Vec<Schema>) -> Result<Self, io::Error> {
         Ok(Self {
             io: BlockFileIO::new(File::open(path)?),
             collections,
