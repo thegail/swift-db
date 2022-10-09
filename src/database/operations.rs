@@ -7,7 +7,7 @@ use crate::schema::Document;
 impl Database {
     pub fn create(&mut self, document: Document) -> Result<(), OperationError> {
         let bytes = document.serialize();
-        self.reader
+        self.io
             .write_block(bytes)
             .map_err(|e| OperationError::IOError(e))
     }
@@ -18,11 +18,11 @@ impl Database {
             .iter()
             .find(|s| s.id == collection)
             .ok_or(OperationError::UnknownSchemaIdentifier)?;
-        self.reader
+        self.io
             .reset_position()
             .map_err(|e| OperationError::IOError(e))?;
         loop {
-            let block = self.reader.next().map_err(|o| OperationError::IOError(o))?;
+            let block = self.io.next().map_err(|o| OperationError::IOError(o))?;
             let mut parser =
                 ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
             return parser
