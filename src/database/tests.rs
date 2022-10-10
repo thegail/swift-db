@@ -5,10 +5,10 @@ use crate::schema::*;
 struct Cleanup;
 impl Drop for Cleanup {
     fn drop(&mut self) {
-        // let res = std::fs::remove_file("test.sdb");
-        // if let Err(err) = res {
-        //     eprintln!("{}", err);
-        // }
+        let res = std::fs::remove_file("test.sdb");
+        if let Err(err) = res {
+            eprintln!("{}", err);
+        }
     }
 }
 
