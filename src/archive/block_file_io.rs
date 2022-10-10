@@ -7,10 +7,10 @@ pub struct BlockFileIO {
 }
 
 impl BlockFileIO {
-    pub fn new(file: File) -> Self {
+    pub fn new(read_file: File, write_file: File) -> Self {
         Self {
-            reader: BufReader::new(file.try_clone().expect("File clone failed")),
-            writer: file,
+            reader: BufReader::new(read_file),
+            writer: write_file,
         }
     }
 
@@ -55,7 +55,7 @@ impl BlockFileIO {
         let mut block = block;
         self.writer.seek(SeekFrom::End(0))?;
         let mut buf = vec![69u8];
-        buf.extend_from_slice(&(buf.len() as u64).to_be_bytes());
+        buf.extend_from_slice(&(block.len() as u64).to_be_bytes());
         buf.append(&mut block);
         self.writer.write(&buf)?;
         Ok(())
