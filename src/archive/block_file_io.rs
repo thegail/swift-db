@@ -27,12 +27,9 @@ impl BlockFileIO {
     }
 
     fn read_block(&mut self) -> Result<Vec<u8>, Error> {
-        let mut length_bytes = [0u8; 4];
+        let mut length_bytes = [0u8; 8];
         self.reader.read_exact(&mut length_bytes)?;
-        let block_length = ((length_bytes[0] as u64) << 48)
-            + ((length_bytes[1] as u64) << 32)
-            + ((length_bytes[2] as u64) << 16)
-            + (length_bytes[3] as u64);
+        let block_length = u64::from_be_bytes(length_bytes);
 
         let mut handle = self.reader.by_ref().take(block_length);
         let mut buffer: Vec<u8> = vec![];
