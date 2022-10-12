@@ -31,12 +31,13 @@ impl FieldValue {
             }
             FieldValue::DateTime(d) => d.timestamp().to_be_bytes().to_vec(),
             FieldValue::String(s) => {
-                let mut bytes = s.len().to_be_bytes().to_vec();
-                bytes.extend_from_slice(s.as_bytes());
+                let s_bytes = s.as_bytes();
+                let mut bytes = (s_bytes.len() as u32).to_be_bytes().to_vec();
+                bytes.extend_from_slice(s_bytes);
                 bytes
             }
             FieldValue::ByteArray(b) => {
-                let mut bytes = b.len().to_be_bytes().to_vec();
+                let mut bytes = (b.len() as u32).to_be_bytes().to_vec();
                 bytes.extend_from_slice(b);
                 bytes
             }
