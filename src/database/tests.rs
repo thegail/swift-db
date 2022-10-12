@@ -12,10 +12,8 @@ impl Drop for Cleanup {
     }
 }
 
-#[test]
-fn create_document() {
-    let _c = Cleanup;
-    let test_fields = vec![
+fn test_fields() -> Vec<Field> {
+    vec![
         Field {
             name: "name".to_string(),
             id: 0x1,
@@ -41,12 +39,20 @@ fn create_document() {
             id: 0x5,
             field_type: FieldType::DateTime,
         },
-    ];
-    let test_schema = Schema {
+    ]
+}
+
+fn test_schema() -> Schema {
+    Schema {
         name: "people".to_string(),
         id: 0x10,
-        fields: test_fields,
-    };
+        fields: test_fields(),
+    }
+}
+
+#[test]
+fn create_document() {
+    let _c = Cleanup;
     let field_instances = vec![
         FieldInstance {
             id: 0x1,
@@ -70,11 +76,30 @@ fn create_document() {
         },
     ];
     let document = Document {
-        schema: test_schema.clone(),
+        schema: test_schema(),
         fields: field_instances,
     };
     _ = std::fs::File::create("test.sdb");
-    let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema])
+    let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");
     database.create(document).expect("Creation failed");
+}
+
+#[test]
+fn read_document() {
+    let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
+        .expect("Database construction failed");
+    let _document = database
+        .find(
+            0x10,
+            query::Query {
+                collection: 0x10,
+                fields_of_interest: vec![0x2],
+                condition: query::Condition::Equal(
+                    query::Expression::Field(0x2),
+                    query::Expression::Value(FieldValue::UInt(11)),
+                ),
+            },
+        )
+        .expect("Read error");
 }
