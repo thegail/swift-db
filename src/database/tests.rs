@@ -39,6 +39,27 @@ fn test_fields() -> Vec<Field> {
             id: 0x5,
             field_type: FieldType::DateTime,
         },
+        Field {
+            name: "state".to_string(),
+            id: 0x6,
+            field_type: FieldType::Enum(vec![
+                EnumCase {
+                    id: 0x1,
+                    name: "happy".to_string(),
+                    associated_value: None,
+                },
+                EnumCase {
+                    id: 0x2,
+                    name: "sad".to_string(),
+                    associated_value: None,
+                },
+                EnumCase {
+                    id: 0x3,
+                    name: "angry".to_string(),
+                    associated_value: None,
+                },
+            ]),
+        },
     ]
 }
 
@@ -73,6 +94,13 @@ fn create_document() {
         FieldInstance {
             id: 0x5,
             value: FieldValue::DateTime(chrono::Utc::now()),
+        },
+        FieldInstance {
+            id: 0x6,
+            value: FieldValue::Enum(Box::new(EnumValue {
+                case_id: 0x2,
+                associated_value: None,
+            })),
         },
     ];
     let document = Document {
