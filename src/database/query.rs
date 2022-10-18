@@ -49,73 +49,73 @@ impl Condition {
                         if let FieldValue::Int(right_int) = right_value {
                             left_int == right_int
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::UInt(left_uint) => {
                         if let FieldValue::UInt(right_uint) = right_value {
                             left_uint == right_uint
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Long(left_long) => {
                         if let FieldValue::Long(right_long) = right_value {
                             left_long == right_long
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::ULong(left_ulong) => {
                         if let FieldValue::ULong(right_ulong) = right_value {
                             left_ulong == right_ulong
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Float(left_float) => {
                         if let FieldValue::Float(right_float) = right_value {
                             left_float == right_float
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Bool(left_bool) => {
                         if let FieldValue::Bool(right_bool) = right_value {
                             left_bool == right_bool
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::DateTime(left_date) => {
                         if let FieldValue::DateTime(right_date) = right_value {
                             left_date == right_date
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::String(left_string) => {
                         if let FieldValue::String(right_string) = right_value {
                             left_string == right_string
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::ByteArray(left_bytes) => {
                         if let FieldValue::ByteArray(right_bytes) = right_value {
                             left_bytes == right_bytes
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Array(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Object(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Enum(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                 }
             }
@@ -129,73 +129,73 @@ impl Condition {
                         if let FieldValue::Int(right_int) = right_value {
                             left_int != right_int
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::UInt(left_uint) => {
                         if let FieldValue::UInt(right_uint) = right_value {
                             left_uint != right_uint
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Long(left_long) => {
                         if let FieldValue::Long(right_long) = right_value {
                             left_long != right_long
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::ULong(left_ulong) => {
                         if let FieldValue::ULong(right_ulong) = right_value {
                             left_ulong != right_ulong
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Float(left_float) => {
                         if let FieldValue::Float(right_float) = right_value {
                             left_float != right_float
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Bool(left_bool) => {
                         if let FieldValue::Bool(right_bool) = right_value {
                             left_bool != right_bool
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::DateTime(left_date) => {
                         if let FieldValue::DateTime(right_date) = right_value {
                             left_date != right_date
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::String(left_string) => {
                         if let FieldValue::String(right_string) = right_value {
                             left_string != right_string
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::ByteArray(left_bytes) => {
                         if let FieldValue::ByteArray(right_bytes) = right_value {
                             left_bytes != right_bytes
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Array(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Object(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Enum(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                 }
             }
@@ -209,65 +209,65 @@ impl Condition {
                         if let FieldValue::Int(right_int) = right_value {
                             left_int > right_int
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::UInt(left_uint) => {
                         if let FieldValue::UInt(right_uint) = right_value {
                             left_uint > right_uint
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Long(left_long) => {
                         if let FieldValue::Long(right_long) = right_value {
                             left_long > right_long
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::ULong(left_ulong) => {
                         if let FieldValue::ULong(right_ulong) = right_value {
                             left_ulong > right_ulong
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Float(left_float) => {
                         if let FieldValue::Float(right_float) = right_value {
                             left_float > right_float
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Bool(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::DateTime(left_date) => {
                         if let FieldValue::DateTime(right_date) = right_value {
                             left_date > right_date
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::String(left_string) => {
                         if let FieldValue::String(right_string) = right_value {
                             left_string > right_string
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::ByteArray(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Array(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Object(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Enum(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                 }
             }
@@ -281,65 +281,65 @@ impl Condition {
                         if let FieldValue::Int(right_int) = right_value {
                             left_int < right_int
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::UInt(left_uint) => {
                         if let FieldValue::UInt(right_uint) = right_value {
                             left_uint < right_uint
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Long(left_long) => {
                         if let FieldValue::Long(right_long) = right_value {
                             left_long < right_long
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::ULong(left_ulong) => {
                         if let FieldValue::ULong(right_ulong) = right_value {
                             left_ulong < right_ulong
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Float(left_float) => {
                         if let FieldValue::Float(right_float) = right_value {
                             left_float < right_float
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::Bool(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::DateTime(left_date) => {
                         if let FieldValue::DateTime(right_date) = right_value {
                             left_date < right_date
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::String(left_string) => {
                         if let FieldValue::String(right_string) = right_value {
                             left_string < right_string
                         } else {
-                            panic!("oh nooo")
+                            todo!()
                         }
                     }
                     FieldValue::ByteArray(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Array(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Object(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                     FieldValue::Enum(_) => {
-                        panic!("oh nooo")
+                        todo!()
                     }
                 }
             }
