@@ -42,7 +42,13 @@ impl FieldValue {
                 bytes
             }
             FieldValue::Array(_) => todo!(),
-            FieldValue::Object(_) => todo!(),
+            FieldValue::Object(o) => {
+                let mut bytes = [0u8; 16].to_vec();
+                bytes.append(&mut o.serialize());
+                bytes.splice(0..7, (bytes.len() - 4).to_be_bytes());
+                bytes.splice(8..15, o.schema.id.to_be_bytes());
+                bytes
+            }
             FieldValue::Enum(e) => {
                 let mut bytes = e.case_id.to_be_bytes().to_vec();
                 if let Some(associated_value) = &e.associated_value {
