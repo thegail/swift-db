@@ -41,7 +41,14 @@ impl FieldValue {
                 bytes.extend_from_slice(b);
                 bytes
             }
-            FieldValue::Array(_) => todo!(),
+            FieldValue::Array(a) => {
+                let mut bytes = [0u8; 4].to_vec();
+                for val in a {
+                    bytes.append(&mut val.serialize());
+                }
+                bytes.splice(0..3, (bytes.len() as u32 - 4).to_be_bytes());
+                bytes
+            }
             FieldValue::Object(o) => {
                 let mut bytes = [0u8; 16].to_vec();
                 bytes.append(&mut o.serialize());
