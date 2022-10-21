@@ -175,7 +175,7 @@ fn write_read_bench() {
     let w_finish = std::time::Instant::now();
     println!("Write elapsed: {:?}", w_finish - w_start);
     let r_start = std::time::Instant::now();
-    for i in 1..1000 {
+    for i in (1..1000).rev() {
         _ = database
             .find(
                 0x10,
