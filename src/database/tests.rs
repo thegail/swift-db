@@ -114,6 +114,7 @@ fn create_document() {
 }
 
 #[test]
+#[ignore]
 fn read_document() {
     let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");
