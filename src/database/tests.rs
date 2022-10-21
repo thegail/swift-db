@@ -119,7 +119,7 @@ fn read_document() {
     let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");
     let _document = database
-        .find(
+        .find_one(
             0x10,
             query::Query {
                 collection: 0x10,
@@ -178,7 +178,7 @@ fn write_read_bench() {
     let r_start = std::time::Instant::now();
     for i in (1..1000).rev() {
         _ = database
-            .find(
+            .find_one(
                 0x10,
                 query::Query {
                     collection: 0x10,

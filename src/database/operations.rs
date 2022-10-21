@@ -12,7 +12,7 @@ impl Database {
             .map_err(|e| OperationError::IOError(e))
     }
 
-    pub fn find(&mut self, collection: u64, query: Query) -> Result<Document, OperationError> {
+    pub fn find_one(&mut self, collection: u64, query: Query) -> Result<Document, OperationError> {
         let schema = self
             .collections
             .iter()
