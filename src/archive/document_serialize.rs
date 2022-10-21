@@ -26,7 +26,7 @@ impl FieldValue {
                 if *b {
                     vec![1u8]
                 } else {
-                    vec![1u8]
+                    vec![0u8]
                 }
             }
             FieldValue::DateTime(d) => d.timestamp().to_be_bytes().to_vec(),
