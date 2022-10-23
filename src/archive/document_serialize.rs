@@ -5,12 +5,22 @@ impl Document {
         let mut vector = Vec::<u8>::new();
         let schema_bytes = self.schema.id.to_be_bytes();
         vector.extend_from_slice(&schema_bytes);
+        self.serialize_fields(&mut vector);
+        vector
+    }
+
+    pub fn serialize_subdocument(&self) -> Vec<u8> {
+        let mut vector = Vec::<u8>::new();
+        self.serialize_fields(&mut vector);
+        vector
+    }
+
+    fn serialize_fields(&self, vector: &mut Vec<u8>) {
         for field in self.fields.iter() {
             let bytes = field.id.to_be_bytes();
             vector.extend_from_slice(&bytes);
             vector.append(&mut field.value.serialize());
         }
-        vector
     }
 }
 
@@ -46,14 +56,13 @@ impl FieldValue {
                 for val in a {
                     bytes.append(&mut val.serialize());
                 }
-                bytes.splice(0..3, (bytes.len() as u32 - 4).to_be_bytes());
+                bytes.splice(0..4, (bytes.len() as u32 - 4).to_be_bytes());
                 bytes
             }
             FieldValue::Object(o) => {
-                let mut bytes = [0u8; 16].to_vec();
-                bytes.append(&mut o.serialize());
-                bytes.splice(0..7, (bytes.len() - 4).to_be_bytes());
-                bytes.splice(8..15, o.schema.id.to_be_bytes());
+                let mut bytes = [0u8; 8].to_vec();
+                bytes.append(&mut o.serialize_subdocument());
+                bytes.splice(0..8, (bytes.len() as u64 - 4).to_be_bytes());
                 bytes
             }
             FieldValue::Enum(e) => {
