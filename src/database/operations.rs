@@ -1,7 +1,7 @@
 use super::database::Database;
 use super::operation_error::OperationError;
 use super::query::Query;
-use crate::archive::ArchiveParser;
+use crate::archive::{ArchiveParser, ParseError};
 use crate::schema::Document;
 
 impl Database {
@@ -25,9 +25,17 @@ impl Database {
             let block = self.io.next().map_err(|o| OperationError::IOError(o))?;
             let mut parser =
                 ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
-            return parser
-                .read_document()
-                .map_err(|e| OperationError::ParseError(e));
+            let document_result = parser.read_document();
+            match document_result {
+                Err(ParseError::SchemaMismatch) => {}
+                Err(error) => return Err(OperationError::ParseError(error)),
+                Ok(document) => {
+                    let matches = document.evaluate(&query.condition);
+                    if matches {
+                        return Ok(document);
+                    }
+                }
+            }
         }
     }
 
@@ -51,11 +59,17 @@ impl Database {
             let block = next.unwrap();
             let mut parser =
                 ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
-            results.push(
-                parser
-                    .read_document()
-                    .map_err(|e| OperationError::ParseError(e))?,
-            );
+            let document_result = parser.read_document();
+            match document_result {
+                Err(ParseError::SchemaMismatch) => {}
+                Err(error) => return Err(OperationError::ParseError(error)),
+                Ok(document) => {
+                    let matches = document.evaluate(&query.condition);
+                    if matches {
+                        results.push(document)
+                    }
+                }
+            }
         }
         Ok(results)
     }

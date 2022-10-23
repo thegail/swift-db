@@ -23,7 +23,7 @@ pub enum Expression {
 
 impl Document {
     fn eval_expr<'a>(&'a self, expr: &'a Expression) -> Option<&'a FieldValue> {
-        // Holy shit using named lifetimes actually worked !! --tg, beginning Rust programmer
+        // Holy shit using named lifetimes actually worked !! --tg [baby's first named lifetime]
         match expr {
             Expression::Value(value) => Some(value),
             Expression::Field(field_id) => {
