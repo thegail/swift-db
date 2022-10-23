@@ -143,7 +143,7 @@ fn write_read_bench() {
     for i in 1..1000 {
         let field_instances = vec![
             FieldInstance {
-                id: i,
+                id: 0x1,
                 value: FieldValue::String("John Doe".repeat(i as usize / 10).to_string()),
             },
             FieldInstance {
@@ -156,11 +156,18 @@ fn write_read_bench() {
             },
             FieldInstance {
                 id: 0x4,
-                value: FieldValue::Bool(i.is_power_of_two()),
+                value: FieldValue::Bool((i as u32).is_power_of_two()),
             },
             FieldInstance {
                 id: 0x5,
                 value: FieldValue::DateTime(chrono::Utc::now()),
+            },
+            FieldInstance {
+                id: 0x6,
+                value: FieldValue::Enum(Box::new(EnumValue {
+                    case_id: 0x2,
+                    associated_value: None,
+                })),
             },
         ];
         let document = Document {
@@ -193,4 +200,23 @@ fn write_read_bench() {
     }
     let r_finish = std::time::Instant::now();
     println!("Read elapsed: {:?}", r_finish - r_start);
+}
+
+#[test]
+fn read_many_test() {
+    let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
+        .expect("Database construction failed");
+    _ = database
+        .find_many(
+            0x10,
+            query::Query {
+                collection: 0x10,
+                fields_of_interest: vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6],
+                condition: query::Condition::LessThan(
+                    query::Expression::Field(0x2),
+                    query::Expression::Value(crate::schema::FieldValue::UInt(10)),
+                ),
+            },
+        )
+        .expect("Read error");
 }
