@@ -253,6 +253,7 @@ fn write_read_bench() {
 }
 
 #[test]
+#[ignore]
 fn read_many_test() {
     let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");

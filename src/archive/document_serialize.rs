@@ -62,7 +62,7 @@ impl FieldValue {
             FieldValue::Object(o) => {
                 let mut bytes = [0u8; 8].to_vec();
                 bytes.append(&mut o.serialize_subdocument());
-                bytes.splice(0..8, (bytes.len() as u64 - 4).to_be_bytes());
+                bytes.splice(0..8, (bytes.len() as u64 - 8).to_be_bytes());
                 bytes
             }
             FieldValue::Enum(e) => {
