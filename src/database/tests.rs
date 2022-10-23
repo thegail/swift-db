@@ -60,7 +60,31 @@ fn test_fields() -> Vec<Field> {
                 },
             ]),
         },
+        Field {
+            name: "coordinates".to_string(),
+            id: 0x7,
+            field_type: FieldType::Object(Box::new(coords_schema())),
+        },
     ]
+}
+
+fn coords_schema() -> Schema {
+    Schema {
+        name: "coordinates".to_string(),
+        id: 0x20,
+        fields: vec![
+            Field {
+                name: "x".to_string(),
+                id: 0x1,
+                field_type: FieldType::Int,
+            },
+            Field {
+                name: "y".to_string(),
+                id: 0x2,
+                field_type: FieldType::Int,
+            },
+        ],
+    }
 }
 
 fn test_schema() -> Schema {
@@ -100,6 +124,22 @@ fn create_document() {
             value: FieldValue::Enum(Box::new(EnumValue {
                 case_id: 0x2,
                 associated_value: None,
+            })),
+        },
+        FieldInstance {
+            id: 0x7,
+            value: FieldValue::Object(Box::new(Document {
+                schema: coords_schema(),
+                fields: vec![
+                    FieldInstance {
+                        id: 0x1,
+                        value: FieldValue::Int(100),
+                    },
+                    FieldInstance {
+                        id: 0x2,
+                        value: FieldValue::Int(190),
+                    },
+                ],
             })),
         },
     ];
@@ -164,6 +204,22 @@ fn write_read_bench() {
                 value: FieldValue::Enum(Box::new(EnumValue {
                     case_id: 0x2,
                     associated_value: None,
+                })),
+            },
+            FieldInstance {
+                id: 0x7,
+                value: FieldValue::Object(Box::new(Document {
+                    schema: coords_schema(),
+                    fields: vec![
+                        FieldInstance {
+                            id: 0x1,
+                            value: FieldValue::Int(100 + i),
+                        },
+                        FieldInstance {
+                            id: 0x2,
+                            value: FieldValue::Int(190),
+                        },
+                    ],
                 })),
             },
         ];
