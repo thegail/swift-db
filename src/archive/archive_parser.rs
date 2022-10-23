@@ -23,10 +23,15 @@ impl ArchiveParser {
     }
 
     pub fn read_document(&mut self) -> Result<Document, ParseError> {
+        // Read document with a schema identifier
         let schema_id = self.parse_int::<u64>();
         if schema_id != self.schema.id {
             return Err(ParseError::SchemaMismatch);
         }
+        self.read_subdocument()
+    }
+
+    pub fn read_subdocument(&mut self) -> Result<Document, ParseError> {
         let length = self.data.len();
         let mut fields: Vec<FieldInstance> = vec![];
         while self.ptr < length {
@@ -73,7 +78,9 @@ impl ArchiveParser {
             )),
             FieldType::ByteArray => Ok(FieldValue::ByteArray(self.parse_byte_array())),
             FieldType::Array(element) => Ok(FieldValue::Array(self.parse_array(&*element)?)),
-            FieldType::Object(_schema) => Ok(FieldValue::Object(Box::new(self.parse_object()?))),
+            FieldType::Object(schema) => {
+                Ok(FieldValue::Object(Box::new(self.parse_object(&**schema)?)))
+            }
             FieldType::Enum(cases) => Ok(FieldValue::Enum(Box::new(self.parse_enum(cases)?))),
         }
     }
@@ -173,10 +180,11 @@ impl ArchiveParser {
         Ok(values)
     }
 
-    fn parse_object(&mut self) -> Result<Document, ParseError> {
+    fn parse_object(&mut self, schema: &Schema) -> Result<Document, ParseError> {
         let bytes = self.parse_byte_array();
-        let mut parser = Self::new(self.schema.clone(), bytes, self.fields_of_interest.clone());
-        parser.read_document()
+        let all_fields = schema.fields.iter().map(|f| f.id).collect();
+        let mut parser = Self::new(schema.clone(), bytes, all_fields);
+        parser.read_subdocument()
     }
 
     fn parse_enum(&mut self, cases: &Vec<EnumCase>) -> Result<EnumValue, ParseError> {
