@@ -119,17 +119,14 @@ fn read_document() {
     let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");
     let _document = database
-        .find_one(
-            0x10,
-            query::Query {
-                collection: 0x10,
-                fields_of_interest: vec![0x2],
-                condition: query::Condition::Equal(
-                    query::Expression::Field(0x2),
-                    query::Expression::Value(FieldValue::UInt(11)),
-                ),
-            },
-        )
+        .find_one(query::Query {
+            collection: 0x10,
+            fields_of_interest: vec![0x2],
+            condition: query::Condition::Equal(
+                query::Expression::Field(0x2),
+                query::Expression::Value(FieldValue::UInt(11)),
+            ),
+        })
         .expect("Read error");
 }
 
@@ -185,17 +182,14 @@ fn write_read_bench() {
     let r_start = std::time::Instant::now();
     for i in (1..1000).rev() {
         _ = database
-            .find_one(
-                0x10,
-                query::Query {
-                    collection: 0x10,
-                    fields_of_interest: vec![0x1, 0x2, 0x3, 0x4, 0x5],
-                    condition: query::Condition::Equal(
-                        query::Expression::Field(0x2),
-                        query::Expression::Value(FieldValue::UInt(i)),
-                    ),
-                },
-            )
+            .find_one(query::Query {
+                collection: 0x10,
+                fields_of_interest: vec![0x1, 0x2, 0x3, 0x4, 0x5],
+                condition: query::Condition::Equal(
+                    query::Expression::Field(0x2),
+                    query::Expression::Value(FieldValue::UInt(i)),
+                ),
+            })
             .expect("Read error");
     }
     let r_finish = std::time::Instant::now();
@@ -207,16 +201,13 @@ fn read_many_test() {
     let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");
     _ = database
-        .find_many(
-            0x10,
-            query::Query {
-                collection: 0x10,
-                fields_of_interest: vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6],
-                condition: query::Condition::LessThan(
-                    query::Expression::Field(0x2),
-                    query::Expression::Value(crate::schema::FieldValue::UInt(10)),
-                ),
-            },
-        )
+        .find_many(query::Query {
+            collection: 0x10,
+            fields_of_interest: vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6],
+            condition: query::Condition::LessThan(
+                query::Expression::Field(0x2),
+                query::Expression::Value(crate::schema::FieldValue::UInt(10)),
+            ),
+        })
         .expect("Read error");
 }
