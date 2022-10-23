@@ -177,7 +177,7 @@ fn write_read_bench() {
         .expect("Database construction failed");
     let _c = Cleanup;
     let mut docs = vec![];
-    for i in 1..1000 {
+    for i in 1..=1000 {
         let field_instances = vec![
             FieldInstance {
                 id: 0x1,
@@ -236,7 +236,7 @@ fn write_read_bench() {
     let w_finish = std::time::Instant::now();
     println!("Write elapsed: {:?}", w_finish - w_start);
     let r_start = std::time::Instant::now();
-    for i in (1..1000).rev() {
+    for i in (1..=1000).rev() {
         _ = database
             .find_one(query::Query {
                 collection: 0x10,
