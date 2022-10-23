@@ -30,4 +30,37 @@ impl Database {
                 .map_err(|e| OperationError::ParseError(e));
         }
     }
+
+    pub fn find_many(
+        &mut self,
+        collection: u64,
+        query: Query,
+    ) -> Result<Vec<Document>, OperationError> {
+        let schema = self
+            .collections
+            .iter()
+            .find(|s| s.id == collection)
+            .ok_or(OperationError::UnknownSchemaIdentifier)?;
+        self.io
+            .reset_position()
+            .map_err(|e| OperationError::IOError(e))?;
+        let mut results = vec![];
+        loop {
+            let next = self.io.next();
+            if let Err(error) = &next {
+                if let std::io::ErrorKind::UnexpectedEof = error.kind() {
+                    break;
+                }
+            }
+            let block = next.unwrap();
+            let mut parser =
+                ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
+            results.push(
+                parser
+                    .read_document()
+                    .map_err(|e| OperationError::ParseError(e))?,
+            );
+        }
+        Ok(results)
+    }
 }
