@@ -95,6 +95,54 @@ fn test_schema() -> Schema {
     }
 }
 
+fn bench_test_instance(i: i32) -> Vec<FieldInstance> {
+    vec![
+        FieldInstance {
+            id: 0x1,
+            value: FieldValue::String("John Doe".repeat(i as usize / 10).to_string()),
+        },
+        FieldInstance {
+            id: 0x2,
+            value: FieldValue::UInt(i as u32),
+        },
+        FieldInstance {
+            id: 0x3,
+            value: FieldValue::Float(100.25 + i as f64),
+        },
+        FieldInstance {
+            id: 0x4,
+            value: FieldValue::Bool((i as u32).is_power_of_two()),
+        },
+        FieldInstance {
+            id: 0x5,
+            value: FieldValue::DateTime(chrono::Utc::now()),
+        },
+        FieldInstance {
+            id: 0x6,
+            value: FieldValue::Enum(Box::new(EnumValue {
+                case_id: 0x2,
+                associated_value: None,
+            })),
+        },
+        FieldInstance {
+            id: 0x7,
+            value: FieldValue::Object(Box::new(Document {
+                schema: coords_schema(),
+                fields: vec![
+                    FieldInstance {
+                        id: 0x1,
+                        value: FieldValue::Int(100 + i),
+                    },
+                    FieldInstance {
+                        id: 0x2,
+                        value: FieldValue::Int(190),
+                    },
+                ],
+            })),
+        },
+    ]
+}
+
 #[test]
 fn create_document() {
     let _c = Cleanup;
@@ -178,51 +226,7 @@ fn write_read_bench() {
     let _c = Cleanup;
     let mut docs = vec![];
     for i in 1..=1000 {
-        let field_instances = vec![
-            FieldInstance {
-                id: 0x1,
-                value: FieldValue::String("John Doe".repeat(i as usize / 10).to_string()),
-            },
-            FieldInstance {
-                id: 0x2,
-                value: FieldValue::UInt(i as u32),
-            },
-            FieldInstance {
-                id: 0x3,
-                value: FieldValue::Float(100.25 + i as f64),
-            },
-            FieldInstance {
-                id: 0x4,
-                value: FieldValue::Bool((i as u32).is_power_of_two()),
-            },
-            FieldInstance {
-                id: 0x5,
-                value: FieldValue::DateTime(chrono::Utc::now()),
-            },
-            FieldInstance {
-                id: 0x6,
-                value: FieldValue::Enum(Box::new(EnumValue {
-                    case_id: 0x2,
-                    associated_value: None,
-                })),
-            },
-            FieldInstance {
-                id: 0x7,
-                value: FieldValue::Object(Box::new(Document {
-                    schema: coords_schema(),
-                    fields: vec![
-                        FieldInstance {
-                            id: 0x1,
-                            value: FieldValue::Int(100 + i),
-                        },
-                        FieldInstance {
-                            id: 0x2,
-                            value: FieldValue::Int(190),
-                        },
-                    ],
-                })),
-            },
-        ];
+        let field_instances = bench_test_instance(i);
         let document = Document {
             schema: test_schema(),
             fields: field_instances,
