@@ -12,11 +12,11 @@ impl Database {
             .map_err(|e| OperationError::IOError(e))
     }
 
-    pub fn find_one(&mut self, collection: u64, query: Query) -> Result<Document, OperationError> {
+    pub fn find_one(&mut self, query: Query) -> Result<Document, OperationError> {
         let schema = self
             .collections
             .iter()
-            .find(|s| s.id == collection)
+            .find(|s| s.id == query.collection)
             .ok_or(OperationError::UnknownSchemaIdentifier)?;
         self.io
             .reset_position()
@@ -31,15 +31,11 @@ impl Database {
         }
     }
 
-    pub fn find_many(
-        &mut self,
-        collection: u64,
-        query: Query,
-    ) -> Result<Vec<Document>, OperationError> {
+    pub fn find_many(&mut self, query: Query) -> Result<Vec<Document>, OperationError> {
         let schema = self
             .collections
             .iter()
-            .find(|s| s.id == collection)
+            .find(|s| s.id == query.collection)
             .ok_or(OperationError::UnknownSchemaIdentifier)?;
         self.io
             .reset_position()
