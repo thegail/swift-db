@@ -105,12 +105,12 @@ impl ArchiveParser {
                 Ok(())
             }
             FieldType::Array(_) => {
-                let length = self.parse_int::<u32>() as usize;
+                let length = self.parse_int::<u64>() as usize;
                 self.ptr += length;
                 Ok(())
             }
             FieldType::Object(_) => {
-                let length = self.parse_int::<u32>() as usize;
+                let length = self.parse_int::<u64>() as usize;
                 self.ptr += length;
                 Ok(())
             }
