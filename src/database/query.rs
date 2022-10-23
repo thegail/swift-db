@@ -22,27 +22,28 @@ pub enum Expression {
 }
 
 impl Document {
-    fn eval_expr(&self, expr: Expression) -> Option<FieldValue> {
+    fn eval_expr<'a>(&'a self, expr: &'a Expression) -> Option<&'a FieldValue> {
+        // Holy shit using named lifetimes actually worked !! --tg, beginning Rust programmer
         match expr {
             Expression::Value(value) => Some(value),
             Expression::Field(field_id) => {
-                if let Some(field_instance) = self.fields.iter().find(|x| x.id == field_id) {
-                    Some(field_instance.value.clone())
+                if let Some(field_instance) = self.fields.iter().find(|x| x.id == *field_id) {
+                    Some(&field_instance.value)
                 } else {
                     None
                 }
             }
         }
     }
-}
 
-impl Condition {
-    pub fn evaluate(self, doc: &Document) -> bool {
-        match self {
+    pub fn evaluate(&self, condition: &Condition) -> bool {
+        match condition {
             Condition::Equal(left, right) => {
-                let left_value = doc.eval_expr(left).expect("TODO: condition error handling");
-                let right_value = doc
-                    .eval_expr(right)
+                let left_value = self
+                    .eval_expr(&left)
+                    .expect("TODO: condition error handling");
+                let right_value = self
+                    .eval_expr(&right)
                     .expect("TODO: condition error handling");
                 match left_value {
                     FieldValue::Int(left_int) => {
@@ -120,9 +121,11 @@ impl Condition {
                 }
             }
             Condition::NotEqual(left, right) => {
-                let left_value = doc.eval_expr(left).expect("TODO: condition error handling");
-                let right_value = doc
-                    .eval_expr(right)
+                let left_value = self
+                    .eval_expr(&left)
+                    .expect("TODO: condition error handling");
+                let right_value = self
+                    .eval_expr(&right)
                     .expect("TODO: condition error handling");
                 match left_value {
                     FieldValue::Int(left_int) => {
@@ -200,9 +203,11 @@ impl Condition {
                 }
             }
             Condition::GreaterThan(left, right) => {
-                let left_value = doc.eval_expr(left).expect("TODO: condition error handling");
-                let right_value = doc
-                    .eval_expr(right)
+                let left_value = self
+                    .eval_expr(&left)
+                    .expect("TODO: condition error handling");
+                let right_value = self
+                    .eval_expr(&right)
                     .expect("TODO: condition error handling");
                 match left_value {
                     FieldValue::Int(left_int) => {
@@ -272,9 +277,11 @@ impl Condition {
                 }
             }
             Condition::LessThan(left, right) => {
-                let left_value = doc.eval_expr(left).expect("TODO: condition error handling");
-                let right_value = doc
-                    .eval_expr(right)
+                let left_value = self
+                    .eval_expr(&left)
+                    .expect("TODO: condition error handling");
+                let right_value = self
+                    .eval_expr(&right)
                     .expect("TODO: condition error handling");
                 match left_value {
                     FieldValue::Int(left_int) => {
@@ -343,9 +350,9 @@ impl Condition {
                     }
                 }
             }
-            Condition::Or(left, right) => left.evaluate(doc) || right.evaluate(doc),
-            Condition::And(left, right) => left.evaluate(doc) && right.evaluate(doc),
-            Condition::Not(condition) => !condition.evaluate(doc),
+            Condition::Or(left, right) => self.evaluate(left) || self.evaluate(right),
+            Condition::And(left, right) => self.evaluate(left) && self.evaluate(right),
+            Condition::Not(condition) => !self.evaluate(condition),
         }
     }
 }
