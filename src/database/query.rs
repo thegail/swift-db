@@ -124,7 +124,7 @@ impl Document {
                     FieldValue::Long(l) => eval_match_arm!(Long, l, r, >),
                     FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, >),
                     FieldValue::Float(l) => eval_match_arm!(Float, l, r, >),
-                    FieldValue::Bool(l) => todo!(),
+                    FieldValue::Bool(_) => todo!(),
                     FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, >),
                     FieldValue::String(l) => eval_match_arm!(String, l, r, >),
                     FieldValue::ByteArray(_) => {
@@ -155,7 +155,7 @@ impl Document {
                     FieldValue::Long(l) => eval_match_arm!(Long, l, r, <),
                     FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, <),
                     FieldValue::Float(l) => eval_match_arm!(Float, l, r, <),
-                    FieldValue::Bool(l) => todo!(),
+                    FieldValue::Bool(_) => todo!(),
                     FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, <),
                     FieldValue::String(l) => eval_match_arm!(String, l, r, <),
                     FieldValue::ByteArray(_) => {
