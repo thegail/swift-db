@@ -1,4 +1,5 @@
-use crate::schema::{Document, FieldValue};
+use super::operation_error::OperationError;
+use crate::schema::{Document, FieldType, FieldValue};
 
 pub struct Query {
     pub collection: u64,
@@ -21,6 +22,19 @@ pub enum Expression {
     Field(u16),
 }
 
+macro_rules! eval_match_arm {
+    ($i:ident, $l:expr, $r: expr, $o: tt) => {
+        if let FieldValue::$i(right_unwrapped) = $r {
+            Ok($l $o right_unwrapped)
+        } else {
+            Err(OperationError::expression_type_mismatch(
+                FieldType::$i,
+                $r.simple_type(),
+            ))
+        }
+    };
+}
+
 impl Document {
     fn eval_expr<'a>(&'a self, expr: &'a Expression) -> Option<&'a FieldValue> {
         // Holy shit using named lifetimes actually worked !! --tg [baby's first named lifetime]
@@ -36,7 +50,7 @@ impl Document {
         }
     }
 
-    pub fn evaluate(&self, condition: &Condition) -> bool {
+    pub fn evaluate(&self, condition: &Condition) -> Result<bool, OperationError> {
         match condition {
             Condition::Equal(left, right) => {
                 let left_value = self
@@ -45,70 +59,17 @@ impl Document {
                 let right_value = self
                     .eval_expr(&right)
                     .expect("TODO: condition error handling");
+                let r = right_value;
                 match left_value {
-                    FieldValue::Int(left_int) => {
-                        if let FieldValue::Int(right_int) = right_value {
-                            left_int == right_int
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::UInt(left_uint) => {
-                        if let FieldValue::UInt(right_uint) = right_value {
-                            left_uint == right_uint
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Long(left_long) => {
-                        if let FieldValue::Long(right_long) = right_value {
-                            left_long == right_long
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::ULong(left_ulong) => {
-                        if let FieldValue::ULong(right_ulong) = right_value {
-                            left_ulong == right_ulong
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Float(left_float) => {
-                        if let FieldValue::Float(right_float) = right_value {
-                            left_float == right_float
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Bool(left_bool) => {
-                        if let FieldValue::Bool(right_bool) = right_value {
-                            left_bool == right_bool
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::DateTime(left_date) => {
-                        if let FieldValue::DateTime(right_date) = right_value {
-                            left_date == right_date
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::String(left_string) => {
-                        if let FieldValue::String(right_string) = right_value {
-                            left_string == right_string
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::ByteArray(left_bytes) => {
-                        if let FieldValue::ByteArray(right_bytes) = right_value {
-                            left_bytes == right_bytes
-                        } else {
-                            todo!()
-                        }
-                    }
+                    FieldValue::Int(l) => eval_match_arm!(Int, l, r, ==),
+                    FieldValue::UInt(l) => eval_match_arm!(UInt, l, r, ==),
+                    FieldValue::Long(l) => eval_match_arm!(Long, l, r, ==),
+                    FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, ==),
+                    FieldValue::Float(l) => eval_match_arm!(Float, l, r, ==),
+                    FieldValue::Bool(l) => eval_match_arm!(Bool, l, r, ==),
+                    FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, ==),
+                    FieldValue::String(l) => eval_match_arm!(String, l, r, ==),
+                    FieldValue::ByteArray(l) => eval_match_arm!(ByteArray, l, r, ==),
                     FieldValue::Array(_) => {
                         todo!()
                     }
@@ -127,70 +88,17 @@ impl Document {
                 let right_value = self
                     .eval_expr(&right)
                     .expect("TODO: condition error handling");
+                let r = right_value;
                 match left_value {
-                    FieldValue::Int(left_int) => {
-                        if let FieldValue::Int(right_int) = right_value {
-                            left_int != right_int
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::UInt(left_uint) => {
-                        if let FieldValue::UInt(right_uint) = right_value {
-                            left_uint != right_uint
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Long(left_long) => {
-                        if let FieldValue::Long(right_long) = right_value {
-                            left_long != right_long
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::ULong(left_ulong) => {
-                        if let FieldValue::ULong(right_ulong) = right_value {
-                            left_ulong != right_ulong
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Float(left_float) => {
-                        if let FieldValue::Float(right_float) = right_value {
-                            left_float != right_float
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Bool(left_bool) => {
-                        if let FieldValue::Bool(right_bool) = right_value {
-                            left_bool != right_bool
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::DateTime(left_date) => {
-                        if let FieldValue::DateTime(right_date) = right_value {
-                            left_date != right_date
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::String(left_string) => {
-                        if let FieldValue::String(right_string) = right_value {
-                            left_string != right_string
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::ByteArray(left_bytes) => {
-                        if let FieldValue::ByteArray(right_bytes) = right_value {
-                            left_bytes != right_bytes
-                        } else {
-                            todo!()
-                        }
-                    }
+                    FieldValue::Int(l) => eval_match_arm!(Int, l, r, !=),
+                    FieldValue::UInt(l) => eval_match_arm!(UInt, l, r, !=),
+                    FieldValue::Long(l) => eval_match_arm!(Long, l, r, !=),
+                    FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, !=),
+                    FieldValue::Float(l) => eval_match_arm!(Float, l, r, !=),
+                    FieldValue::Bool(l) => eval_match_arm!(Bool, l, r, !=),
+                    FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, !=),
+                    FieldValue::String(l) => eval_match_arm!(String, l, r, !=),
+                    FieldValue::ByteArray(l) => eval_match_arm!(ByteArray, l, r, !=),
                     FieldValue::Array(_) => {
                         todo!()
                     }
@@ -209,59 +117,16 @@ impl Document {
                 let right_value = self
                     .eval_expr(&right)
                     .expect("TODO: condition error handling");
+                let r = right_value;
                 match left_value {
-                    FieldValue::Int(left_int) => {
-                        if let FieldValue::Int(right_int) = right_value {
-                            left_int > right_int
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::UInt(left_uint) => {
-                        if let FieldValue::UInt(right_uint) = right_value {
-                            left_uint > right_uint
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Long(left_long) => {
-                        if let FieldValue::Long(right_long) = right_value {
-                            left_long > right_long
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::ULong(left_ulong) => {
-                        if let FieldValue::ULong(right_ulong) = right_value {
-                            left_ulong > right_ulong
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Float(left_float) => {
-                        if let FieldValue::Float(right_float) = right_value {
-                            left_float > right_float
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Bool(_) => {
-                        todo!()
-                    }
-                    FieldValue::DateTime(left_date) => {
-                        if let FieldValue::DateTime(right_date) = right_value {
-                            left_date > right_date
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::String(left_string) => {
-                        if let FieldValue::String(right_string) = right_value {
-                            left_string > right_string
-                        } else {
-                            todo!()
-                        }
-                    }
+                    FieldValue::Int(l) => eval_match_arm!(Int, l, r, >),
+                    FieldValue::UInt(l) => eval_match_arm!(UInt, l, r, >),
+                    FieldValue::Long(l) => eval_match_arm!(Long, l, r, >),
+                    FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, >),
+                    FieldValue::Float(l) => eval_match_arm!(Float, l, r, >),
+                    FieldValue::Bool(l) => todo!(),
+                    FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, >),
+                    FieldValue::String(l) => eval_match_arm!(String, l, r, >),
                     FieldValue::ByteArray(_) => {
                         todo!()
                     }
@@ -283,59 +148,16 @@ impl Document {
                 let right_value = self
                     .eval_expr(&right)
                     .expect("TODO: condition error handling");
+                let r = right_value;
                 match left_value {
-                    FieldValue::Int(left_int) => {
-                        if let FieldValue::Int(right_int) = right_value {
-                            left_int < right_int
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::UInt(left_uint) => {
-                        if let FieldValue::UInt(right_uint) = right_value {
-                            left_uint < right_uint
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Long(left_long) => {
-                        if let FieldValue::Long(right_long) = right_value {
-                            left_long < right_long
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::ULong(left_ulong) => {
-                        if let FieldValue::ULong(right_ulong) = right_value {
-                            left_ulong < right_ulong
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Float(left_float) => {
-                        if let FieldValue::Float(right_float) = right_value {
-                            left_float < right_float
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::Bool(_) => {
-                        todo!()
-                    }
-                    FieldValue::DateTime(left_date) => {
-                        if let FieldValue::DateTime(right_date) = right_value {
-                            left_date < right_date
-                        } else {
-                            todo!()
-                        }
-                    }
-                    FieldValue::String(left_string) => {
-                        if let FieldValue::String(right_string) = right_value {
-                            left_string < right_string
-                        } else {
-                            todo!()
-                        }
-                    }
+                    FieldValue::Int(l) => eval_match_arm!(Int, l, r, <),
+                    FieldValue::UInt(l) => eval_match_arm!(UInt, l, r, <),
+                    FieldValue::Long(l) => eval_match_arm!(Long, l, r, <),
+                    FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, <),
+                    FieldValue::Float(l) => eval_match_arm!(Float, l, r, <),
+                    FieldValue::Bool(l) => todo!(),
+                    FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, <),
+                    FieldValue::String(l) => eval_match_arm!(String, l, r, <),
                     FieldValue::ByteArray(_) => {
                         todo!()
                     }
@@ -350,9 +172,9 @@ impl Document {
                     }
                 }
             }
-            Condition::Or(left, right) => self.evaluate(left) || self.evaluate(right),
-            Condition::And(left, right) => self.evaluate(left) && self.evaluate(right),
-            Condition::Not(condition) => !self.evaluate(condition),
+            Condition::Or(left, right) => Ok(self.evaluate(left)? || self.evaluate(right)?),
+            Condition::And(left, right) => Ok(self.evaluate(left)? && self.evaluate(right)?),
+            Condition::Not(condition) => Ok(!self.evaluate(condition)?),
         }
     }
 }
