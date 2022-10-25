@@ -4,30 +4,29 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Debug)]
-pub enum OperationError {
+enum UnderlyingOperationError {
     ParseError(ParseError),
     IOError(std::io::Error),
     UnknownSchemaIdentifier,
     ExpressionTypeMismatch(ExpressionTypeMismatch),
 }
 
-impl OperationError {
-    pub fn expression_type_mismatch(left: FieldType, right: FieldType) -> Self {
-        Self::ExpressionTypeMismatch(ExpressionTypeMismatch { left, right })
-    }
+pub struct OperationError {
+    underlying: UnderlyingOperationError,
 }
 
 impl Display for OperationError {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(formatter, "{}", self)
+        self.underlying.fmt(formatter)
     }
 }
-impl Error for OperationError {}
-
-struct ExpressionTypeMismatch {
-    left: FieldType,
-    right: FieldType,
+impl Debug for OperationError {
+    fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
+        self.underlying.fmt(formatter)
+    }
 }
+
+impl Error for OperationError {}
 
 impl Display for FieldType {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
@@ -48,9 +47,13 @@ impl Display for FieldType {
     }
 }
 
+struct ExpressionTypeMismatch {
+    left: FieldType,
+    right: FieldType,
+}
+
 impl Debug for ExpressionTypeMismatch {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(formatter, "left: {}, right: {}", self.left, self.right);
-        Ok(())
+        write!(formatter, "left: {}, right: {}", self.left, self.right)
     }
 }
