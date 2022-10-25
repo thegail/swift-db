@@ -15,6 +15,36 @@ pub struct OperationError {
     underlying: UnderlyingOperationError,
 }
 
+impl OperationError {
+    #![allow(non_snake_case)]
+    pub fn ParseError(underlying: ParseError) -> Self {
+        Self {
+            underlying: UnderlyingOperationError::ParseError(underlying),
+        }
+    }
+
+    pub fn IOError(underlying: std::io::Error) -> Self {
+        Self {
+            underlying: UnderlyingOperationError::IOError(underlying),
+        }
+    }
+
+    pub fn UnknownSchemaIdentifier() -> Self {
+        Self {
+            underlying: UnderlyingOperationError::UnknownSchemaIdentifier,
+        }
+    }
+
+    pub fn ExpressionTypeMismatch(left: FieldType, right: FieldType) -> Self {
+        Self {
+            underlying: UnderlyingOperationError::ExpressionTypeMismatch(ExpressionTypeMismatch {
+                left,
+                right,
+            }),
+        }
+    }
+}
+
 impl Display for OperationError {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
         self.underlying.fmt(formatter)
