@@ -1,4 +1,4 @@
-use super::Document;
+use super::{Document, FieldType, Schema};
 use chrono::{DateTime, Utc};
 
 #[derive(Clone)]
@@ -21,4 +21,27 @@ pub enum FieldValue {
 pub struct EnumValue {
     pub case_id: u16,
     pub associated_value: Option<FieldValue>,
+}
+
+impl FieldValue {
+    pub fn simple_type(&self) -> FieldType {
+        match self {
+            Self::Int(_) => FieldType::Int,
+            Self::UInt(_) => FieldType::UInt,
+            Self::Long(_) => FieldType::Long,
+            Self::ULong(_) => FieldType::ULong,
+            Self::Float(_) => FieldType::Float,
+            Self::Bool(_) => FieldType::Bool,
+            Self::DateTime(_) => FieldType::DateTime,
+            Self::String(_) => FieldType::String,
+            Self::ByteArray(_) => FieldType::ByteArray,
+            Self::Array(_) => FieldType::Array(Box::new(FieldType::Int)),
+            Self::Object(_) => FieldType::Object(Box::new(Schema {
+                name: String::new(),
+                id: 0,
+                fields: vec![],
+            })),
+            Self::Enum(_) => FieldType::Enum(vec![]),
+        }
+    }
 }
