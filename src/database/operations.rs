@@ -30,7 +30,7 @@ impl Database {
                 Err(ParseError::SchemaMismatch) => {}
                 Err(error) => return Err(OperationError::ParseError(error)),
                 Ok(document) => {
-                    let matches = document.evaluate(&query.condition);
+                    let matches = document.evaluate(&query.condition)?;
                     if matches {
                         return Ok(document);
                     }
@@ -64,7 +64,7 @@ impl Database {
                 Err(ParseError::SchemaMismatch) => {}
                 Err(error) => return Err(OperationError::ParseError(error)),
                 Ok(document) => {
-                    let matches = document.evaluate(&query.condition);
+                    let matches = document.evaluate(&query.condition)?;
                     if matches {
                         results.push(document)
                     }
