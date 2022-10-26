@@ -79,8 +79,8 @@ characteristics and their implementations in SwiftDB are outlined below.
 
 ### Atomicity
 
-Transactions are atomic. A transaction either succeeds in its entirety, or fails
-without _any_ side-effects. If the transaction is cancelled for any reason
+Transactions must be atomic. A transaction either succeeds in its entirety, or
+fails without _any_ side-effects. If the transaction is cancelled for any reason
 (including hardware failures, etc.), the database is left as if the transaction
 had never occurred.
 
@@ -116,5 +116,7 @@ commit or closing.
 ### Durability
 
 Once committed and visible to other transactions, data must persist, even in the
-case of hardware failures, etc. A commit acknowledgement means data has been
-stored in non-volitile storage.
+case of hardware failures, etc.
+
+In SwiftDB, commit acknowledgement message means data has been stored in
+non-volitile storage.
