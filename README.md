@@ -95,6 +95,10 @@ Write-ahead logging can be disabled in [configuration](#configuration).
 An invalid transaction must fail, and may never leave the database in an invalid
 or corrupted state.
 
+SwiftDB achieves correctness by cancelling a transaction if an error occurs or
+an invalid write is attempted. This cancellation is equivalent to if the client
+had called `(close)`.
+
 ### Isolation
 
 Concurrently executed transactions must be serializable: the outcome of the
