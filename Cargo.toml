@@ -2,6 +2,9 @@
 name = "swift-db"
 version = "0.1.0"
 edition = "2021"
+description = "A document database engine for Swift"
+readme = "README.md"
+repository = "https://github.com/thegail/swift-db"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
