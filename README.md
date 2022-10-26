@@ -54,8 +54,8 @@ read/write commands the client sends.
 
 After locks are acquired, the client may perform reads and writes using the
 functions `(create)`, `(read)`, `(update)`, `(updateall)`, `(writeall)`, and
-`(delete)`. These changes are only visible to the current transaction until they
-are committed.
+`(delete)`. Any changes are only visible to the current transaction until they
+are committed (see [isolation](#isolation)).
 
 ### Commit, roll back, or close the transaction
 
@@ -73,3 +73,30 @@ performed, this is the preferred command to end the transaction.
 ### Query Conditions
 
 ## ACID Compliance
+
+ACID is a set of characteristics in order to guarantee database validity. The
+characteristics and their implementations in SwiftDB are outlined below.
+
+### Atomicity
+
+Transactions are atomic. A transaction either succeeds in its entirety, or fails
+without _any_ side-effects. If the transaction is cancelled for any reason
+(including hardware failures, etc.), the database is left as if the transaction
+had never occurred.
+
+### Correctness
+
+An invalid transaction must fail, and may never leave the database in an invalid
+or corrupted state.
+
+### Isolation
+
+Concurrently executed transactions must be serializable: the outcome of the
+transactions must be equivalent to the outcome if they had been executed
+serially instead of concurrently.
+
+### Durability
+
+Once committed and visible to other transactions, data must persist, even in the
+case of hardware failures, etc. A commit acknowledgement means data has been
+stored in non-volitile storage.
