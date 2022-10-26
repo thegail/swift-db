@@ -105,6 +105,14 @@ Concurrently executed transactions must be serializable: the outcome of the
 transactions must be equivalent to the outcome if they had been executed
 serially instead of concurrently.
 
+SwiftDB achieves serializability through a combination of private workspace MVCC
+and strict, conservative two-phase locking. A blocking write lock prevents all
+other concurrent accesses, while a non-blocking write lock causes any concurrent
+reads to read the version before the writing transaction began. Only one write
+lock, blocking or non-blocking, may be in place at a time. Locks are acquired at
+the beginning of the transaction, and released only upon the transaction's
+commit or closing.
+
 ### Durability
 
 Once committed and visible to other transactions, data must persist, even in the
