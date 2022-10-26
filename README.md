@@ -84,6 +84,12 @@ without _any_ side-effects. If the transaction is cancelled for any reason
 (including hardware failures, etc.), the database is left as if the transaction
 had never occurred.
 
+SwiftDB achieves atomicity of transactions through write-ahead logging. Before a
+transaction can be committed, its operations are logged to non-volitile storage,
+such that if a hardware failure occurs during a disk write, the cleanup
+operation can restore the database to the state before the transaction occurred.
+Write-ahead logging can be disabled in [configuration](#configuration).
+
 ### Correctness
 
 An invalid transaction must fail, and may never leave the database in an invalid
