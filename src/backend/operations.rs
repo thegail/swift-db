@@ -1,10 +1,10 @@
-use super::database::Database;
+use super::backend::Backend;
 use super::operation_error::OperationError;
 use super::query::Query;
 use crate::archive::{ArchiveParser, ParseError};
 use crate::schema::Document;
 
-impl Database {
+impl Backend {
     pub fn create(&mut self, document: Document) -> Result<(), OperationError> {
         let bytes = document.serialize();
         self.io
@@ -22,7 +22,7 @@ impl Database {
             .reset_position()
             .map_err(|e| OperationError::IOError(e))?;
         loop {
-            let block = self.io.next().map_err(|o| OperationError::IOError(o))?;
+            let (position, block) = self.io.next().map_err(|o| OperationError::IOError(o))?;
             let mut parser =
                 ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
             let document_result = parser.read_document();
@@ -56,7 +56,7 @@ impl Database {
                     break;
                 }
             }
-            let block = next.unwrap();
+            let (position, block) = next.unwrap();
             let mut parser =
                 ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
             let document_result = parser.read_document();

@@ -196,7 +196,7 @@ fn create_document() {
         fields: field_instances,
     };
     _ = std::fs::File::create("test.sdb");
-    let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
+    let mut database = super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");
     database.create(document).expect("Creation failed");
 }
@@ -204,7 +204,7 @@ fn create_document() {
 #[test]
 #[ignore]
 fn read_document() {
-    let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
+    let mut database = super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");
     let _document = database
         .find_one(query::Query {
@@ -221,7 +221,7 @@ fn read_document() {
 #[test]
 fn write_read_bench() {
     _ = std::fs::File::create("test.sdb");
-    let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
+    let mut database = super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");
     let _c = Cleanup;
     let mut docs = vec![];
@@ -259,7 +259,7 @@ fn write_read_bench() {
 #[test]
 #[ignore]
 fn read_many_test() {
-    let mut database = super::database::Database::new("test.sdb".to_string(), vec![test_schema()])
+    let mut database = super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()])
         .expect("Database construction failed");
     _ = database
         .find_many(query::Query {
