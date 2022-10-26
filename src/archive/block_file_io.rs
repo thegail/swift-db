@@ -14,12 +14,12 @@ impl BlockFileIO {
         }
     }
 
-    pub fn next(&mut self) -> Result<Vec<u8>, Error> {
+    pub fn next(&mut self) -> Result<(usize, Vec<u8>), Error> {
         loop {
             let mut buf = [0u8; 1];
             self.reader.read_exact(&mut buf)?;
             if buf[0] == 69 {
-                break Ok(self.read_block()?);
+                break Ok((self.reader.stream_position()? as usize, self.read_block()?));
             } else if buf[0] != 0 {
                 break Err(Error::new(std::io::ErrorKind::InvalidData, "Invalid byte"));
             }
