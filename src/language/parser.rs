@@ -27,28 +27,32 @@ where
         }
     }
 
-    fn parse(mut self) -> Result<Vec<Expression>, ParseError> {
+    fn parse(mut self) -> Result<(), ParseError> {
         for byte in self.input.bytes() {
             let byte = byte.map_err(|e| ParseError::ReadError(e))?;
             match byte {
                 b'(' => self.output.push(Vec::new()),
                 b')' => {
-                    let list = self.output.pop().unwrap();
-                    let mut higher = self.output.last_mut();
-                    if let None = higher {
-                        return Ok(list);
+                    if self.output.len() == 1 {
+                        return Ok(());
+                    } else if self.output.len() == 0 {
+                        return Err(ParseError::UnexpectedCharacter(b')'));
                     }
-                    let mut higher = higher.unwrap();
-                    higher.push(Expression::List(list));
+                    let list = self.output.pop().unwrap();
+                    let higher = self.output.last_mut();
+                    if let None = higher {
+                        return Ok(());
+                    }
+                    higher.unwrap().push(Expression::List(list));
                 }
-                b' ' => (),
                 b'a'..=b'z' | b'A'..=b'Z' | b'_' => (),
                 b'0'..=b'9' => (),
-                b'\\' => (),
+                b' ' => (),
                 b'"' => (),
+                b'\\' => (),
                 c => return Err(ParseError::UnexpectedCharacter(c)),
             }
         }
-        Ok(vec![])
+        Ok(())
     }
 }
