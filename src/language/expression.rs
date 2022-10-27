@@ -1,4 +1,6 @@
 pub enum Expression {
-    Node(String),
+    Identifier(String),
+    Numeric(String),
+    Literal(String),
     List(Vec<Expression>),
 }
