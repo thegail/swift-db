@@ -12,7 +12,7 @@ impl Backend {
             .map_err(|e| OperationError::IOError(e))
     }
 
-    pub fn find_one(&mut self, query: Query) -> Result<Document, OperationError> {
+    pub fn find_one(&mut self, query: Query) -> Result<usize, OperationError> {
         let schema = self
             .collections
             .iter()
@@ -32,14 +32,15 @@ impl Backend {
                 Ok(document) => {
                     let matches = document.evaluate(&query.condition)?;
                     if matches {
-                        return Ok(document);
+                        self.document_cache.insert(position, document);
+                        return Ok(position);
                     }
                 }
             }
         }
     }
 
-    pub fn find_many(&mut self, query: Query) -> Result<Vec<Document>, OperationError> {
+    pub fn find_many(&mut self, query: Query) -> Result<Vec<usize>, OperationError> {
         let schema = self
             .collections
             .iter()
@@ -65,8 +66,9 @@ impl Backend {
                 Err(error) => return Err(OperationError::ParseError(error)),
                 Ok(document) => {
                     let matches = document.evaluate(&query.condition)?;
+                    self.document_cache.insert(position, document);
                     if matches {
-                        results.push(document)
+                        results.push(position)
                     }
                 }
             }
