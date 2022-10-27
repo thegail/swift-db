@@ -49,13 +49,13 @@ impl ArchiveParser {
     fn read_field(&mut self) -> Result<Option<FieldInstance>, ParseError> {
         let field_id = self.parse_int::<u16>();
         let field = (&self.schema.fields)
-            .into_iter()
+            .iter()
             .find(|x| x.id == field_id)
             .ok_or(ParseError::UnknownFieldIdentifier)?
             .clone();
         if !self.fields_of_interest.contains(&field_id) {
             self.skip_field(&field.field_type)?;
-            return Ok(None);
+            Ok(None)
         } else {
             Ok(Some(FieldInstance {
                 id: field_id,
@@ -117,12 +117,12 @@ impl ArchiveParser {
             FieldType::Enum(cases) => {
                 let case_id = self.parse_int::<u16>();
                 let enum_case = cases
-                    .into_iter()
+                    .iter()
                     .find(|x| x.id == case_id)
                     .ok_or(ParseError::UnknownCaseIdentifier)?
                     .clone();
                 match enum_case.associated_value {
-                    Option::None => return Ok(()),
+                    Option::None => Ok(()),
                     Option::Some(value_type) => self.skip_field(&value_type),
                 }
             }
@@ -146,11 +146,7 @@ impl ArchiveParser {
     fn parse_bool(&mut self) -> bool {
         let value = self.data[self.ptr];
         self.ptr += 1;
-        if value == 0 {
-            false
-        } else {
-            true
-        }
+        value != 0
     }
 
     fn parse_datetime(&mut self) -> DateTime<Utc> {
@@ -190,17 +186,15 @@ impl ArchiveParser {
     fn parse_enum(&mut self, cases: &Vec<EnumCase>) -> Result<EnumValue, ParseError> {
         let case_id = self.parse_int::<u16>();
         let enum_case = cases
-            .into_iter()
+            .iter()
             .find(|x| x.id == case_id)
             .ok_or(ParseError::UnknownCaseIdentifier)?
             .clone();
         match enum_case.associated_value {
-            Option::None => {
-                return Ok(EnumValue {
-                    case_id,
-                    associated_value: None,
-                })
-            }
+            Option::None => Ok(EnumValue {
+                case_id,
+                associated_value: None,
+            }),
             Option::Some(value_type) => Ok(EnumValue {
                 case_id,
                 associated_value: Some(self.parse_value(&value_type)?),

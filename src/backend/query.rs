@@ -54,10 +54,10 @@ impl Document {
         match condition {
             Condition::Equal(left, right) => {
                 let left_value = self
-                    .eval_expr(&left)
+                    .eval_expr(left)
                     .expect("TODO: condition error handling");
                 let right_value = self
-                    .eval_expr(&right)
+                    .eval_expr(right)
                     .expect("TODO: condition error handling");
                 let r = right_value;
                 match left_value {
@@ -83,10 +83,10 @@ impl Document {
             }
             Condition::NotEqual(left, right) => {
                 let left_value = self
-                    .eval_expr(&left)
+                    .eval_expr(left)
                     .expect("TODO: condition error handling");
                 let right_value = self
-                    .eval_expr(&right)
+                    .eval_expr(right)
                     .expect("TODO: condition error handling");
                 let r = right_value;
                 match left_value {
@@ -112,10 +112,10 @@ impl Document {
             }
             Condition::GreaterThan(left, right) => {
                 let left_value = self
-                    .eval_expr(&left)
+                    .eval_expr(left)
                     .expect("TODO: condition error handling");
                 let right_value = self
-                    .eval_expr(&right)
+                    .eval_expr(right)
                     .expect("TODO: condition error handling");
                 let r = right_value;
                 match left_value {
@@ -143,10 +143,10 @@ impl Document {
             }
             Condition::LessThan(left, right) => {
                 let left_value = self
-                    .eval_expr(&left)
+                    .eval_expr(left)
                     .expect("TODO: condition error handling");
                 let right_value = self
-                    .eval_expr(&right)
+                    .eval_expr(right)
                     .expect("TODO: condition error handling");
                 let r = right_value;
                 match left_value {
