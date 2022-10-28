@@ -31,7 +31,7 @@ where
         }
     }
 
-    fn parse(mut self) -> Result<(), ParseError> {
+    fn parse_input(mut self) -> Result<Vec<Expression>, ParseError> {
         for byte in self.input.bytes() {
             let byte = byte.map_err(|e| ParseError::ReadError(e))?;
             if let Some(CurrentType::Literal) = self.current_type {
@@ -113,7 +113,12 @@ where
                 c => return Err(ParseError::UnexpectedCharacter(c)),
             }
         }
-        Ok(())
+        Ok(*self.output.last().unwrap())
+    }
+
+    pub fn parse(input: I) -> Result<Vec<Expression>, ParseError> {
+        let parser = Self::new(input);
+        parser.parse_input()
     }
 }
 
