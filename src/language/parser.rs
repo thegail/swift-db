@@ -115,11 +115,11 @@ where
         }
         Ok(self.output.pop().unwrap())
     }
+}
 
-    pub fn parse(input: I) -> Result<Vec<Expression>, ParseError> {
-        let parser = Self::new(input);
-        parser.parse_input()
-    }
+pub fn parse(input: impl Read) -> Result<Vec<Expression>, ParseError> {
+    let parser = Parser::new(input);
+    parser.parse_input()
 }
 
 enum CurrentType {
