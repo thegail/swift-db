@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum Expression {
     Identifier(String),
     Numeric(String),
