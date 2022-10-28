@@ -2,11 +2,7 @@ use super::expression::Expression;
 use super::parse_error::ParseError;
 use std::io::Read;
 
-struct Parser<I>
-where
-    I: Read,
-{
-    input: I,
+struct Parser {
     pos: usize,
     is_free: bool,
     output: Vec<Vec<Expression>>,
@@ -15,13 +11,9 @@ where
     is_escaped: bool,
 }
 
-impl<I> Parser<I>
-where
-    I: Read,
-{
-    fn new(input: I) -> Self {
+impl Parser {
+    fn new() -> Self {
         Self {
-            input,
             pos: 0,
             is_free: true,
             output: Vec::new(),
@@ -31,14 +23,16 @@ where
         }
     }
 
-    fn parse_input(mut self) -> Result<Vec<Expression>, ParseError> {
-        for byte in self.input.bytes() {
+    fn parse_input(mut self, input: impl Read) -> Result<Vec<Expression>, ParseError> {
+        for byte in input.bytes() {
             let byte = byte.map_err(|e| ParseError::ReadError(e))?;
             if let Some(CurrentType::Literal) = self.current_type {
                 if self.is_escaped {
                     match byte {
-                        b'"' => self.current.push(byte as char),
-                        b'\\' => self.current.push(byte as char),
+                        b'"' | b'\\' => {
+                            self.current.push(byte as char);
+                            self.is_escaped = false;
+                        }
                         _ => return Err(ParseError::UnexpectedCharacter(byte)),
                     }
                 } else if byte == b'\\' {
@@ -58,6 +52,7 @@ where
             match byte {
                 b'(' => self.output.push(Vec::new()),
                 b')' => {
+                    self.end_token(byte)?;
                     if self.output.len() == 1 {
                         break;
                     } else if self.output.len() == 0 {
@@ -86,26 +81,7 @@ where
                     }
                     self.current.push(byte as char);
                 }
-                b' ' => match self.current_type {
-                    Some(CurrentType::Identifier) => {
-                        self.output
-                            .last_mut()
-                            .unwrap()
-                            .push(Expression::Identifier(self.current.clone()));
-                        self.current.clear();
-                        self.current_type = None;
-                    }
-                    Some(CurrentType::Numeric) => {
-                        self.output
-                            .last_mut()
-                            .unwrap()
-                            .push(Expression::Numeric(self.current.clone()));
-                        self.current.clear();
-                        self.current_type = None;
-                    }
-                    None => (),
-                    _ => return Err(ParseError::UnexpectedCharacter(byte)),
-                },
+                b' ' => self.end_token(byte)?,
                 b'"' => match self.current_type {
                     None => self.current_type = Some(CurrentType::Literal),
                     _ => return Err(ParseError::UnexpectedCharacter(byte)),
@@ -115,11 +91,35 @@ where
         }
         Ok(self.output.pop().unwrap())
     }
+
+    fn end_token(&mut self, byte: u8) -> Result<(), ParseError> {
+        match self.current_type {
+            Some(CurrentType::Identifier) => {
+                self.output
+                    .last_mut()
+                    .unwrap()
+                    .push(Expression::Identifier(self.current.clone()));
+                self.current.clear();
+                self.current_type = None;
+            }
+            Some(CurrentType::Numeric) => {
+                self.output
+                    .last_mut()
+                    .unwrap()
+                    .push(Expression::Numeric(self.current.clone()));
+                self.current.clear();
+                self.current_type = None;
+            }
+            None => (),
+            _ => return Err(ParseError::UnexpectedCharacter(byte)),
+        }
+        Ok(())
+    }
 }
 
 pub fn parse(input: impl Read) -> Result<Vec<Expression>, ParseError> {
-    let parser = Parser::new(input);
-    parser.parse_input()
+    let parser = Parser::new();
+    parser.parse_input(input)
 }
 
 enum CurrentType {
