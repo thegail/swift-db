@@ -59,14 +59,14 @@ where
                 b'(' => self.output.push(Vec::new()),
                 b')' => {
                     if self.output.len() == 1 {
-                        return Ok(());
+                        break;
                     } else if self.output.len() == 0 {
                         return Err(ParseError::UnexpectedCharacter(b')'));
                     }
                     let list = self.output.pop().unwrap();
                     let higher = self.output.last_mut();
                     if let None = higher {
-                        return Ok(());
+                        break;
                     }
                     higher.unwrap().push(Expression::List(list));
                 }
@@ -113,7 +113,7 @@ where
                 c => return Err(ParseError::UnexpectedCharacter(c)),
             }
         }
-        Ok(*self.output.last().unwrap())
+        Ok(self.output.pop().unwrap())
     }
 
     pub fn parse(input: I) -> Result<Vec<Expression>, ParseError> {
