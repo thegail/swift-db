@@ -2,7 +2,7 @@ use super::backend::Backend;
 use super::operation_error::OperationError;
 use super::query::Query;
 use crate::archive::{ArchiveParser, ParseError};
-use crate::schema::Document;
+use crate::schema::{Document, Schema};
 
 impl Backend {
     pub fn create(&mut self, document: Document) -> Result<(), OperationError> {
@@ -74,5 +74,41 @@ impl Backend {
             }
         }
         Ok(results)
+    }
+
+    pub fn read(
+        &mut self,
+        pos: usize,
+        schema: &Schema,
+        fields: Vec<u16>,
+    ) -> Result<Document, OperationError> {
+        let block = self
+            .io
+            .read_at_position(pos as u64)
+            .map_err(|e| OperationError::IOError(e))?;
+        let document = ArchiveParser::new(schema.clone(), block, fields)
+            .read_document()
+            .map_err(|e| OperationError::ParseError(e))?;
+        Ok(document)
+    }
+
+    pub fn read_many(
+        &mut self,
+        pos: Vec<usize>,
+        schema: &Schema,
+        fields: Vec<u16>,
+    ) -> Result<Vec<Document>, OperationError> {
+        pos.iter()
+            .map(|p| {
+                let block = self
+                    .io
+                    .read_at_position(*p as u64)
+                    .map_err(|e| OperationError::IOError(e))?;
+                let document = ArchiveParser::new(schema.clone(), block, fields.clone())
+                    .read_document()
+                    .map_err(|e| OperationError::ParseError(e))?;
+                Ok(document)
+            })
+            .collect()
     }
 }

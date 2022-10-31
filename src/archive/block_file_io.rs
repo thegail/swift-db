@@ -38,7 +38,7 @@ impl BlockFileIO {
         Ok(buffer)
     }
 
-    fn read_at_position(&mut self, position: u64) -> Result<Vec<u8>, Error> {
+    pub fn read_at_position(&mut self, position: u64) -> Result<Vec<u8>, Error> {
         self.reader.seek(SeekFrom::Start(position))?;
         self.read_block()
     }
