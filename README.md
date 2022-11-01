@@ -7,7 +7,7 @@ document database built to work easily with Swift.
 
 SwiftDB's query language is a lisp, so the client uses s-expressions to
 construct queries, like `(select sp t wn (coll people) (> (f age) 60))`. A list
-of functions and their definitions are located below.
+of functions and their definitions are located in the language docs.
 
 ## Transaction Model
 
@@ -22,7 +22,7 @@ SwiftDB transactions have five stages:
 ### Open the transaction
 
 Transactions are opened with the statement `(open t)`, where `t` may any valid
-identifier. This is described in [Function Definitions](#function-definitions).
+identifier. This is described in the language docs.
 
 ### Select values
 
@@ -67,10 +67,6 @@ acknowledgement, the changes were fully written to the disk and are guaranteed
 to be durable (see [durability](#durability)). `(close)` ends the transaction,
 discarding any changes made during the read/write phase. If no writes were
 performed, this is the preferred command to end the transaction.
-
-## Function Definitions
-
-### Query Conditions
 
 ## ACID Compliance
 
