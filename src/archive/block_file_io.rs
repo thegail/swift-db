@@ -54,7 +54,7 @@ impl BlockFileIO {
         let mut buf = vec![69u8];
         buf.extend_from_slice(&(block.len() as u64).to_be_bytes());
         buf.append(&mut block);
-        self.writer.write(&buf)?;
+        self.writer.write_all(&buf)?;
         Ok(())
     }
 }
