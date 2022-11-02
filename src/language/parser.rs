@@ -25,7 +25,7 @@ impl Parser {
 
     fn parse_input(mut self, input: impl Read) -> Result<Vec<Expression>, ParseError> {
         for byte in input.bytes() {
-            let byte = byte.map_err(|e| ParseError::ReadError(e))?;
+            let byte = byte.map_err(ParseError::ReadError)?;
             if let Some(CurrentType::Literal) = self.current_type {
                 if self.is_escaped {
                     match byte {
@@ -55,12 +55,12 @@ impl Parser {
                     self.end_token(byte)?;
                     if self.output.len() == 1 {
                         break;
-                    } else if self.output.len() == 0 {
+                    } else if self.output.is_empty() {
                         return Err(ParseError::UnexpectedCharacter(b')'));
                     }
                     let list = self.output.pop().unwrap();
                     let higher = self.output.last_mut();
-                    if let None = higher {
+                    if higher.is_none() {
                         break;
                     }
                     higher.unwrap().push(Expression::List(list));

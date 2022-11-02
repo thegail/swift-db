@@ -7,21 +7,21 @@ pub enum Expression {
 }
 
 impl Expression {
-    pub fn get_identifier<'a>(&'a self) -> &'a String {
+    pub fn get_identifier(&self) -> &String {
         match self {
             Expression::Identifier(k) => k,
             _ => panic!("unexpected token"),
         }
     }
 
-    pub fn get_expression<'a>(&'a self) -> &'a Vec<Expression> {
+    pub fn get_expression(&self) -> &Vec<Expression> {
         match self {
             Expression::List(v) => v,
             _ => panic!("unexpected token"),
         }
     }
 
-    pub fn get_literal<'a>(&'a self) -> &'a String {
+    pub fn get_literal(&self) -> &String {
         match self {
             Expression::Literal(s) => s,
             _ => panic!("unexpected token"),
