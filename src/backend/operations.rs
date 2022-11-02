@@ -7,9 +7,7 @@ use crate::schema::{Document, Schema};
 impl Backend {
     pub fn create(&mut self, document: Document) -> Result<(), OperationError> {
         let bytes = document.serialize();
-        self.io
-            .write_block(bytes)
-            .map_err(|e| OperationError::IOError(e))
+        self.io.write_block(bytes).map_err(OperationError::IOError)
     }
 
     pub fn find_one(&mut self, query: Query) -> Result<usize, OperationError> {
@@ -18,9 +16,7 @@ impl Backend {
             .iter()
             .find(|s| s.id == query.collection)
             .ok_or(OperationError::UnknownSchemaIdentifier)?;
-        self.io
-            .reset_position()
-            .map_err(|e| OperationError::IOError(e))?;
+        self.io.reset_position().map_err(OperationError::IOError)?;
         loop {
             let (position, block) = self.io.next().map_err(|o| OperationError::IOError(o))?;
             let mut parser =
@@ -46,9 +42,7 @@ impl Backend {
             .iter()
             .find(|s| s.id == query.collection)
             .ok_or(OperationError::UnknownSchemaIdentifier)?;
-        self.io
-            .reset_position()
-            .map_err(|e| OperationError::IOError(e))?;
+        self.io.reset_position().map_err(OperationError::IOError)?;
         let mut results = vec![];
         loop {
             let next = self.io.next();
@@ -85,10 +79,10 @@ impl Backend {
         let block = self
             .io
             .read_at_position(pos as u64)
-            .map_err(|e| OperationError::IOError(e))?;
+            .map_err(OperationError::IOError)?;
         let document = ArchiveParser::new(schema.clone(), block, fields)
             .read_document()
-            .map_err(|e| OperationError::ParseError(e))?;
+            .map_err(OperationError::ParseError)?;
         Ok(document)
     }
 
@@ -103,10 +97,10 @@ impl Backend {
                 let block = self
                     .io
                     .read_at_position(*p as u64)
-                    .map_err(|e| OperationError::IOError(e))?;
+                    .map_err(OperationError::IOError)?;
                 let document = ArchiveParser::new(schema.clone(), block, fields.clone())
                     .read_document()
-                    .map_err(|e| OperationError::ParseError(e))?;
+                    .map_err(OperationError::ParseError)?;
                 Ok(document)
             })
             .collect()
