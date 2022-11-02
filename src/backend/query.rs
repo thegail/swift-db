@@ -27,10 +27,10 @@ macro_rules! eval_match_arm {
         if let FieldValue::$i(right_unwrapped) = $r {
             Ok($l $o right_unwrapped)
         } else {
-            Err(OperationError::ExpressionTypeMismatch(
-                FieldType::$i,
-                $r.simple_type(),
-            ))
+            Err(OperationError::ExpressionTypeMismatch {
+                left: FieldType::$i,
+                right: $r.simple_type(),
+            })
         }
     };
 }

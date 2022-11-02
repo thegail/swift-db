@@ -4,55 +4,16 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Debug)]
-enum UnderlyingOperationError {
+pub enum OperationError {
     ParseError(ParseError),
     IOError(std::io::Error),
     UnknownSchemaIdentifier,
-    ExpressionTypeMismatch(ExpressionTypeMismatch),
-}
-
-pub struct OperationError {
-    underlying: UnderlyingOperationError,
-}
-
-impl OperationError {
-    #![allow(non_snake_case)]
-    pub fn ParseError(underlying: ParseError) -> Self {
-        Self {
-            underlying: UnderlyingOperationError::ParseError(underlying),
-        }
-    }
-
-    pub fn IOError(underlying: std::io::Error) -> Self {
-        Self {
-            underlying: UnderlyingOperationError::IOError(underlying),
-        }
-    }
-
-    pub fn UnknownSchemaIdentifier() -> Self {
-        Self {
-            underlying: UnderlyingOperationError::UnknownSchemaIdentifier,
-        }
-    }
-
-    pub fn ExpressionTypeMismatch(left: FieldType, right: FieldType) -> Self {
-        Self {
-            underlying: UnderlyingOperationError::ExpressionTypeMismatch(ExpressionTypeMismatch {
-                left,
-                right,
-            }),
-        }
-    }
+    ExpressionTypeMismatch { left: FieldType, right: FieldType },
 }
 
 impl Display for OperationError {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
-        self.underlying.fmt(formatter)
-    }
-}
-impl Debug for OperationError {
-    fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
-        self.underlying.fmt(formatter)
+        write!(formatter, "{}", self)
     }
 }
 
@@ -77,13 +38,8 @@ impl Display for FieldType {
     }
 }
 
-struct ExpressionTypeMismatch {
-    left: FieldType,
-    right: FieldType,
-}
-
-impl Debug for ExpressionTypeMismatch {
+impl Debug for FieldType {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(formatter, "left: {}, right: {}", self.left, self.right)
+        write!(formatter, "{}", self)
     }
 }

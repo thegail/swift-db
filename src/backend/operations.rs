@@ -17,7 +17,7 @@ impl Backend {
             .collections
             .iter()
             .find(|s| s.id == query.collection)
-            .ok_or(OperationError::UnknownSchemaIdentifier())?;
+            .ok_or(OperationError::UnknownSchemaIdentifier)?;
         self.io
             .reset_position()
             .map_err(|e| OperationError::IOError(e))?;
@@ -45,7 +45,7 @@ impl Backend {
             .collections
             .iter()
             .find(|s| s.id == query.collection)
-            .ok_or(OperationError::UnknownSchemaIdentifier())?;
+            .ok_or(OperationError::UnknownSchemaIdentifier)?;
         self.io
             .reset_position()
             .map_err(|e| OperationError::IOError(e))?;
