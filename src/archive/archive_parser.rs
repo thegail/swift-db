@@ -183,7 +183,7 @@ impl ArchiveParser {
         parser.read_subdocument()
     }
 
-    fn parse_enum(&mut self, cases: &Vec<EnumCase>) -> Result<EnumValue, ParseError> {
+    fn parse_enum(&mut self, cases: &[EnumCase]) -> Result<EnumValue, ParseError> {
         let case_id = self.parse_int::<u16>();
         let enum_case = cases
             .iter()

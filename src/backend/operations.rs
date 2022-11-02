@@ -18,7 +18,7 @@ impl Backend {
             .ok_or(OperationError::UnknownSchemaIdentifier)?;
         self.io.reset_position().map_err(OperationError::IOError)?;
         loop {
-            let (position, block) = self.io.next().map_err(|o| OperationError::IOError(o))?;
+            let (position, block) = self.io.next().map_err(OperationError::IOError)?;
             let mut parser =
                 ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
             let document_result = parser.read_document();
