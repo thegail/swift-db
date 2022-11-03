@@ -9,7 +9,12 @@ pub enum ParseError {
 
 impl Display for ParseError {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(formatter, "{}", self)
+        match self {
+            ParseError::ReadError(err) => write!(formatter, "Read error: {}", err),
+            ParseError::UnexpectedCharacter(ch) => {
+                write!(formatter, "Unexpected character: {}", *ch as char)
+            }
+        }
     }
 }
 
