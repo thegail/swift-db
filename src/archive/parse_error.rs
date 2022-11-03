@@ -11,7 +11,13 @@ pub enum ParseError {
 
 impl Display for ParseError {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(formatter, "{}", self)
+        let string = match self {
+            ParseError::SchemaMismatch => "Mismatched schema in archive parser",
+            ParseError::UnknownFieldIdentifier => "Unknown field in archive",
+            ParseError::UnknownCaseIdentifier => "Unkown enum case in archive",
+            ParseError::InvalidString => "Invalid UTF-8 string in archive",
+        };
+        write!(formatter, "{}", string)
     }
 }
 impl Error for ParseError {}
