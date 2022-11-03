@@ -13,7 +13,20 @@ pub enum OperationError {
 
 impl Display for OperationError {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(formatter, "{}", self)
+        match self {
+            OperationError::ParseError(err) => write!(formatter, "Parse error: {}", err),
+            OperationError::IOError(err) => write!(formatter, "Archive read error: {}", err),
+            OperationError::UnknownSchemaIdentifier => {
+                write!(formatter, "Unknown schema identifier in query")
+            }
+            OperationError::ExpressionTypeMismatch { left, right } => {
+                write!(
+                    formatter,
+                    "Type mismatch in expression: {} and {} are not comparable",
+                    left, right
+                )
+            }
+        }
     }
 }
 
