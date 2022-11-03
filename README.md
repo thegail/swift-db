@@ -53,7 +53,7 @@ read/write commands the client sends.
 ### Perform reads and writes
 
 After locks are acquired, the client may perform reads and writes using the
-functions `(create)`, `(read)`, `(update)`, `(updateall)`, `(writeall)`, and
+functions `(create)`, `(read)`, `(update)`, `(readall)`, `(updateall)`, and
 `(delete)`. Any changes are only visible to the current transaction until they
 are committed (see [isolation](#isolation)).
 
