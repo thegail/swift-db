@@ -27,21 +27,20 @@ identifier. This is described in the language docs.
 ### Select values
 
 Values are selected using the function
-`(select [ident] [transaction]? [lock] [collection] [condition])`. The results
-of the selection will be associated with `[ident]`. In the case that a
-connection may have multiple transactions running at the same time,
-`[transaction]` explicitly associates the selection with one of them. If not
-present, the most recently opened transaction is used. `[lock]` specifies the
-type of lock the transaction will acquires in the
-[acquire locks](#acquire-locks) stage. The value `r` represents a read-only
-lock. A read-only lock will wait if it contests a `wb` lock. The value `wb`
-represents a blocking read/write lock. A blocking read/write lock will wait if
-it contests a `wn` lock. The value `wn` represents a non-blocking read/write
-lock. A non-blocking read/write lock will wait if it contests a `wb` or a `wn`
-lock. `[collection]` must be the result of a call to `(coll [ident])` where
-`[ident]` is the name of the targeted document collection. Finally,
-`[condition]` is a prefix-notation condition expression, described in
-[Query Conditions](#query-conditions) below.
+`(select [ident] [transaction] [lock] [collection] [condition])`. The results of
+the selection will be associated with `[ident]`. In the case that a connection
+may have multiple transactions running at the same time, `[transaction]`
+explicitly associates the selection with one of them. If not present, the most
+recently opened transaction is used. `[lock]` specifies the type of lock the
+transaction will acquires in the [acquire locks](#acquire-locks) stage. The
+value `r` represents a read-only lock. A read-only lock will wait if it contests
+a `wb` lock. The value `wb` represents a blocking read/write lock. A blocking
+read/write lock will wait if it contests a `wn` lock. The value `wn` represents
+a non-blocking read/write lock. A non-blocking read/write lock will wait if it
+contests a `wb` or a `wn` lock. `[collection]` must be the result of a call to
+`(coll [ident])` where `[ident]` is the name of the targeted document
+collection. Finally, `[condition]` is a prefix-notation condition expression,
+described in [Query Conditions](#query-conditions) below.
 
 ### Acquire locks
 
