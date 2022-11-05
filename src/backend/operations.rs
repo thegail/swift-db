@@ -1,6 +1,7 @@
 use super::backend::Backend;
 use super::operation_error::OperationError;
 use super::query::Query;
+use super::selection::Selection;
 use crate::archive::{ArchiveParser, ParseError};
 use crate::schema::{Document, Schema};
 
@@ -10,7 +11,7 @@ impl Backend {
         self.io.write_block(bytes).map_err(OperationError::IOError)
     }
 
-    pub fn find_one(&mut self, query: Query) -> Result<usize, OperationError> {
+    pub fn find_one(&mut self, query: Query) -> Result<Selection, OperationError> {
         let schema = self
             .collections
             .iter()
@@ -33,7 +34,10 @@ impl Backend {
                     let matches = document.evaluate(&query.condition)?;
                     if matches {
                         self.document_cache.insert(position, document);
-                        return Ok(position);
+                        return Ok(Selection {
+                            position,
+                            schema: schema.clone(),
+                        });
                     }
                 }
             }
