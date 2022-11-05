@@ -5,3 +5,5 @@ mod query;
 mod selection;
 #[cfg(test)]
 mod tests;
+
+pub use selection::Selection;
