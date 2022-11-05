@@ -209,7 +209,6 @@ fn read_document() {
     let _document = database
         .find_one(query::Query {
             collection: 0x10,
-            fields_of_interest: vec![0x2],
             condition: query::Condition::Equal(
                 query::Expression::Field(0x2),
                 query::Expression::Value(FieldValue::UInt(11)),
@@ -244,7 +243,6 @@ fn write_read_bench() {
         _ = database
             .find_one(query::Query {
                 collection: 0x10,
-                fields_of_interest: vec![0x1, 0x2, 0x3, 0x4, 0x5],
                 condition: query::Condition::Equal(
                     query::Expression::Field(0x2),
                     query::Expression::Value(FieldValue::UInt(i)),
@@ -264,7 +262,6 @@ fn read_many_test() {
     _ = database
         .find_many(query::Query {
             collection: 0x10,
-            fields_of_interest: vec![0x1, 0x2, 0x3, 0x4, 0x5, 0x6],
             condition: query::Condition::LessThan(
                 query::Expression::Field(0x2),
                 query::Expression::Value(crate::schema::FieldValue::UInt(10)),

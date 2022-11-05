@@ -3,7 +3,6 @@ use crate::schema::{Document, FieldType, FieldValue};
 
 pub struct Query {
     pub collection: u64,
-    pub fields_of_interest: Vec<u16>,
     pub condition: Condition,
 }
 

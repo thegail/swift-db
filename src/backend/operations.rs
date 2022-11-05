@@ -19,8 +19,12 @@ impl Backend {
         self.io.reset_position().map_err(OperationError::IOError)?;
         loop {
             let (position, block) = self.io.next().map_err(OperationError::IOError)?;
-            let mut parser =
-                ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
+            let mut parser = ArchiveParser::new(
+                schema.clone(),
+                block,
+                // TODO optimize
+                schema.fields.iter().map(|f| f.id).collect(),
+            );
             let document_result = parser.read_document();
             match document_result {
                 Err(ParseError::SchemaMismatch) => {}
@@ -52,8 +56,12 @@ impl Backend {
                 }
             }
             let (position, block) = next.unwrap();
-            let mut parser =
-                ArchiveParser::new(schema.clone(), block, query.fields_of_interest.clone());
+            let mut parser = ArchiveParser::new(
+                schema.clone(),
+                block,
+                // TODO optimize
+                schema.fields.iter().map(|f| f.id).collect(),
+            );
             let document_result = parser.read_document();
             match document_result {
                 Err(ParseError::SchemaMismatch) => {}
