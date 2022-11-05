@@ -5,7 +5,7 @@ pub struct Selection {
     pub position: usize,
 }
 
-pub struct MultipleSelection {
+pub struct ManySelection {
     pub schema: Schema,
     pub positions: Vec<usize>,
 }
