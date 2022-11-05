@@ -1,7 +1,7 @@
 use super::backend::Backend;
 use super::operation_error::OperationError;
 use super::query::Query;
-use super::selection::Selection;
+use super::selection::{MultipleSelection, Selection};
 use crate::archive::{ArchiveParser, ParseError};
 use crate::schema::{Document, Schema};
 
@@ -44,7 +44,7 @@ impl Backend {
         }
     }
 
-    pub fn find_many(&mut self, query: Query) -> Result<Vec<usize>, OperationError> {
+    pub fn find_many(&mut self, query: Query) -> Result<MultipleSelection, OperationError> {
         let schema = self
             .collections
             .iter()
@@ -79,7 +79,10 @@ impl Backend {
                 }
             }
         }
-        Ok(results)
+        Ok(MultipleSelection {
+            schema: schema.clone(),
+            positions: results,
+        })
     }
 
     pub fn read(
