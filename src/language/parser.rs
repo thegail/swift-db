@@ -3,7 +3,7 @@ use super::parse_error::ParseError;
 use std::io::Read;
 
 struct Parser {
-    pos: usize,
+    position: usize,
     is_free: bool,
     output: Vec<Vec<Expression>>,
     current: String,
@@ -14,7 +14,7 @@ struct Parser {
 impl Parser {
     fn new() -> Self {
         Self {
-            pos: 0,
+            position: 0,
             is_free: true,
             output: Vec::new(),
             current: String::new(),
@@ -33,7 +33,12 @@ impl Parser {
                             self.current.push(byte as char);
                             self.is_escaped = false;
                         }
-                        _ => return Err(ParseError::UnexpectedCharacter(byte)),
+                        _ => {
+                            return Err(ParseError::UnexpectedCharacter {
+                                position: self.position,
+                                value: byte,
+                            })
+                        }
                     }
                 } else if byte == b'\\' {
                     self.is_escaped = true;
@@ -56,7 +61,10 @@ impl Parser {
                     if self.output.len() == 1 {
                         break;
                     } else if self.output.is_empty() {
-                        return Err(ParseError::UnexpectedCharacter(b')'));
+                        return Err(ParseError::UnexpectedCharacter {
+                            position: self.position,
+                            value: byte,
+                        });
                     }
                     let list = self.output.pop().unwrap();
                     let higher = self.output.last_mut();
@@ -69,7 +77,12 @@ impl Parser {
                     match self.current_type {
                         None => self.current_type = Some(CurrentType::Identifier),
                         Some(CurrentType::Identifier) => (),
-                        _ => return Err(ParseError::UnexpectedCharacter(byte)),
+                        _ => {
+                            return Err(ParseError::UnexpectedCharacter {
+                                position: self.position,
+                                value: byte,
+                            })
+                        }
                     }
                     self.current.push(byte as char);
                 }
@@ -77,16 +90,31 @@ impl Parser {
                     match self.current_type {
                         None => self.current_type = Some(CurrentType::Numeric),
                         Some(CurrentType::Numeric) => (),
-                        _ => return Err(ParseError::UnexpectedCharacter(byte)),
+                        _ => {
+                            return Err(ParseError::UnexpectedCharacter {
+                                position: self.position,
+                                value: byte,
+                            })
+                        }
                     }
                     self.current.push(byte as char);
                 }
                 b' ' => self.end_token(byte)?,
                 b'"' => match self.current_type {
                     None => self.current_type = Some(CurrentType::Literal),
-                    _ => return Err(ParseError::UnexpectedCharacter(byte)),
+                    _ => {
+                        return Err(ParseError::UnexpectedCharacter {
+                            position: self.position,
+                            value: byte,
+                        })
+                    }
                 },
-                c => return Err(ParseError::UnexpectedCharacter(c)),
+                _ => {
+                    return Err(ParseError::UnexpectedCharacter {
+                        position: self.position,
+                        value: byte,
+                    })
+                }
             }
         }
         Ok(self.output.pop().unwrap())
@@ -111,7 +139,12 @@ impl Parser {
                 self.current_type = None;
             }
             None => (),
-            _ => return Err(ParseError::UnexpectedCharacter(byte)),
+            _ => {
+                return Err(ParseError::UnexpectedCharacter {
+                    position: self.position,
+                    value: byte,
+                })
+            }
         }
         Ok(())
     }
