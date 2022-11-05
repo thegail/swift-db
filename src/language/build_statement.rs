@@ -2,7 +2,10 @@ use super::expression::Expression;
 use super::parse_error::ParseError;
 
 fn build_statement(expression: Vec<Expression>) -> Result<(), ParseError> {
-    let keyword = expression.first().unwrap().get_identifier();
+    let keyword = expression
+        .first()
+        .ok_or(ParseError::ArgumentCount)?
+        .get_identifier()?;
     match keyword.as_str() {
         "select" => build_select(expression),
         "read" => build_read(expression),
