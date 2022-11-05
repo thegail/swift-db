@@ -1,3 +1,5 @@
+use super::parse_error::ParseError;
+
 #[derive(Debug)]
 pub enum Expression {
     Identifier(String),
@@ -7,24 +9,24 @@ pub enum Expression {
 }
 
 impl Expression {
-    pub fn get_identifier(&self) -> &String {
+    pub fn get_identifier(&self) -> Result<&String, ParseError> {
         match self {
-            Expression::Identifier(k) => k,
-            _ => panic!("unexpected token"),
+            Expression::Identifier(s) => Ok(s),
+            _ => Err(ParseError::UnexpectedToken),
         }
     }
 
-    pub fn get_expression(&self) -> &Vec<Expression> {
+    pub fn get_expression(&self) -> Result<&Vec<Expression>, ParseError> {
         match self {
-            Expression::List(v) => v,
-            _ => panic!("unexpected token"),
+            Expression::List(v) => Ok(v),
+            _ => Err(ParseError::UnexpectedToken),
         }
     }
 
-    pub fn get_literal(&self) -> &String {
+    pub fn get_literal(&self) -> Result<&String, ParseError> {
         match self {
-            Expression::Literal(s) => s,
-            _ => panic!("unexpected token"),
+            Expression::Literal(s) => Ok(s),
+            _ => Err(ParseError::UnexpectedToken),
         }
     }
 }

@@ -5,6 +5,8 @@ use std::fmt::{Display, Formatter};
 pub enum ParseError {
     ReadError(std::io::Error),
     UnexpectedCharacter { position: usize, value: u8 },
+    ArgumentCount,
+    UnexpectedToken,
 }
 
 impl Display for ParseError {
@@ -17,10 +19,12 @@ impl Display for ParseError {
             } => {
                 write!(
                     formatter,
-                    "Unexpected character at position {}: {}",
-                    position, *character as char,
+                    "Unexpected character {} at position {}",
+                    *character as char, position,
                 )
             }
+            ParseError::ArgumentCount => write!(formatter, "Incorrect number of arguments"),
+            ParseError::UnexpectedToken => write!(formatter, "Unexpected token"),
         }
     }
 }
