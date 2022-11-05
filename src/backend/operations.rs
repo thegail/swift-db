@@ -3,7 +3,7 @@ use super::operation_error::OperationError;
 use super::query::Query;
 use super::selection::{MultipleSelection, Selection};
 use crate::archive::{ArchiveParser, ParseError};
-use crate::schema::{Document, Schema};
+use crate::schema::Document;
 
 impl Backend {
     pub fn create(&mut self, document: Document) -> Result<(), OperationError> {
@@ -87,15 +87,14 @@ impl Backend {
 
     pub fn read(
         &mut self,
-        pos: usize,
-        schema: &Schema,
+        selection: Selection,
         fields: Vec<u16>,
     ) -> Result<Document, OperationError> {
         let block = self
             .io
-            .read_at_position(pos as u64)
+            .read_at_position(selection.position as u64)
             .map_err(OperationError::IOError)?;
-        let document = ArchiveParser::new(schema.clone(), block, fields)
+        let document = ArchiveParser::new(selection.schema.clone(), block, fields)
             .read_document()
             .map_err(OperationError::ParseError)?;
         Ok(document)
@@ -103,17 +102,18 @@ impl Backend {
 
     pub fn read_many(
         &mut self,
-        pos: Vec<usize>,
-        schema: &Schema,
+        selection: MultipleSelection,
         fields: Vec<u16>,
     ) -> Result<Vec<Document>, OperationError> {
-        pos.iter()
+        selection
+            .positions
+            .iter()
             .map(|p| {
                 let block = self
                     .io
                     .read_at_position(*p as u64)
                     .map_err(OperationError::IOError)?;
-                let document = ArchiveParser::new(schema.clone(), block, fields.clone())
+                let document = ArchiveParser::new(selection.schema.clone(), block, fields.clone())
                     .read_document()
                     .map_err(OperationError::ParseError)?;
                 Ok(document)
