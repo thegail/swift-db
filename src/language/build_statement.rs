@@ -11,8 +11,8 @@ fn build_statement(expression: &[Expression]) -> Result<Statement, ParseError> {
         .get_identifier()?;
     match keyword.as_str() {
         "select" => build_select(expression),
-        "read" => build_read(expression),
-        _ => panic!("bad keyword"),
+        "readall" => build_read_all(expression),
+        _ => Err(ParseError::UnexpectedToken),
     }
 }
 
@@ -156,6 +156,6 @@ fn build_value_expression(expression: &Expression) -> Result<ValueExpression, Pa
     }
 }
 
-fn build_read(_expression: &[Expression]) -> Result<Statement, ParseError> {
+fn build_read_all(_expression: &[Expression]) -> Result<Statement, ParseError> {
     todo!()
 }
