@@ -8,6 +8,10 @@ of functions and their definitions are located in the language docs.
 
 The following top level functions are available:
 
+-   [`(open)`](#open)
+-   [`(acquire)`](#acquire)
+-   [`(commit)`](#commit)
+-   [`(close)`](#close)
 -   [`(select)`](#select)
 -   [`(selects)`](#select)
 -   [`(acquire)`](#acquire)
@@ -17,6 +21,38 @@ The following top level functions are available:
 -   [`(readall)`](#readall)
 -   [`(updateall)`](#updateall)
 -   [`(delete)`](#delete)
+
+### Open
+
+`(open [identifier])`
+
+This opens a transaction, binding it to `identifier`. The transaction is
+initialized in the selection stage.
+
+### Acquire
+
+`(acquire [transaction])`
+
+Acquires locks on the selections in `transaction`, waiting if necessary.
+`(acquire)` may only be called during the selection stage of a transaction.
+After the acquisition is acknowledged, the transaction moves into the read/write
+stage, in which the client may perform reads and writes on the transaction.
+
+### Commit
+
+`(commit [transaction])`
+
+Commits any writes performed during the read/write stage of `transaction`. This
+may only be called during the read/write stage of the transaction. Once the
+commitment is acknowledged, it is durable and non-volatile.
+
+### Close
+
+`(close [transaction])`
+
+Closes `transaction`, discarding any writes performed during the read/write
+stage. If the transaction did not perform any writes, this is the preferred
+method of ending it.
 
 ### Select
 
@@ -52,6 +88,14 @@ database.
 #### `[condition]`
 
 A [query condition](#query-conditions) expression.
+
+### Read All
+
+`(readall [selection])`
+
+Read all fields of `selection`. If `selection` is a single selection, this
+returns an object with all fields of `selection`. If it is a multiple selection,
+this returns an array of objects with all fields of `selection`.
 
 ## Query Conditions
 
