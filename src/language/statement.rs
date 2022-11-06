@@ -1,6 +1,18 @@
 use crate::backend::Query;
 
 pub enum Statement {
+    Open {
+        transaction: String,
+    },
+    Acquire {
+        transaction: String,
+    },
+    Commit {
+        transaction: String,
+    },
+    Close {
+        transaction: String,
+    },
     Select {
         identifier: String,
         transaction: String,

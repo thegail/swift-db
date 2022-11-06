@@ -10,10 +10,50 @@ fn build_statement(expression: &[Expression]) -> Result<Statement, ParseError> {
         .ok_or(ParseError::ArgumentCount)?
         .get_identifier()?;
     match keyword.as_str() {
+        "open" => build_open(expression),
+        "acquire" => build_acquire(expression),
+        "commit" => build_commit(expression),
+        "close" => build_close(expression),
         "select" => build_select(expression),
         "readall" => build_read_all(expression),
         _ => Err(ParseError::UnexpectedToken),
     }
+}
+
+fn build_open(expression: &[Expression]) -> Result<Statement, ParseError> {
+    if expression.len() != 2 {
+        return Err(ParseError::ArgumentCount);
+    }
+    Ok(Statement::Open {
+        transaction: expression[1].get_identifier()?.clone(),
+    })
+}
+
+fn build_acquire(expression: &[Expression]) -> Result<Statement, ParseError> {
+    if expression.len() != 2 {
+        return Err(ParseError::ArgumentCount);
+    }
+    Ok(Statement::Acquire {
+        transaction: expression[1].get_identifier()?.clone(),
+    })
+}
+
+fn build_commit(expression: &[Expression]) -> Result<Statement, ParseError> {
+    if expression.len() != 2 {
+        return Err(ParseError::ArgumentCount);
+    }
+    Ok(Statement::Commit {
+        transaction: expression[1].get_identifier()?.clone(),
+    })
+}
+
+fn build_close(expression: &[Expression]) -> Result<Statement, ParseError> {
+    if expression.len() != 2 {
+        return Err(ParseError::ArgumentCount);
+    }
+    Ok(Statement::Close {
+        transaction: expression[1].get_identifier()?.clone(),
+    })
 }
 
 fn build_select(expression: &[Expression]) -> Result<Statement, ParseError> {
