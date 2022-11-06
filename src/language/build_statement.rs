@@ -4,7 +4,7 @@ use super::statement::Statement;
 use crate::backend::{Condition, Expression as ValueExpression, Query};
 use crate::schema::{FieldValue, Schema};
 
-fn build_statement(expression: &Vec<Expression>) -> Result<Statement, ParseError> {
+fn build_statement(expression: &[Expression]) -> Result<Statement, ParseError> {
     let keyword = expression
         .first()
         .ok_or(ParseError::ArgumentCount)?
@@ -16,7 +16,7 @@ fn build_statement(expression: &Vec<Expression>) -> Result<Statement, ParseError
     }
 }
 
-fn build_select(expression: &Vec<Expression>) -> Result<Statement, ParseError> {
+fn build_select(expression: &[Expression]) -> Result<Statement, ParseError> {
     if expression.len() != 6 {
         return Err(ParseError::ArgumentCount);
     }
@@ -44,7 +44,7 @@ fn build_select(expression: &Vec<Expression>) -> Result<Statement, ParseError> {
     })
 }
 
-fn build_condition(expression: &Vec<Expression>) -> Result<Condition, ParseError> {
+fn build_condition(expression: &[Expression]) -> Result<Condition, ParseError> {
     if expression.is_empty() {
         return Err(ParseError::ArgumentCount);
     }
@@ -84,7 +84,7 @@ fn build_condition(expression: &Vec<Expression>) -> Result<Condition, ParseError
 }
 
 fn get_binary_expressions(
-    expression: &Vec<Expression>,
+    expression: &[Expression],
 ) -> Result<(ValueExpression, ValueExpression), ParseError> {
     if expression.len() != 3 {
         return Err(ParseError::ArgumentCount);
@@ -95,9 +95,7 @@ fn get_binary_expressions(
     ))
 }
 
-fn get_binary_conditions(
-    expression: &Vec<Expression>,
-) -> Result<(Condition, Condition), ParseError> {
+fn get_binary_conditions(expression: &[Expression]) -> Result<(Condition, Condition), ParseError> {
     if expression.len() != 3 {
         return Err(ParseError::ArgumentCount);
     }
@@ -140,7 +138,7 @@ fn build_value_expression(expression: &Expression) -> Result<ValueExpression, Pa
                         .fields
                         .iter()
                         .find(|f| f.name == identifier.as_str())
-                        .ok_or(ParseError::UnknownIdentifier(identifier.clone()))?;
+                        .ok_or_else(|| ParseError::UnknownIdentifier(identifier.clone()))?;
                     Ok(ValueExpression::Field(field.id))
                 }
                 "f" => {
@@ -158,6 +156,6 @@ fn build_value_expression(expression: &Expression) -> Result<ValueExpression, Pa
     }
 }
 
-fn build_read(_expression: &Vec<Expression>) -> Result<Statement, ParseError> {
+fn build_read(_expression: &[Expression]) -> Result<Statement, ParseError> {
     todo!()
 }
