@@ -1,7 +1,7 @@
 use super::expression::Expression;
 use super::parse_error::ParseError;
 use super::statement::Statement;
-use crate::backend::{Condition, Query};
+use crate::backend::{Condition, Expression as ValueExpression, Query};
 
 fn build_statement(expression: &Vec<Expression>) -> Result<Statement, ParseError> {
     let keyword = expression
@@ -44,6 +44,53 @@ fn build_select(expression: &Vec<Expression>) -> Result<Statement, ParseError> {
 }
 
 fn build_condition(expression: &Vec<Expression>) -> Result<Condition, ParseError> {
+    if expression.is_empty() {
+        return Err(ParseError::ArgumentCount);
+    }
+    // TODO implement true/false
+    // TODO implement not equal
+    match expression[0].get_operator()? {
+        '=' => {
+            let values = get_binary_expressions(expression)?;
+            Ok(Condition::Equal(values.0, values.1))
+        }
+        '<' => {
+            let values = get_binary_expressions(expression)?;
+            Ok(Condition::LessThan(values.0, values.1))
+        }
+        '>' => {
+            let values = get_binary_expressions(expression)?;
+            Ok(Condition::GreaterThan(values.0, values.1))
+        }
+        '|' => {
+            let values = get_binary_expressions(expression)?;
+            Ok(Condition::Or(values.0, values.1))
+        }
+        '&' => {
+            let values = get_binary_expressions(expression)?;
+            Ok(Condition::And(values.0, values.1))
+        }
+        '!' => {
+            // let values = get_binary_expressions(expression)?;
+            Ok(Condition::Not(value))
+        }
+        _ => unreachable!(),
+    }
+}
+
+fn get_binary_expressions(
+    expression: &Vec<Expression>,
+) -> Result<(ValueExpression, ValueExpression), ParseError> {
+    todo!()
+}
+
+fn get_binary_conditions(
+    expression: &Vec<Expression>,
+) -> Result<(Condition, Condition), ParseError> {
+    todo!()
+}
+
+fn build_value_expression(expression: &Vec<Expression>) -> Result<ValueExpression, ParseError> {
     todo!()
 }
 
