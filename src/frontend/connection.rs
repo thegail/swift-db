@@ -8,7 +8,7 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn execute_statement(&mut self, statement: Statement) {
+    pub fn execute_statement(&mut self, statement: Statement) -> Result<(), FrontendError> {
         match statement {
             Statement::Open { transaction } => self.open(transaction),
             Statement::Acquire { transaction } => self.acquire(transaction),
@@ -30,27 +30,32 @@ impl Connection {
                 identifier: transaction.clone(),
             });
         }
-        self.transactions[transaction] = Transaction::new();
+        self.transactions.insert(transaction, Transaction::new());
         Ok(())
     }
 
-    fn acquire(&mut self, transaction: String) {
+    fn acquire(&mut self, transaction: String) -> Result<(), FrontendError> {
         todo!()
     }
 
-    fn commit(&mut self, transaction: String) {
+    fn commit(&mut self, transaction: String) -> Result<(), FrontendError> {
         todo!()
     }
 
-    fn close(&mut self, transaction: String) {
+    fn close(&mut self, transaction: String) -> Result<(), FrontendError> {
         todo!()
     }
 
-    fn select(&mut self, identifier: String, transaction: String, query: Query) {
+    fn select(
+        &mut self,
+        identifier: String,
+        transaction: String,
+        query: Query,
+    ) -> Result<(), FrontendError> {
         todo!()
     }
 
-    fn read_all(&mut self, selection: String) {
+    fn read_all(&mut self, selection: String) -> Result<(), FrontendError> {
         todo!()
     }
 }
