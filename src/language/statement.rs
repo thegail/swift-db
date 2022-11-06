@@ -5,7 +5,7 @@ pub enum Statement {
         identifier: String,
         transaction: String,
         // lock: LockType,
-        condition: Query,
+        query: Query,
     },
     Read {
         selection: String,
