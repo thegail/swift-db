@@ -5,3 +5,5 @@ mod parser;
 mod statement;
 #[cfg(test)]
 mod tests;
+
+pub use statement::Statement;
