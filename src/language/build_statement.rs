@@ -89,18 +89,24 @@ fn get_binary_expressions(
         return Err(ParseError::ArgumentCount);
     }
     return Ok((
-        build_value_expression(expression[1])?,
-        build_value_expression(expression[2])?,
+        build_value_expression(&expression[1])?,
+        build_value_expression(&expression[2])?,
     ));
 }
 
 fn get_binary_conditions(
     expression: &Vec<Expression>,
 ) -> Result<(Condition, Condition), ParseError> {
-    todo!()
+    if expression.len() != 3 {
+        return Err(ParseError::ArgumentCount);
+    }
+    return Ok((
+        build_condition(expression[1].get_expression()?)?,
+        build_condition(expression[2].get_expression()?)?,
+    ));
 }
 
-fn build_value_expression(expression: Expression) -> Result<ValueExpression, ParseError> {
+fn build_value_expression(expression: &Expression) -> Result<ValueExpression, ParseError> {
     todo!()
 }
 
