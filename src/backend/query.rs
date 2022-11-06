@@ -35,15 +35,14 @@ macro_rules! eval_match_arm {
 }
 
 impl Document {
-    fn eval_expr<'a>(&'a self, expr: &'a Expression) -> Option<&'a FieldValue> {
-        // Holy shit using named lifetimes actually worked !! --tg [baby's first named lifetime]
+    fn eval_expr<'a>(&'a self, expr: &'a Expression) -> Result<&'a FieldValue, OperationError> {
         match expr {
-            Expression::Value(value) => Some(value),
+            Expression::Value(value) => Ok(value),
             Expression::Field(field_id) => {
                 if let Some(field_instance) = self.fields.iter().find(|x| x.id == *field_id) {
-                    Some(&field_instance.value)
+                    Ok(&field_instance.value)
                 } else {
-                    None
+                    Err(OperationError::UnknownFieldIdentifier)
                 }
             }
         }
@@ -52,12 +51,8 @@ impl Document {
     pub fn evaluate(&self, condition: &Condition) -> Result<bool, OperationError> {
         match condition {
             Condition::Equal(left, right) => {
-                let left_value = self
-                    .eval_expr(left)
-                    .expect("TODO: condition error handling");
-                let right_value = self
-                    .eval_expr(right)
-                    .expect("TODO: condition error handling");
+                let left_value = self.eval_expr(left)?;
+                let right_value = self.eval_expr(right)?;
                 let r = right_value;
                 match left_value {
                     FieldValue::Int(l) => eval_match_arm!(Int, l, r, ==),
@@ -81,12 +76,8 @@ impl Document {
                 }
             }
             Condition::NotEqual(left, right) => {
-                let left_value = self
-                    .eval_expr(left)
-                    .expect("TODO: condition error handling");
-                let right_value = self
-                    .eval_expr(right)
-                    .expect("TODO: condition error handling");
+                let left_value = self.eval_expr(left)?;
+                let right_value = self.eval_expr(right)?;
                 let r = right_value;
                 match left_value {
                     FieldValue::Int(l) => eval_match_arm!(Int, l, r, !=),
@@ -110,12 +101,8 @@ impl Document {
                 }
             }
             Condition::GreaterThan(left, right) => {
-                let left_value = self
-                    .eval_expr(left)
-                    .expect("TODO: condition error handling");
-                let right_value = self
-                    .eval_expr(right)
-                    .expect("TODO: condition error handling");
+                let left_value = self.eval_expr(left)?;
+                let right_value = self.eval_expr(right)?;
                 let r = right_value;
                 match left_value {
                     FieldValue::Int(l) => eval_match_arm!(Int, l, r, >),
@@ -141,12 +128,8 @@ impl Document {
                 }
             }
             Condition::LessThan(left, right) => {
-                let left_value = self
-                    .eval_expr(left)
-                    .expect("TODO: condition error handling");
-                let right_value = self
-                    .eval_expr(right)
-                    .expect("TODO: condition error handling");
+                let left_value = self.eval_expr(left)?;
+                let right_value = self.eval_expr(right)?;
                 let r = right_value;
                 match left_value {
                     FieldValue::Int(l) => eval_match_arm!(Int, l, r, <),
