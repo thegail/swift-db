@@ -115,7 +115,9 @@ fn bench_test_instance(i: i32) -> Vec<FieldInstance> {
         },
         FieldInstance {
             id: 0x5,
-            value: FieldValue::DateTime(chrono::Utc::now()),
+            value: FieldValue::DateTime(chrono::DateTime::<chrono::Utc>::from(
+                std::time::SystemTime::now(),
+            )),
         },
         FieldInstance {
             id: 0x6,
@@ -165,7 +167,9 @@ fn create_document() {
         },
         FieldInstance {
             id: 0x5,
-            value: FieldValue::DateTime(chrono::Utc::now()),
+            value: FieldValue::DateTime(chrono::DateTime::<chrono::Utc>::from(
+                std::time::SystemTime::now(),
+            )),
         },
         FieldInstance {
             id: 0x6,
