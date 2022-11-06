@@ -10,6 +10,7 @@ pub enum OperationError {
     UnknownSchemaIdentifier,
     UnknownFieldIdentifier,
     ExpressionTypeMismatch { left: FieldType, right: FieldType },
+    InvalidExpressionType,
 }
 
 impl Display for OperationError {
@@ -29,6 +30,9 @@ impl Display for OperationError {
                     "Type mismatch in expression: {} and {} are not comparable",
                     left, right
                 )
+            }
+            OperationError::InvalidExpressionType => {
+                write!(formatter, "Invalid expression type for operation in query")
             }
         }
     }
