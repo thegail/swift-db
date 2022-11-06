@@ -2,6 +2,7 @@ use super::expression::Expression;
 use super::parse_error::ParseError;
 use super::statement::Statement;
 use crate::backend::{Condition, Expression as ValueExpression, Query};
+use crate::schema::{FieldValue, Schema};
 
 fn build_statement(expression: &Vec<Expression>) -> Result<Statement, ParseError> {
     let keyword = expression
@@ -107,7 +108,54 @@ fn get_binary_conditions(
 }
 
 fn build_value_expression(expression: &Expression) -> Result<ValueExpression, ParseError> {
-    todo!()
+    match expression {
+        Expression::Identifier(identifier) => match identifier.as_str() {
+            "true" => Ok(ValueExpression::Value(FieldValue::Bool(true))),
+            "false" => Ok(ValueExpression::Value(FieldValue::Bool(false))),
+            _ => Err(ParseError::UnexpectedToken),
+        },
+        Expression::Literal(string) => {
+            Ok(ValueExpression::Value(FieldValue::String(string.clone())))
+        }
+        Expression::Numeric(_number) => {
+            todo!("Numeric parsing")
+        }
+        Expression::List(expression) => {
+            if expression.is_empty() {
+                return Err(ParseError::ArgumentCount);
+            }
+            match expression[0].get_identifier()?.as_str() {
+                "tf" => {
+                    if expression.len() != 2 {
+                        return Err(ParseError::ArgumentCount);
+                    }
+                    let identifier = expression[1].get_identifier()?;
+                    // TODO get schema here
+                    let schema = Schema {
+                        id: 0,
+                        name: "abc".to_string(),
+                        fields: vec![],
+                    };
+                    let field = schema
+                        .fields
+                        .iter()
+                        .find(|f| f.name == identifier.as_str())
+                        .ok_or(ParseError::UnknownIdentifier(identifier.clone()))?;
+                    Ok(ValueExpression::Field(field.id))
+                }
+                "f" => {
+                    // TODO support subexpressions in ValueExpression
+                    todo!()
+                }
+                "s" => {
+                    // TODO support subscripts in ValueExpression
+                    todo!()
+                }
+                _ => Err(ParseError::UnexpectedToken),
+            }
+        }
+        _ => Err(ParseError::UnexpectedToken),
+    }
 }
 
 fn build_read(_expression: &Vec<Expression>) -> Result<Statement, ParseError> {
