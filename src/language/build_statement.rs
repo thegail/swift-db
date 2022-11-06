@@ -63,12 +63,12 @@ fn build_condition(expression: &Vec<Expression>) -> Result<Condition, ParseError
             Ok(Condition::GreaterThan(values.0, values.1))
         }
         '|' => {
-            let values = get_binary_expressions(expression)?;
-            Ok(Condition::Or(values.0, values.1))
+            let values = get_binary_conditions(expression)?;
+            Ok(Condition::Or(Box::new(values.0), Box::new(values.1)))
         }
         '&' => {
-            let values = get_binary_expressions(expression)?;
-            Ok(Condition::And(values.0, values.1))
+            let values = get_binary_conditions(expression)?;
+            Ok(Condition::And(Box::new(values.0), Box::new(values.1)))
         }
         '!' => {
             // let values = get_binary_expressions(expression)?;
