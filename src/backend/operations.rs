@@ -94,7 +94,7 @@ impl Backend {
             .io
             .read_at_position(selection.position as u64)
             .map_err(OperationError::IOError)?;
-        let document = ArchiveParser::new(selection.schema.clone(), block, fields)
+        let document = ArchiveParser::new(selection.schema, block, fields)
             .read_document()
             .map_err(OperationError::ParseError)?;
         Ok(document)

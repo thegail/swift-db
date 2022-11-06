@@ -89,10 +89,10 @@ fn get_binary_expressions(
     if expression.len() != 3 {
         return Err(ParseError::ArgumentCount);
     }
-    return Ok((
+    Ok((
         build_value_expression(&expression[1])?,
         build_value_expression(&expression[2])?,
-    ));
+    ))
 }
 
 fn get_binary_conditions(

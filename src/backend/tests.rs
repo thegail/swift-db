@@ -99,7 +99,7 @@ fn bench_test_instance(i: i32) -> Vec<FieldInstance> {
     vec![
         FieldInstance {
             id: 0x1,
-            value: FieldValue::String("John Doe".repeat(i as usize / 10).to_string()),
+            value: FieldValue::String("John Doe".repeat(i as usize / 10)),
         },
         FieldInstance {
             id: 0x2,
