@@ -87,32 +87,28 @@ impl ArchiveParser {
 
     fn skip_field(&mut self, field_type: &FieldType) -> Result<(), ParseError> {
         match field_type {
-            FieldType::Int => Ok(self.ptr += size_of::<i32>()),
-            FieldType::UInt => Ok(self.ptr += size_of::<u32>()),
-            FieldType::Long => Ok(self.ptr += size_of::<i64>()),
-            FieldType::ULong => Ok(self.ptr += size_of::<u64>()),
-            FieldType::Float => Ok(self.ptr += size_of::<f64>()),
-            FieldType::Bool => Ok(self.ptr += size_of::<u8>()),
-            FieldType::DateTime => Ok(self.ptr += size_of::<i64>()),
+            FieldType::Int => self.ptr += size_of::<i32>(),
+            FieldType::UInt => self.ptr += size_of::<u32>(),
+            FieldType::Long => self.ptr += size_of::<i64>(),
+            FieldType::ULong => self.ptr += size_of::<u64>(),
+            FieldType::Float => self.ptr += size_of::<f64>(),
+            FieldType::Bool => self.ptr += size_of::<u8>(),
+            FieldType::DateTime => self.ptr += size_of::<i64>(),
             FieldType::String => {
                 let length = self.parse_int::<u32>() as usize;
                 self.ptr += length;
-                Ok(())
             }
             FieldType::ByteArray => {
                 let length = self.parse_int::<u32>() as usize;
                 self.ptr += length;
-                Ok(())
             }
             FieldType::Array(_) => {
                 let length = self.parse_int::<u64>() as usize;
                 self.ptr += length;
-                Ok(())
             }
             FieldType::Object(_) => {
                 let length = self.parse_int::<u64>() as usize;
                 self.ptr += length;
-                Ok(())
             }
             FieldType::Enum(cases) => {
                 let case_id = self.parse_int::<u16>();
@@ -122,11 +118,12 @@ impl ArchiveParser {
                     .ok_or(ParseError::UnknownCaseIdentifier)?
                     .clone();
                 match enum_case.associated_value {
-                    Option::None => Ok(()),
-                    Option::Some(value_type) => self.skip_field(&value_type),
+                    Option::None => (),
+                    Option::Some(value_type) => self.skip_field(&value_type)?,
                 }
             }
         }
+        Ok(())
     }
 
     fn parse_int<T: PrimInt>(&mut self) -> T {
