@@ -18,7 +18,7 @@ The following top level functions are available:
 -   [`(create)`](#create)
 -   [`(read)`](#read)
 -   [`(update)`](#update)
--   [`(readall)`](#readall)
+-   [`(readall)`](#read-all)
 -   [`(updateall)`](#updateall)
 -   [`(delete)`](#delete)
 
