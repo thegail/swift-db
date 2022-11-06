@@ -99,7 +99,7 @@ impl Parser {
                     }
                     self.current.push(byte as char);
                 }
-                b'=' | b'<' | b'>' | b'|' | b'&' => match self.current_type {
+                b'=' | b'<' | b'>' | b'|' | b'&' | b'!' => match self.current_type {
                     None => self
                         .output
                         .last_mut()
