@@ -5,6 +5,7 @@ pub enum Expression {
     Identifier(String),
     Numeric(String),
     Literal(String),
+    Operator(char),
     List(Vec<Expression>),
 }
 

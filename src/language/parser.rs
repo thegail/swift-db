@@ -99,6 +99,19 @@ impl Parser {
                     }
                     self.current.push(byte as char);
                 }
+                b'=' | b'<' | b'>' | b'|' | b'&' => match self.current_type {
+                    None => self
+                        .output
+                        .last_mut()
+                        .unwrap()
+                        .push(Expression::Operator(byte as char)),
+                    _ => {
+                        return Err(ParseError::UnexpectedCharacter {
+                            position: self.position,
+                            value: byte,
+                        })
+                    }
+                },
                 b' ' => self.end_token(byte)?,
                 b'"' => match self.current_type {
                     None => self.current_type = Some(CurrentType::Literal),
