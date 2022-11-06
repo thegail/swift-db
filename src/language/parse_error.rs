@@ -7,6 +7,7 @@ pub enum ParseError {
     UnexpectedCharacter { position: usize, value: u8 },
     ArgumentCount,
     UnexpectedToken,
+    UnknownIdentifier(String),
 }
 
 impl Display for ParseError {
@@ -25,6 +26,9 @@ impl Display for ParseError {
             }
             ParseError::ArgumentCount => write!(formatter, "Incorrect number of arguments"),
             ParseError::UnexpectedToken => write!(formatter, "Unexpected token"),
+            ParseError::UnknownIdentifier(identifier) => {
+                write!(formatter, "Unknown identifier {}", identifier)
+            }
         }
     }
 }
