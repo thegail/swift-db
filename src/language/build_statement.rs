@@ -71,8 +71,12 @@ fn build_condition(expression: &Vec<Expression>) -> Result<Condition, ParseError
             Ok(Condition::And(Box::new(values.0), Box::new(values.1)))
         }
         '!' => {
-            // let values = get_binary_expressions(expression)?;
-            Ok(Condition::Not(value))
+            if expression.len() != 2 {
+                return Err(ParseError::ArgumentCount);
+            }
+            Ok(Condition::Not(Box::new(build_condition(
+                expression[1].get_expression()?,
+            )?)))
         }
         _ => unreachable!(),
     }
@@ -81,7 +85,13 @@ fn build_condition(expression: &Vec<Expression>) -> Result<Condition, ParseError
 fn get_binary_expressions(
     expression: &Vec<Expression>,
 ) -> Result<(ValueExpression, ValueExpression), ParseError> {
-    todo!()
+    if expression.len() != 3 {
+        return Err(ParseError::ArgumentCount);
+    }
+    return Ok((
+        build_value_expression(expression[1])?,
+        build_value_expression(expression[2])?,
+    ));
 }
 
 fn get_binary_conditions(
@@ -90,7 +100,7 @@ fn get_binary_conditions(
     todo!()
 }
 
-fn build_value_expression(expression: &Vec<Expression>) -> Result<ValueExpression, ParseError> {
+fn build_value_expression(expression: Expression) -> Result<ValueExpression, ParseError> {
     todo!()
 }
 
