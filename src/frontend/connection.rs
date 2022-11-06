@@ -34,15 +34,15 @@ impl Connection {
         Ok(())
     }
 
-    fn acquire(&mut self, transaction: String) -> Result<(), FrontendError> {
+    fn acquire(&mut self, _transaction: String) -> Result<(), FrontendError> {
         todo!()
     }
 
-    fn commit(&mut self, transaction: String) -> Result<(), FrontendError> {
+    fn commit(&mut self, _transaction: String) -> Result<(), FrontendError> {
         todo!()
     }
 
-    fn close(&mut self, transaction: String) -> Result<(), FrontendError> {
+    fn close(&mut self, _transaction: String) -> Result<(), FrontendError> {
         todo!()
     }
 
