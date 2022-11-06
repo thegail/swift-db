@@ -156,6 +156,12 @@ fn build_value_expression(expression: &Expression) -> Result<ValueExpression, Pa
     }
 }
 
-fn build_read_all(_expression: &[Expression]) -> Result<Statement, ParseError> {
-    todo!()
+fn build_read_all(expression: &[Expression]) -> Result<Statement, ParseError> {
+    if expression.len() != 2 {
+        return Err(ParseError::ArgumentCount);
+    }
+    let selection = expression[1].get_identifier()?;
+    Ok(Statement::ReadAll {
+        selection: selection.clone(),
+    })
 }

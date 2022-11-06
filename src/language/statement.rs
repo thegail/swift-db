@@ -11,4 +11,7 @@ pub enum Statement {
         selection: String,
         fields: Vec<u16>,
     },
+    ReadAll {
+        selection: String,
+    },
 }
