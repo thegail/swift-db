@@ -64,15 +64,9 @@ impl Document {
                     FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, ==),
                     FieldValue::String(l) => eval_match_arm!(String, l, r, ==),
                     FieldValue::ByteArray(l) => eval_match_arm!(ByteArray, l, r, ==),
-                    FieldValue::Array(_) => {
-                        todo!()
-                    }
-                    FieldValue::Object(_) => {
-                        todo!()
-                    }
-                    FieldValue::Enum(_) => {
-                        todo!()
-                    }
+                    FieldValue::Array(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Object(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Enum(_) => Err(OperationError::InvalidExpressionType),
                 }
             }
             Condition::NotEqual(left, right) => {
@@ -89,15 +83,9 @@ impl Document {
                     FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, !=),
                     FieldValue::String(l) => eval_match_arm!(String, l, r, !=),
                     FieldValue::ByteArray(l) => eval_match_arm!(ByteArray, l, r, !=),
-                    FieldValue::Array(_) => {
-                        todo!()
-                    }
-                    FieldValue::Object(_) => {
-                        todo!()
-                    }
-                    FieldValue::Enum(_) => {
-                        todo!()
-                    }
+                    FieldValue::Array(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Object(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Enum(_) => Err(OperationError::InvalidExpressionType),
                 }
             }
             Condition::GreaterThan(left, right) => {
@@ -110,21 +98,13 @@ impl Document {
                     FieldValue::Long(l) => eval_match_arm!(Long, l, r, >),
                     FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, >),
                     FieldValue::Float(l) => eval_match_arm!(Float, l, r, >),
-                    FieldValue::Bool(_) => todo!(),
+                    FieldValue::Bool(_) => Err(OperationError::InvalidExpressionType),
                     FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, >),
                     FieldValue::String(l) => eval_match_arm!(String, l, r, >),
-                    FieldValue::ByteArray(_) => {
-                        todo!()
-                    }
-                    FieldValue::Array(_) => {
-                        todo!()
-                    }
-                    FieldValue::Object(_) => {
-                        todo!()
-                    }
-                    FieldValue::Enum(_) => {
-                        todo!()
-                    }
+                    FieldValue::ByteArray(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Array(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Object(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Enum(_) => Err(OperationError::InvalidExpressionType),
                 }
             }
             Condition::LessThan(left, right) => {
@@ -137,21 +117,13 @@ impl Document {
                     FieldValue::Long(l) => eval_match_arm!(Long, l, r, <),
                     FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, <),
                     FieldValue::Float(l) => eval_match_arm!(Float, l, r, <),
-                    FieldValue::Bool(_) => todo!(),
+                    FieldValue::Bool(_) => Err(OperationError::InvalidExpressionType),
                     FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, <),
                     FieldValue::String(l) => eval_match_arm!(String, l, r, <),
-                    FieldValue::ByteArray(_) => {
-                        todo!()
-                    }
-                    FieldValue::Array(_) => {
-                        todo!()
-                    }
-                    FieldValue::Object(_) => {
-                        todo!()
-                    }
-                    FieldValue::Enum(_) => {
-                        todo!()
-                    }
+                    FieldValue::ByteArray(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Array(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Object(_) => Err(OperationError::InvalidExpressionType),
+                    FieldValue::Enum(_) => Err(OperationError::InvalidExpressionType),
                 }
             }
             Condition::Or(left, right) => Ok(self.evaluate(left)? || self.evaluate(right)?),
