@@ -9,4 +9,4 @@ repository = "https://github.com/thegail/swift-db"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.19"
+chrono = { version = "0.4.19", default-features = false }
