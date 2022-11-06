@@ -8,6 +8,7 @@ pub enum OperationError {
     ParseError(ParseError),
     IOError(std::io::Error),
     UnknownSchemaIdentifier,
+    UnknownFieldIdentifier,
     ExpressionTypeMismatch { left: FieldType, right: FieldType },
 }
 
@@ -18,6 +19,9 @@ impl Display for OperationError {
             OperationError::IOError(err) => write!(formatter, "Archive read error: {}", err),
             OperationError::UnknownSchemaIdentifier => {
                 write!(formatter, "Unknown schema identifier in query")
+            }
+            OperationError::UnknownFieldIdentifier => {
+                write!(formatter, "Unknown field identifier in query")
             }
             OperationError::ExpressionTypeMismatch { left, right } => {
                 write!(
