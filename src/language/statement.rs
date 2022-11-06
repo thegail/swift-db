@@ -1,6 +1,6 @@
 use crate::backend::Query;
 
-enum Statement {
+pub enum Statement {
     Select {
         identifier: String,
         transaction: String,
