@@ -1,3 +1,4 @@
+use super::frontend_error::FrontendError;
 use super::transaction::Transaction;
 use crate::{backend::Query, language::Statement};
 use std::collections::HashMap;
@@ -23,10 +24,14 @@ impl Connection {
         }
     }
 
-    fn open(&mut self, transaction: String) {
+    fn open(&mut self, transaction: String) -> Result<(), FrontendError> {
         if self.transactions.contains_key(&transaction) {
-            // Err
+            return Err(FrontendError::Redeclaration {
+                identifier: transaction.clone(),
+            });
         }
+        self.transactions[transaction] = Transaction::new();
+        Ok(())
     }
 
     fn acquire(&mut self, transaction: String) {
