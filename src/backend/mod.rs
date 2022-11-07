@@ -1,4 +1,5 @@
 mod backend;
+mod operation;
 mod operation_error;
 mod query;
 mod selection;
