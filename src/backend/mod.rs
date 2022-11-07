@@ -7,6 +7,6 @@ mod selection;
 mod tests;
 
 pub use backend::Backend;
-pub use operation::Operation;
+pub use operation::{Operation, Response};
 pub use query::{Condition, Expression, Query};
 pub use selection::Selection;
