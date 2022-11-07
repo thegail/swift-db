@@ -6,5 +6,6 @@ mod selection;
 #[cfg(test)]
 mod tests;
 
+pub use backend::Backend;
 pub use query::{Condition, Expression, Query};
 pub use selection::Selection;
