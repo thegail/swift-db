@@ -1,7 +1,7 @@
 use super::operation_error::OperationError;
 use super::query::Query;
 use super::selection::{ManySelection, Selection};
-use super::{Operation, Response};
+use super::{Operation, Request, Response};
 use crate::archive::BlockFileIO;
 use crate::archive::{ArchiveParser, ParseError};
 use crate::schema::{Document, Schema};
@@ -14,14 +14,14 @@ pub struct Backend {
     io: BlockFileIO,
     collections: Vec<Schema>,
     document_cache: HashMap<usize, Document>,
-    reciever: Receiver<Operation>,
+    reciever: Receiver<Request>,
 }
 
 impl Backend {
     pub fn new(
         path: String,
         collections: Vec<Schema>,
-        reciever: Receiver<Operation>,
+        reciever: Receiver<Request>,
     ) -> Result<Self, io::Error> {
         Ok(Self {
             io: BlockFileIO::new(
@@ -32,6 +32,12 @@ impl Backend {
             document_cache: HashMap::new(),
             reciever,
         })
+    }
+
+    pub fn listen(&mut self) {
+        while let Ok(request) = self.reciever.recv() {
+            let result = self.execute_operation(request.operation);
+        }
     }
 }
 

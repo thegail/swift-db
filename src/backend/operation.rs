@@ -1,5 +1,11 @@
 use super::{Query, Selection};
 use crate::schema::Document;
+use std::sync::mpsc::Sender;
+
+pub struct Request {
+    pub operation: Operation,
+    pub return_channel: Sender<Response>,
+}
 
 pub enum Operation {
     FindOne {
