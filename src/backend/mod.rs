@@ -8,5 +8,6 @@ mod tests;
 
 pub use backend::Backend;
 pub use operation::{Operation, Request, Response};
+pub use operation_error::OperationError;
 pub use query::{Condition, Expression, Query};
 pub use selection::Selection;
