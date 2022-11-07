@@ -1,16 +1,17 @@
 use super::frontend_error::FrontendError;
 use super::transaction::Transaction;
-use crate::{backend::Query, language::Statement};
+use crate::backend::{Operation, Query, Request};
+use crate::language::Statement;
 use std::collections::HashMap;
-use std::sync::mpsc::Sender;
+use std::sync::mpsc::{channel, Sender};
 
 pub struct Connection {
     transactions: HashMap<String, Transaction>,
-    sender: Sender<String>,
+    sender: Sender<Request>,
 }
 
 impl Connection {
-    pub fn new(sender: Sender<String>) -> Self {
+    pub fn new(sender: Sender<Request>) -> Self {
         Self {
             transactions: HashMap::new(),
             sender,
@@ -61,7 +62,18 @@ impl Connection {
         transaction: String,
         query: Query,
     ) -> Result<(), FrontendError> {
-        todo!()
+        let (returner, return_reciever) = channel();
+        self.sender
+            .send(Request {
+                operation: Operation::FindOne { query },
+                return_channel: returner,
+            })
+            .or(Err(FrontendError::SendError))?;
+        let result = return_reciever
+            .recv()
+            .or(Err(FrontendError::RecieveError))?
+            .map_err(FrontendError::OperationError)?;
+        Ok(())
     }
 
     fn read_all(&mut self, selection: String) -> Result<(), FrontendError> {
