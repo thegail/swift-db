@@ -6,10 +6,10 @@ use std::io;
 use std::sync::mpsc::Receiver;
 
 pub struct Backend {
-    pub io: BlockFileIO,
-    pub collections: Vec<Schema>,
-    pub document_cache: HashMap<usize, Document>,
-    pub reciever: Receiver<String>,
+    pub(super) io: BlockFileIO,
+    pub(super) collections: Vec<Schema>,
+    pub(super) document_cache: HashMap<usize, Document>,
+    pub(super) reciever: Receiver<String>,
 }
 
 impl Backend {
