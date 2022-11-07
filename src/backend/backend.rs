@@ -36,12 +36,12 @@ impl Backend {
 }
 
 impl Backend {
-    pub fn create(&mut self, document: Document) -> Result<(), OperationError> {
+    fn create(&mut self, document: Document) -> Result<(), OperationError> {
         let bytes = document.serialize();
         self.io.write_block(bytes).map_err(OperationError::IOError)
     }
 
-    pub fn find_one(&mut self, query: Query) -> Result<Selection, OperationError> {
+    fn find_one(&mut self, query: Query) -> Result<Selection, OperationError> {
         let schema = self
             .collections
             .iter()
@@ -74,7 +74,7 @@ impl Backend {
         }
     }
 
-    pub fn find_many(&mut self, query: Query) -> Result<ManySelection, OperationError> {
+    fn find_many(&mut self, query: Query) -> Result<ManySelection, OperationError> {
         let schema = self
             .collections
             .iter()
@@ -115,11 +115,7 @@ impl Backend {
         })
     }
 
-    pub fn read(
-        &mut self,
-        selection: Selection,
-        fields: Vec<u16>,
-    ) -> Result<Document, OperationError> {
+    fn read(&mut self, selection: Selection, fields: Vec<u16>) -> Result<Document, OperationError> {
         let block = self
             .io
             .read_at_position(selection.position as u64)
@@ -130,7 +126,7 @@ impl Backend {
         Ok(document)
     }
 
-    pub fn read_many(
+    fn read_many(
         &mut self,
         selection: ManySelection,
         fields: Vec<u16>,
