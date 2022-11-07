@@ -37,6 +37,10 @@ impl Backend {
     pub fn listen(&mut self) {
         while let Ok(request) = self.reciever.recv() {
             let result = self.execute_operation(request.operation);
+            let send_result = request.return_channel.send(result);
+            if let Err(error) = send_result {
+                println!("Send error: {}", error);
+            }
         }
     }
 }
