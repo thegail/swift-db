@@ -2,12 +2,21 @@ use super::frontend_error::FrontendError;
 use super::transaction::Transaction;
 use crate::{backend::Query, language::Statement};
 use std::collections::HashMap;
+use std::sync::mpsc::Sender;
 
 pub struct Connection {
-    pub transactions: HashMap<String, Transaction>,
+    transactions: HashMap<String, Transaction>,
+    sender: Sender<String>,
 }
 
 impl Connection {
+    pub fn new(sender: Sender<String>) -> Self {
+        Self {
+            transactions: HashMap::new(),
+            sender,
+        }
+    }
+
     pub fn execute_statement(&mut self, statement: Statement) -> Result<(), FrontendError> {
         match statement {
             Statement::Open { transaction } => self.open(transaction),
