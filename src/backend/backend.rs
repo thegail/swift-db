@@ -1,7 +1,7 @@
 use super::operation_error::OperationError;
 use super::query::Query;
 use super::selection::{ManySelection, Selection};
-use super::Operation;
+use super::{Operation, Response};
 use crate::archive::BlockFileIO;
 use crate::archive::{ArchiveParser, ParseError};
 use crate::schema::{Document, Schema};
@@ -38,6 +38,18 @@ impl Backend {
 mod operations {
     use super::*;
     impl Backend {
+        pub fn execute_operation(
+            &mut self,
+            operation: Operation,
+        ) -> Result<Response, OperationError> {
+            match operation {
+                Operation::FindOne { query } => Ok(Response::Selection(self.find_one(query)?)),
+                Operation::Read { selection, fields } => {
+                    Ok(Response::Document(self.read(selection, fields)?))
+                }
+            }
+        }
+
         fn create(&mut self, document: Document) -> Result<(), OperationError> {
             let bytes = document.serialize();
             self.io.write_block(bytes).map_err(OperationError::IOError)
