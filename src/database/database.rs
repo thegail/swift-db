@@ -1,5 +1,5 @@
 use super::lifecycle_error::LifecycleError;
-use crate::backend::Backend;
+use crate::backend::{Backend, Operation};
 use crate::frontend::Connection;
 use crate::schema::Schema;
 use std::sync::mpsc::{channel, Sender};
@@ -7,7 +7,7 @@ use std::sync::mpsc::{channel, Sender};
 struct Database {
     backend: Backend,
     connections: Vec<Connection>,
-    sender: Sender<String>,
+    sender: Sender<Operation>,
 }
 
 impl Database {
