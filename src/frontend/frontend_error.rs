@@ -7,6 +7,7 @@ pub enum FrontendError {
     Redeclaration { identifier: String },
     OperationError(OperationError),
     SendError,
+    RecieveError,
 }
 
 impl Display for FrontendError {
@@ -19,6 +20,7 @@ impl Display for FrontendError {
                 write!(formatter, "Backend operation error: {}", error)
             }
             FrontendError::SendError => write!(formatter, "Error sending request to backend"),
+            FrontendError::RecieveError => write!(formatter, "Error recieving from backend"),
         }
     }
 }
