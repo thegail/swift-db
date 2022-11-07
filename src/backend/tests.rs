@@ -200,16 +200,20 @@ fn create_document() {
         fields: field_instances,
     };
     _ = std::fs::File::create("test.sdb");
-    let mut database = super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()])
-        .expect("Database construction failed");
+    let (_, rx) = std::sync::mpsc::channel();
+    let mut database =
+        super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()], rx)
+            .expect("Database construction failed");
     database.create(document).expect("Creation failed");
 }
 
 #[test]
 #[ignore]
 fn read_document() {
-    let mut database = super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()])
-        .expect("Database construction failed");
+    let (_, rx) = std::sync::mpsc::channel();
+    let mut database =
+        super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()], rx)
+            .expect("Database construction failed");
     let _document = database
         .find_one(query::Query {
             collection: 0x10,
@@ -224,8 +228,10 @@ fn read_document() {
 #[test]
 fn write_read_bench() {
     _ = std::fs::File::create("test.sdb");
-    let mut database = super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()])
-        .expect("Database construction failed");
+    let (_, rx) = std::sync::mpsc::channel();
+    let mut database =
+        super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()], rx)
+            .expect("Database construction failed");
     let _c = Cleanup;
     let mut docs = vec![];
     for i in 1..=1000 {
@@ -261,8 +267,10 @@ fn write_read_bench() {
 #[test]
 #[ignore]
 fn read_many_test() {
-    let mut database = super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()])
-        .expect("Database construction failed");
+    let (_, rx) = std::sync::mpsc::channel();
+    let mut database =
+        super::backend::Backend::new("test.sdb".to_string(), vec![test_schema()], rx)
+            .expect("Database construction failed");
     _ = database
         .find_many(query::Query {
             collection: 0x10,
