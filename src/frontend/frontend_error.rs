@@ -6,6 +6,7 @@ use std::fmt::{Display, Formatter};
 pub enum FrontendError {
     Redeclaration { identifier: String },
     OperationError(OperationError),
+    SendError,
 }
 
 impl Display for FrontendError {
@@ -17,6 +18,7 @@ impl Display for FrontendError {
             FrontendError::OperationError(error) => {
                 write!(formatter, "Backend operation error: {}", error)
             }
+            FrontendError::SendError => write!(formatter, "Error sending request to backend"),
         }
     }
 }
