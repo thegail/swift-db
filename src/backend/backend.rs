@@ -57,6 +57,10 @@ mod operations {
                 Operation::Read { selection, fields } => {
                     Ok(Response::Document(self.read(selection, fields)?))
                 }
+                Operation::Create { document } => {
+                    self.create(document)?;
+                    Ok(Response::Created)
+                }
             }
         }
 

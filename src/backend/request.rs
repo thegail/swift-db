@@ -12,6 +12,9 @@ pub enum Operation {
     FindOne {
         query: Query,
     },
+    Create {
+        document: Document,
+    },
     Read {
         selection: Selection,
         fields: Vec<u16>,
@@ -21,6 +24,7 @@ pub enum Operation {
 pub enum Response {
     Selection(Selection),
     Document(Document),
+    Created,
 }
 
 impl Response {
