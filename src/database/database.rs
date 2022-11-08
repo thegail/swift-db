@@ -4,14 +4,14 @@ use crate::frontend::Connection;
 use crate::schema::Schema;
 use std::sync::mpsc::{channel, Sender};
 
-struct Database {
+pub struct Database {
     backend: Backend,
     connections: Vec<Connection>,
     sender: Sender<Request>,
 }
 
 impl Database {
-    fn new(path: String, collections: Vec<Schema>) -> Result<Self, LifecycleError> {
+    pub fn new(path: String, collections: Vec<Schema>) -> Result<Self, LifecycleError> {
         let (sender, reciever) = channel();
         let db = Self {
             backend: Backend::new(path, collections, reciever)
