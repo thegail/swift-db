@@ -9,15 +9,17 @@ use std::thread::spawn;
 pub struct Database {
     backend: Backend,
     sender: Sender<Request>,
+    collections: Vec<Schema>,
 }
 
 impl Database {
     pub fn new(path: String, collections: Vec<Schema>) -> Result<Self, LifecycleError> {
         let (sender, reciever) = channel();
         let db = Self {
-            backend: Backend::new(path, collections, reciever)
+            backend: Backend::new(path, collections.clone(), reciever)
                 .map_err(LifecycleError::BackendError)?,
             sender,
+            collections,
         };
         Ok(db)
     }
@@ -30,7 +32,8 @@ impl Database {
         for connection in listener.incoming() {
             match connection {
                 Ok(stream) => {
-                    let mut connection = Connection::new(stream, self.sender.clone());
+                    let mut connection =
+                        Connection::new(stream, self.sender.clone(), self.collections.clone());
                     spawn(move || connection.listen());
                 }
                 Err(_) => (),

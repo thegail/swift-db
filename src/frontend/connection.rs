@@ -2,6 +2,7 @@ use super::frontend_error::FrontendError;
 use super::transaction::Transaction;
 use crate::backend::{Operation, Query, Request};
 use crate::language::{build_statement, parse, Response, Statement};
+use crate::schema::Schema;
 use std::collections::HashMap;
 use std::io::{BufReader, Write};
 use std::net::TcpStream;
@@ -13,15 +14,18 @@ pub struct Connection {
     // TODO this is incredibly stupid but it works...im tired
     selection_map: HashMap<String, String>,
     sender: Sender<Request>,
+    // TODO something better here
+    collections: Vec<Schema>,
 }
 
 impl Connection {
-    pub fn new(stream: TcpStream, sender: Sender<Request>) -> Self {
+    pub fn new(stream: TcpStream, sender: Sender<Request>, collections: Vec<Schema>) -> Self {
         Self {
             stream,
             transactions: HashMap::new(),
             selection_map: HashMap::new(),
             sender,
+            collections,
         }
     }
 
@@ -29,7 +33,10 @@ impl Connection {
         loop {
             let response = parse(&mut BufReader::new(&mut self.stream))
                 .map_err(FrontendError::LanguageError)
-                .and_then(|tokens| build_statement(&tokens).map_err(FrontendError::LanguageError))
+                .and_then(|tokens| {
+                    build_statement(&tokens, &self.collections)
+                        .map_err(FrontendError::LanguageError)
+                })
                 .and_then(|statement| self.execute_statement(statement));
             let write_result = match response {
                 Ok(response) => writeln!(self.stream, "{}", response.serialize()),

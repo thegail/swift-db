@@ -3,6 +3,7 @@ use test_stuff::test_schema;
 
 // TODO remove dead code
 // TODO rewrite all imports
+// TODO remove all clones
 #[allow(dead_code)]
 mod archive;
 #[allow(dead_code)]

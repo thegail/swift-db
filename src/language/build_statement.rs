@@ -4,7 +4,10 @@ use super::statement::Statement;
 use crate::backend::{Condition, Expression as ValueExpression, Query};
 use crate::schema::{FieldValue, Schema};
 
-pub fn build_statement(expression: &[Expression]) -> Result<Statement, ParseError> {
+pub fn build_statement(
+    expression: &[Expression],
+    collections: &[Schema],
+) -> Result<Statement, ParseError> {
     let keyword = expression
         .first()
         .ok_or(ParseError::ArgumentCount)?
@@ -14,7 +17,7 @@ pub fn build_statement(expression: &[Expression]) -> Result<Statement, ParseErro
         "acquire" => build_acquire(expression),
         "commit" => build_commit(expression),
         "close" => build_close(expression),
-        "select" => build_select(expression),
+        "select" => build_select(expression, collections),
         "readall" => build_read_all(expression),
         _ => Err(ParseError::UnexpectedToken),
     }
