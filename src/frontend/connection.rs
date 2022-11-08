@@ -32,9 +32,9 @@ impl Connection {
                 .and_then(|tokens| build_statement(&tokens).map_err(FrontendError::LanguageError))
                 .and_then(|statement| self.execute_statement(statement));
             let write_result = match response {
-                Ok(response) => write!(self.stream, "{}", response.serialize()),
+                Ok(response) => writeln!(self.stream, "{}", response.serialize()),
                 // TODO escape this somehow
-                Err(error) => write!(self.stream, "(error \"{}\")", error),
+                Err(error) => writeln!(self.stream, "(error \"{}\")", error),
             };
             if let Err(_) = write_result {
                 break;
