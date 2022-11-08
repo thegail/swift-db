@@ -7,6 +7,8 @@ use std::sync::mpsc::{channel, Sender};
 
 pub struct Connection {
     transactions: HashMap<String, Transaction>,
+    // TODO this is incredibly stupid but it works...im tired
+    selection_map: HashMap<String, String>,
     sender: Sender<Request>,
 }
 
@@ -60,11 +62,7 @@ impl Connection {
         transaction: String,
         query: Query,
     ) -> Result<(), FrontendError> {
-        let transaction = self
-            .transactions
-            .get_mut(&transaction)
-            .ok_or(FrontendError::UnknownTransaction(transaction))?;
-        if transaction.selections.contains_key(&identifier) {
+        if self.selection_map.contains_key(&identifier) {
             return Err(FrontendError::SelectionRedeclaration(identifier));
         }
         let (returner, return_reciever) = channel();
@@ -78,6 +76,10 @@ impl Connection {
             .recv()
             .or(Err(FrontendError::RecieveError))?
             .map_err(FrontendError::OperationError)?;
+        let transaction = self
+            .transactions
+            .get_mut(&transaction)
+            .ok_or(FrontendError::UnknownTransaction(transaction))?;
         transaction.selections.insert(
             identifier,
             result.get_selection().ok_or(FrontendError::RecieveError)?,
@@ -86,6 +88,6 @@ impl Connection {
     }
 
     fn read_all(&mut self, selection: String) -> Result<(), FrontendError> {
-        todo!()
+        let 
     }
 }
