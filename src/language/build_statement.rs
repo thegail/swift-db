@@ -71,7 +71,7 @@ fn build_select(expression: &[Expression]) -> Result<Statement, ParseError> {
         return Err(ParseError::UnexpectedToken);
     }
     // TODO get collection id
-    let _collection_name = collection_expression[1].get_expression()?;
+    let _collection_name = collection_expression[1].get_identifier()?;
     let collection = 0;
     let condition = build_condition(expression[5].get_expression()?)?;
     Ok(Statement::Select {
