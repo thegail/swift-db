@@ -4,7 +4,6 @@ use std::io::Read;
 
 struct Parser {
     position: usize,
-    is_free: bool,
     output: Vec<Vec<Expression>>,
     current: String,
     current_type: Option<CurrentType>,
@@ -15,7 +14,6 @@ impl Parser {
     fn new() -> Self {
         Self {
             position: 0,
-            is_free: true,
             output: Vec::new(),
             current: String::new(),
             current_type: None,
