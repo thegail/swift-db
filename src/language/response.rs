@@ -5,3 +5,9 @@ pub enum Response {
     Selected,
     Document(Document),
 }
+
+impl Response {
+    pub fn serialize(self) -> String {
+        todo!()
+    }
+}

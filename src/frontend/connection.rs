@@ -35,9 +35,6 @@ impl Connection {
                 Ok(response) => write!(self.stream, "{}", response.serialize()).unwrap_or(()),
                 Err(error) => write!(self.stream, "{}", error).unwrap_or(()),
             }
-            if let Err(error) = response {
-                write!(self.stream, "{}", error);
-            }
         }
     }
 }
