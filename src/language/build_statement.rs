@@ -4,7 +4,7 @@ use super::statement::Statement;
 use crate::backend::{Condition, Expression as ValueExpression, Query};
 use crate::schema::{FieldValue, Schema};
 
-fn build_statement(expression: &[Expression]) -> Result<Statement, ParseError> {
+pub fn build_statement(expression: &[Expression]) -> Result<Statement, ParseError> {
     let keyword = expression
         .first()
         .ok_or(ParseError::ArgumentCount)?
