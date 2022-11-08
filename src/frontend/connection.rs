@@ -69,7 +69,7 @@ mod execute_statement {
                     query,
                 } => self.select(identifier, transaction, query),
                 Statement::ReadAll { selection } => self.read_all(selection),
-                _ => todo!(),
+                // _ => todo!(),
             }
         }
 
@@ -125,8 +125,11 @@ mod execute_statement {
         }
 
         fn read_all(&mut self, selection: String) -> Result<Response, FrontendError> {
-            let selection =
-                &self.transactions[&self.selection_map[&selection]].selections[&selection];
+            let selection = &self.transactions[self
+                .selection_map
+                .get(&selection)
+                .ok_or(FrontendError::UnknownSelection(selection.clone()))?]
+            .selections[&selection];
             let (returner, return_reciever) = channel();
             self.sender
                 .send(Request {
