@@ -8,6 +8,11 @@ pub enum Response {
 
 impl Response {
     pub fn serialize(self) -> String {
-        todo!()
+        match self {
+            Response::Opened => "(ok opened)",
+            Response::Selected => "(ok selected)",
+            Response::Document(_) => "(ok placeholder)",
+        }
+        .to_string()
     }
 }
