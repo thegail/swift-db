@@ -177,7 +177,7 @@ fn build_value_expression(expression: &Expression) -> Result<ValueExpression, Pa
                     let field = schema
                         .fields
                         .iter()
-                        .find(|f| f.name == identifier.as_str())
+                        .find(|f| &f.name == identifier)
                         .ok_or_else(|| ParseError::UnknownIdentifier(identifier.clone()))?;
                     Ok(ValueExpression::Field(field.id))
                 }
