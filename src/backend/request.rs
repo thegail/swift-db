@@ -41,4 +41,11 @@ impl Response {
             _ => None,
         }
     }
+
+    fn get_created(self) -> Option<()> {
+        match self {
+            Response::Created => Some(()),
+            _ => None,
+        }
+    }
 }
