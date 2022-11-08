@@ -1,22 +1,14 @@
 use database::{Database, LifecycleError};
 use test_stuff::test_schema;
 
-// TODO remove dead code
 // TODO rewrite all imports
 // TODO remove all clones
-#[allow(dead_code)]
 mod archive;
-#[allow(dead_code)]
 mod backend;
-#[allow(dead_code)]
 mod database;
-#[allow(dead_code)]
 mod frontend;
-#[allow(dead_code)]
 mod language;
-#[allow(dead_code)]
 mod schema;
-#[allow(dead_code)]
 mod util;
 
 fn main() -> Result<(), LifecycleError> {
