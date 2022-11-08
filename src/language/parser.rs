@@ -23,7 +23,7 @@ impl Parser {
         }
     }
 
-    fn parse_input(mut self, input: impl Read) -> Result<Vec<Expression>, ParseError> {
+    fn parse_input(mut self, input: &impl Read) -> Result<Vec<Expression>, ParseError> {
         for byte in input.bytes() {
             let byte = byte.map_err(ParseError::ReadError)?;
             if let Some(CurrentType::Literal) = self.current_type {
@@ -163,7 +163,7 @@ impl Parser {
     }
 }
 
-pub fn parse(input: impl Read) -> Result<Vec<Expression>, ParseError> {
+pub fn parse(input: &impl Read) -> Result<Vec<Expression>, ParseError> {
     let parser = Parser::new();
     parser.parse_input(input)
 }
