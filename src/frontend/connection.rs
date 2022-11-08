@@ -20,92 +20,102 @@ impl Connection {
             sender,
         }
     }
+}
 
-    pub fn execute_statement(&mut self, statement: Statement) -> Result<Response, FrontendError> {
-        match statement {
-            Statement::Open { transaction } => self.open(transaction),
-            Statement::Acquire { transaction } => self.acquire(transaction),
-            Statement::Commit { transaction } => self.commit(transaction),
-            Statement::Close { transaction } => self.close(transaction),
-            Statement::Select {
+mod execute_statement {
+    use super::*;
+
+    impl Connection {
+        pub fn execute_statement(
+            &mut self,
+            statement: Statement,
+        ) -> Result<Response, FrontendError> {
+            match statement {
+                Statement::Open { transaction } => self.open(transaction),
+                Statement::Acquire { transaction } => self.acquire(transaction),
+                Statement::Commit { transaction } => self.commit(transaction),
+                Statement::Close { transaction } => self.close(transaction),
+                Statement::Select {
+                    identifier,
+                    transaction,
+                    query,
+                } => self.select(identifier, transaction, query),
+                Statement::ReadAll { selection } => self.read_all(selection),
+                _ => todo!(),
+            }
+        }
+
+        fn open(&mut self, transaction: String) -> Result<Response, FrontendError> {
+            if self.transactions.contains_key(&transaction) {
+                return Err(FrontendError::TransactionRedeclaration(transaction.clone()));
+            }
+            self.transactions.insert(transaction, Transaction::new());
+            Ok(Response::Opened)
+        }
+
+        fn acquire(&mut self, _transaction: String) -> Result<Response, FrontendError> {
+            todo!()
+        }
+
+        fn commit(&mut self, _transaction: String) -> Result<Response, FrontendError> {
+            todo!()
+        }
+
+        fn close(&mut self, _transaction: String) -> Result<Response, FrontendError> {
+            todo!()
+        }
+
+        fn select(
+            &mut self,
+            identifier: String,
+            transaction: String,
+            query: Query,
+        ) -> Result<Response, FrontendError> {
+            if self.selection_map.contains_key(&identifier) {
+                return Err(FrontendError::SelectionRedeclaration(identifier));
+            }
+            let (returner, return_reciever) = channel();
+            self.sender
+                .send(Request {
+                    operation: Operation::FindOne { query },
+                    return_channel: returner,
+                })
+                .or(Err(FrontendError::SendError))?;
+            let result = return_reciever
+                .recv()
+                .or(Err(FrontendError::RecieveError))?
+                .map_err(FrontendError::OperationError)?;
+            let transaction = self
+                .transactions
+                .get_mut(&transaction)
+                .ok_or(FrontendError::UnknownTransaction(transaction))?;
+            transaction.selections.insert(
                 identifier,
-                transaction,
-                query,
-            } => self.select(identifier, transaction, query),
-            Statement::ReadAll { selection } => self.read_all(selection),
-            _ => todo!(),
+                result.get_selection().ok_or(FrontendError::RecieveError)?,
+            );
+            Ok(Response::Selected)
         }
-    }
 
-    fn open(&mut self, transaction: String) -> Result<Response, FrontendError> {
-        if self.transactions.contains_key(&transaction) {
-            return Err(FrontendError::TransactionRedeclaration(transaction.clone()));
+        fn read_all(&mut self, selection: String) -> Result<Response, FrontendError> {
+            let selection =
+                &self.transactions[&self.selection_map[&selection]].selections[&selection];
+            let (returner, return_reciever) = channel();
+            self.sender
+                .send(Request {
+                    operation: Operation::Read {
+                        selection: selection.clone(),
+                        fields: vec![],
+                    },
+                    return_channel: returner,
+                })
+                .or(Err(FrontendError::SendError))?;
+            let result = return_reciever
+                .recv()
+                .or(Err(FrontendError::RecieveError))?
+                .map_err(FrontendError::OperationError)?;
+            Ok(Response::Document(
+                result.get_document().ok_or(FrontendError::RecieveError)?,
+            ))
         }
-        self.transactions.insert(transaction, Transaction::new());
-        Ok(Response::Opened)
-    }
-
-    fn acquire(&mut self, _transaction: String) -> Result<Response, FrontendError> {
-        todo!()
-    }
-
-    fn commit(&mut self, _transaction: String) -> Result<Response, FrontendError> {
-        todo!()
-    }
-
-    fn close(&mut self, _transaction: String) -> Result<Response, FrontendError> {
-        todo!()
-    }
-
-    fn select(
-        &mut self,
-        identifier: String,
-        transaction: String,
-        query: Query,
-    ) -> Result<Response, FrontendError> {
-        if self.selection_map.contains_key(&identifier) {
-            return Err(FrontendError::SelectionRedeclaration(identifier));
-        }
-        let (returner, return_reciever) = channel();
-        self.sender
-            .send(Request {
-                operation: Operation::FindOne { query },
-                return_channel: returner,
-            })
-            .or(Err(FrontendError::SendError))?;
-        let result = return_reciever
-            .recv()
-            .or(Err(FrontendError::RecieveError))?
-            .map_err(FrontendError::OperationError)?;
-        let transaction = self
-            .transactions
-            .get_mut(&transaction)
-            .ok_or(FrontendError::UnknownTransaction(transaction))?;
-        transaction.selections.insert(
-            identifier,
-            result.get_selection().ok_or(FrontendError::RecieveError)?,
-        );
-        Ok(Response::Selected)
-    }
-
-    fn read_all(&mut self, selection: String) -> Result<Response, FrontendError> {
-        let selection = &self.transactions[&self.selection_map[&selection]].selections[&selection];
-        let (returner, return_reciever) = channel();
-        self.sender
-            .send(Request {
-                operation: Operation::Read {
-                    selection: selection.clone(),
-                    fields: vec![],
-                },
-                return_channel: returner,
-            })
-            .or(Err(FrontendError::SendError))?;
-        let result = return_reciever
-            .recv()
-            .or(Err(FrontendError::RecieveError))?
-            .map_err(FrontendError::OperationError)?;
-        Ok(Response::Document(
-            result.get_document().ok_or(FrontendError::RecieveError)?,
-        ))
     }
 }
