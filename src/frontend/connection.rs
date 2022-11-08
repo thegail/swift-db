@@ -3,9 +3,11 @@ use super::transaction::Transaction;
 use crate::backend::{Operation, Query, Request};
 use crate::language::{Response, Statement};
 use std::collections::HashMap;
+use std::net::TcpStream;
 use std::sync::mpsc::{channel, Sender};
 
 pub struct Connection {
+    stream: TcpStream,
     transactions: HashMap<String, Transaction>,
     // TODO this is incredibly stupid but it works...im tired
     selection_map: HashMap<String, String>,
@@ -13,8 +15,9 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn new(sender: Sender<Request>) -> Self {
+    pub fn new(stream: TcpStream, sender: Sender<Request>) -> Self {
         Self {
+            stream,
             transactions: HashMap::new(),
             selection_map: HashMap::new(),
             sender,
