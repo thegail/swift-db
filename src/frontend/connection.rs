@@ -31,10 +31,13 @@ impl Connection {
                 .map_err(FrontendError::LanguageError)
                 .and_then(|tokens| build_statement(&tokens).map_err(FrontendError::LanguageError))
                 .and_then(|statement| self.execute_statement(statement));
-            match response {
-                Ok(response) => write!(self.stream, "{}", response.serialize()).unwrap_or(()),
+            let write_result = match response {
+                Ok(response) => write!(self.stream, "{}", response.serialize()),
                 // TODO escape this somehow
-                Err(error) => write!(self.stream, "(error \"{}\")", error).unwrap_or(()),
+                Err(error) => write!(self.stream, "(error \"{}\")", error),
+            };
+            if let Err(_) = write_result {
+                break;
             }
         }
     }
