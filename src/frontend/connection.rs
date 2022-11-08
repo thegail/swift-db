@@ -33,7 +33,8 @@ impl Connection {
                 .and_then(|statement| self.execute_statement(statement));
             match response {
                 Ok(response) => write!(self.stream, "{}", response.serialize()).unwrap_or(()),
-                Err(error) => write!(self.stream, "{}", error).unwrap_or(()),
+                // TODO escape this somehow
+                Err(error) => write!(self.stream, "(error \"{}\")", error).unwrap_or(()),
             }
         }
     }
