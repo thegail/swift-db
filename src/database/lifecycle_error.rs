@@ -4,6 +4,7 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug)]
 pub enum LifecycleError {
     BackendError(std::io::Error),
+    NetworkError(std::io::Error),
 }
 
 impl Display for LifecycleError {
@@ -12,6 +13,7 @@ impl Display for LifecycleError {
             LifecycleError::BackendError(e) => {
                 write!(formatter, "Backend construction error: {}", e)
             }
+            LifecycleError::NetworkError(e) => write!(formatter, "Network error: {}", e),
         }
     }
 }
