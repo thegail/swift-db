@@ -2,7 +2,7 @@ use super::expression::Expression;
 use super::parse_error::ParseError;
 use super::statement::Statement;
 use crate::backend::{Condition, Expression as ValueExpression, Query};
-use crate::schema::{self, FieldValue, Schema};
+use crate::schema::{FieldValue, Schema};
 
 pub fn build_statement(expression: &[Expression]) -> Result<Statement, ParseError> {
     let keyword = expression
@@ -56,7 +56,10 @@ fn build_close(expression: &[Expression]) -> Result<Statement, ParseError> {
     })
 }
 
-fn build_select(expression: &[Expression]) -> Result<Statement, ParseError> {
+fn build_select(
+    expression: &[Expression],
+    collections: &[Schema],
+) -> Result<Statement, ParseError> {
     if expression.len() != 6 {
         return Err(ParseError::ArgumentCount);
     }
@@ -71,14 +74,17 @@ fn build_select(expression: &[Expression]) -> Result<Statement, ParseError> {
         return Err(ParseError::UnexpectedToken);
     }
     // TODO get collection id
-    let _collection_name = collection_expression[1].get_identifier()?;
-    let collection = 0;
+    let collection_name = collection_expression[1].get_identifier()?;
+    let collection = collections
+        .iter()
+        .find(|s| &s.name == collection_name)
+        .ok_or(ParseError::UnknownIdentifier(collection_name.clone()))?;
     let condition = build_condition(expression[5].get_expression()?, collection)?;
     Ok(Statement::Select {
         identifier: identifier.clone(),
         transaction: transaction.clone(),
         query: Query {
-            collection,
+            collection: collection.id,
             condition,
         },
     })
