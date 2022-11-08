@@ -2,7 +2,7 @@ use super::expression::Expression;
 use super::parse_error::ParseError;
 use super::statement::Statement;
 use crate::backend::{Condition, Expression as ValueExpression, Query};
-use crate::schema::{FieldValue, Schema};
+use crate::schema::{self, FieldValue, Schema};
 
 pub fn build_statement(expression: &[Expression]) -> Result<Statement, ParseError> {
     let keyword = expression
@@ -73,7 +73,7 @@ fn build_select(expression: &[Expression]) -> Result<Statement, ParseError> {
     // TODO get collection id
     let _collection_name = collection_expression[1].get_identifier()?;
     let collection = 0;
-    let condition = build_condition(expression[5].get_expression()?)?;
+    let condition = build_condition(expression[5].get_expression()?, collection)?;
     Ok(Statement::Select {
         identifier: identifier.clone(),
         transaction: transaction.clone(),
@@ -84,7 +84,7 @@ fn build_select(expression: &[Expression]) -> Result<Statement, ParseError> {
     })
 }
 
-fn build_condition(expression: &[Expression]) -> Result<Condition, ParseError> {
+fn build_condition(expression: &[Expression], schema: &Schema) -> Result<Condition, ParseError> {
     if expression.is_empty() {
         return Err(ParseError::ArgumentCount);
     }
@@ -92,23 +92,23 @@ fn build_condition(expression: &[Expression]) -> Result<Condition, ParseError> {
     // TODO implement not equal
     match expression[0].get_operator()? {
         '=' => {
-            let values = get_binary_expressions(expression)?;
+            let values = get_binary_expressions(expression, schema)?;
             Ok(Condition::Equal(values.0, values.1))
         }
         '<' => {
-            let values = get_binary_expressions(expression)?;
+            let values = get_binary_expressions(expression, schema)?;
             Ok(Condition::LessThan(values.0, values.1))
         }
         '>' => {
-            let values = get_binary_expressions(expression)?;
+            let values = get_binary_expressions(expression, schema)?;
             Ok(Condition::GreaterThan(values.0, values.1))
         }
         '|' => {
-            let values = get_binary_conditions(expression)?;
+            let values = get_binary_conditions(expression, schema)?;
             Ok(Condition::Or(Box::new(values.0), Box::new(values.1)))
         }
         '&' => {
-            let values = get_binary_conditions(expression)?;
+            let values = get_binary_conditions(expression, schema)?;
             Ok(Condition::And(Box::new(values.0), Box::new(values.1)))
         }
         '!' => {
@@ -117,6 +117,7 @@ fn build_condition(expression: &[Expression]) -> Result<Condition, ParseError> {
             }
             Ok(Condition::Not(Box::new(build_condition(
                 expression[1].get_expression()?,
+                schema,
             )?)))
         }
         _ => unreachable!(),
@@ -125,27 +126,34 @@ fn build_condition(expression: &[Expression]) -> Result<Condition, ParseError> {
 
 fn get_binary_expressions(
     expression: &[Expression],
+    schema: &Schema,
 ) -> Result<(ValueExpression, ValueExpression), ParseError> {
     if expression.len() != 3 {
         return Err(ParseError::ArgumentCount);
     }
     Ok((
-        build_value_expression(&expression[1])?,
-        build_value_expression(&expression[2])?,
+        build_value_expression(&expression[1], schema)?,
+        build_value_expression(&expression[2], schema)?,
     ))
 }
 
-fn get_binary_conditions(expression: &[Expression]) -> Result<(Condition, Condition), ParseError> {
+fn get_binary_conditions(
+    expression: &[Expression],
+    schema: &Schema,
+) -> Result<(Condition, Condition), ParseError> {
     if expression.len() != 3 {
         return Err(ParseError::ArgumentCount);
     }
     return Ok((
-        build_condition(expression[1].get_expression()?)?,
-        build_condition(expression[2].get_expression()?)?,
+        build_condition(expression[1].get_expression()?, schema)?,
+        build_condition(expression[2].get_expression()?, schema)?,
     ));
 }
 
-fn build_value_expression(expression: &Expression) -> Result<ValueExpression, ParseError> {
+fn build_value_expression(
+    expression: &Expression,
+    schema: &Schema,
+) -> Result<ValueExpression, ParseError> {
     match expression {
         Expression::Identifier(identifier) => match identifier.as_str() {
             "true" => Ok(ValueExpression::Value(FieldValue::Bool(true))),
@@ -168,12 +176,6 @@ fn build_value_expression(expression: &Expression) -> Result<ValueExpression, Pa
                         return Err(ParseError::ArgumentCount);
                     }
                     let identifier = expression[1].get_identifier()?;
-                    // TODO get schema here
-                    let schema = Schema {
-                        id: 0,
-                        name: "abc".to_string(),
-                        fields: vec![],
-                    };
                     let field = schema
                         .fields
                         .iter()
