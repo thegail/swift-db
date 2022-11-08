@@ -19,10 +19,10 @@ pub enum Statement {
         // lock: LockType,
         query: Query,
     },
-    Read {
-        selection: String,
-        fields: Vec<u16>,
-    },
+    // Read {
+    //     selection: String,
+    //     fields: Vec<u16>,
+    // },
     ReadAll {
         selection: String,
     },
