@@ -1,9 +1,11 @@
 use crate::backend::OperationError;
+use crate::language::ParseError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum FrontendError {
+    LanguageError(ParseError),
     OperationError(OperationError),
     SendError,
     RecieveError,
@@ -16,6 +18,9 @@ pub enum FrontendError {
 impl Display for FrontendError {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
         match self {
+            FrontendError::LanguageError(error) => {
+                write!(formatter, "Language error: {}", error)
+            }
             FrontendError::OperationError(error) => {
                 write!(formatter, "Backend operation error: {}", error)
             }
