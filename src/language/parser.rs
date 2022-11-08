@@ -24,8 +24,10 @@ impl Parser {
     }
 
     fn parse_input(mut self, input: &impl Read) -> Result<Vec<Expression>, ParseError> {
-        for byte in input.bytes() {
-            let byte = byte.map_err(ParseError::ReadError)?;
+        let buf = [0u8; 1];
+        loop {
+            input.read_exact(&mut buf).map_err(ParseError::ReadError)?;
+            let byte = buf[0];
             if let Some(CurrentType::Literal) = self.current_type {
                 if self.is_escaped {
                     match byte {
