@@ -22,3 +22,19 @@ pub enum Response {
     Selection(Selection),
     Document(Document),
 }
+
+impl Response {
+    pub fn get_selection(self) -> Option<Selection> {
+        match self {
+            Response::Selection(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn get_document(self) -> Option<Document> {
+        match self {
+            Response::Document(d) => Some(d),
+            _ => None,
+        }
+    }
+}
