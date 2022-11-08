@@ -1,5 +1,5 @@
-use super::parse_error::ParseError;
-use crate::schema::*;
+use crate::archive::ParseError;
+use crate::schema::{Document, EnumCase, EnumValue, FieldInstance, FieldType, FieldValue, Schema};
 use crate::util::{FromByteSlice, PrimInt};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use std::iter::Iterator;
