@@ -1,4 +1,4 @@
-use super::parse_error::ParseError;
+use crate::language::ParseError;
 
 #[derive(Debug)]
 pub enum Expression {

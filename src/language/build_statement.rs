@@ -1,7 +1,6 @@
 use super::expression::Expression;
-use super::parse_error::ParseError;
-use super::statement::Statement;
 use crate::backend::{Condition, Expression as ValueExpression, Query};
+use crate::language::{ParseError, Statement};
 use crate::schema::{FieldValue, Schema};
 
 pub fn build_statement(

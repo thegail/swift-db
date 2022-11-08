@@ -1,5 +1,5 @@
 use super::expression::Expression;
-use super::parse_error::ParseError;
+use crate::language::ParseError;
 use std::io::Read;
 
 struct Parser {
