@@ -81,7 +81,7 @@ fn build_select(
     let collection = collections
         .iter()
         .find(|s| &s.name == collection_name)
-        .ok_or(ParseError::UnknownIdentifier(collection_name.clone()))?;
+        .ok_or_else(|| ParseError::UnknownIdentifier(collection_name.clone()))?;
     let condition = build_condition(expression[5].get_expression()?, collection)?;
     Ok(Statement::Select {
         identifier: identifier.clone(),

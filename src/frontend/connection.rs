@@ -43,7 +43,7 @@ impl Connection {
                 // TODO escape this somehow
                 Err(error) => writeln!(self.stream, "(error \"{}\")", error),
             };
-            if let Err(_) = write_result {
+            if write_result.is_err() {
                 break;
             }
         }
@@ -75,7 +75,7 @@ mod execute_statement {
 
         fn open(&mut self, transaction: String) -> Result<Response, FrontendError> {
             if self.transactions.contains_key(&transaction) {
-                return Err(FrontendError::TransactionRedeclaration(transaction.clone()));
+                return Err(FrontendError::TransactionRedeclaration(transaction));
             }
             self.transactions.insert(transaction, Transaction::new());
             Ok(Response::Opened)
@@ -128,7 +128,7 @@ mod execute_statement {
             let selection = &self.transactions[self
                 .selection_map
                 .get(&selection)
-                .ok_or(FrontendError::UnknownSelection(selection.clone()))?]
+                .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?]
             .selections[&selection];
             let (returner, return_reciever) = channel();
             self.sender

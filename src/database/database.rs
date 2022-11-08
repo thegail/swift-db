@@ -29,15 +29,10 @@ impl Database {
             self.backend.listen();
         });
         let listener = TcpListener::bind("localhost:1952").map_err(LifecycleError::NetworkError)?;
-        for connection in listener.incoming() {
-            match connection {
-                Ok(stream) => {
-                    let mut connection =
-                        Connection::new(stream, self.sender.clone(), self.collections.clone());
-                    spawn(move || connection.listen());
-                }
-                Err(_) => (),
-            }
+        for stream in listener.incoming().flatten() {
+            let mut connection =
+                Connection::new(stream, self.sender.clone(), self.collections.clone());
+            spawn(move || connection.listen());
         }
         Ok(())
     }
