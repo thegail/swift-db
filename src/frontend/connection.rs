@@ -1,7 +1,7 @@
 use super::frontend_error::FrontendError;
 use super::transaction::Transaction;
 use crate::backend::{Operation, Query, Request};
-use crate::language::Statement;
+use crate::language::{Response, Statement};
 use std::collections::HashMap;
 use std::sync::mpsc::{channel, Sender};
 
@@ -16,11 +16,12 @@ impl Connection {
     pub fn new(sender: Sender<Request>) -> Self {
         Self {
             transactions: HashMap::new(),
+            selection_map: HashMap::new(),
             sender,
         }
     }
 
-    pub fn execute_statement(&mut self, statement: Statement) -> Result<(), FrontendError> {
+    pub fn execute_statement(&mut self, statement: Statement) -> Result<Response, FrontendError> {
         match statement {
             Statement::Open { transaction } => self.open(transaction),
             Statement::Acquire { transaction } => self.acquire(transaction),
@@ -36,23 +37,23 @@ impl Connection {
         }
     }
 
-    fn open(&mut self, transaction: String) -> Result<(), FrontendError> {
+    fn open(&mut self, transaction: String) -> Result<Response, FrontendError> {
         if self.transactions.contains_key(&transaction) {
             return Err(FrontendError::TransactionRedeclaration(transaction.clone()));
         }
         self.transactions.insert(transaction, Transaction::new());
-        Ok(())
+        Ok(Response::Opened)
     }
 
-    fn acquire(&mut self, _transaction: String) -> Result<(), FrontendError> {
+    fn acquire(&mut self, _transaction: String) -> Result<Response, FrontendError> {
         todo!()
     }
 
-    fn commit(&mut self, _transaction: String) -> Result<(), FrontendError> {
+    fn commit(&mut self, _transaction: String) -> Result<Response, FrontendError> {
         todo!()
     }
 
-    fn close(&mut self, _transaction: String) -> Result<(), FrontendError> {
+    fn close(&mut self, _transaction: String) -> Result<Response, FrontendError> {
         todo!()
     }
 
@@ -61,7 +62,7 @@ impl Connection {
         identifier: String,
         transaction: String,
         query: Query,
-    ) -> Result<(), FrontendError> {
+    ) -> Result<Response, FrontendError> {
         if self.selection_map.contains_key(&identifier) {
             return Err(FrontendError::SelectionRedeclaration(identifier));
         }
@@ -84,10 +85,27 @@ impl Connection {
             identifier,
             result.get_selection().ok_or(FrontendError::RecieveError)?,
         );
-        Ok(())
+        Ok(Response::Selected)
     }
 
-    fn read_all(&mut self, selection: String) -> Result<(), FrontendError> {
-        let 
+    fn read_all(&mut self, selection: String) -> Result<Response, FrontendError> {
+        let selection = &self.transactions[&self.selection_map[&selection]].selections[&selection];
+        let (returner, return_reciever) = channel();
+        self.sender
+            .send(Request {
+                operation: Operation::Read {
+                    selection: selection.clone(),
+                    fields: vec![],
+                },
+                return_channel: returner,
+            })
+            .or(Err(FrontendError::SendError))?;
+        let result = return_reciever
+            .recv()
+            .or(Err(FrontendError::RecieveError))?
+            .map_err(FrontendError::OperationError)?;
+        Ok(Response::Document(
+            result.get_document().ok_or(FrontendError::RecieveError)?,
+        ))
     }
 }
