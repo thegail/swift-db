@@ -1,4 +1,4 @@
-use super::{Document, FieldType, Schema};
+use crate::schema::{Document, FieldType, Schema};
 use chrono::{DateTime, Utc};
 
 #[derive(Clone)]

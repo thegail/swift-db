@@ -1,4 +1,4 @@
-use super::FieldValue;
+use crate::schema::FieldValue;
 
 #[derive(Clone)]
 pub struct FieldInstance {

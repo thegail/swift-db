@@ -1,4 +1,4 @@
-use super::FieldType;
+use crate::schema::FieldType;
 
 #[derive(Clone)]
 pub struct Field {

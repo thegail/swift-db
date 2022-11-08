@@ -1,4 +1,4 @@
-use super::Schema;
+use crate::schema::Schema;
 
 #[derive(Clone)]
 pub enum FieldType {

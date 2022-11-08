@@ -1,4 +1,4 @@
-use super::{FieldInstance, Schema};
+use crate::schema::{FieldInstance, Schema};
 
 #[derive(Clone)]
 pub struct Document {
