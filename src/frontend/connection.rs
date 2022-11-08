@@ -1,8 +1,9 @@
 use super::frontend_error::FrontendError;
 use super::transaction::Transaction;
 use crate::backend::{Operation, Query, Request};
-use crate::language::{Response, Statement};
+use crate::language::{build_statement, parse, Response, Statement};
 use std::collections::HashMap;
+use std::io::{BufReader, Write};
 use std::net::TcpStream;
 use std::sync::mpsc::{channel, Sender};
 
@@ -21,6 +22,22 @@ impl Connection {
             transactions: HashMap::new(),
             selection_map: HashMap::new(),
             sender,
+        }
+    }
+
+    pub fn listen(&mut self) {
+        loop {
+            let response = parse(&BufReader::new(&self.stream))
+                .map_err(FrontendError::LanguageError)
+                .and_then(|tokens| build_statement(&tokens).map_err(FrontendError::LanguageError))
+                .and_then(|statement| self.execute_statement(statement));
+            match response {
+                Ok(response) => write!(self.stream, "{}", response.serialize()).unwrap_or(()),
+                Err(error) => write!(self.stream, "{}", error).unwrap_or(()),
+            }
+            if let Err(error) = response {
+                write!(self.stream, "{}", error);
+            }
         }
     }
 }
