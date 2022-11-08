@@ -7,5 +7,6 @@ mod statement;
 #[cfg(test)]
 mod tests;
 
+pub use parser::parse;
 pub use response::Response;
 pub use statement::Statement;
