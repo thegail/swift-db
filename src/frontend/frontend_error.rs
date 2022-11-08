@@ -4,26 +4,42 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum FrontendError {
-    Redeclaration { identifier: String },
     OperationError(OperationError),
     SendError,
     RecieveError,
-    UnknownTransactionIdentifier(String),
+    TransactionRedeclaration(String),
+    UnknownTransaction(String),
+    SelectionRedeclaration(String),
+    UnknownSelection(String),
 }
 
 impl Display for FrontendError {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), std::fmt::Error> {
         match self {
-            FrontendError::Redeclaration { identifier } => {
-                write!(formatter, "Redeclaration of identifier {}", identifier)
-            }
             FrontendError::OperationError(error) => {
                 write!(formatter, "Backend operation error: {}", error)
             }
             FrontendError::SendError => write!(formatter, "Error sending request to backend"),
             FrontendError::RecieveError => write!(formatter, "Error recieving from backend"),
-            FrontendError::UnknownTransactionIdentifier(identifier) => {
+            FrontendError::TransactionRedeclaration(identifier) => {
+                write!(
+                    formatter,
+                    "Redeclaration of transaction identifier {}",
+                    identifier
+                )
+            }
+            FrontendError::UnknownTransaction(identifier) => {
                 write!(formatter, "Unknown transaction identifier {}", identifier)
+            }
+            FrontendError::SelectionRedeclaration(identifier) => {
+                write!(
+                    formatter,
+                    "Redeclaration of selection identifier {}",
+                    identifier
+                )
+            }
+            FrontendError::UnknownSelection(identifier) => {
+                write!(formatter, "Unknown selection identifier {}", identifier)
             }
         }
     }
