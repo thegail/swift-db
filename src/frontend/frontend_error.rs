@@ -8,6 +8,7 @@ pub enum FrontendError {
     OperationError(OperationError),
     SendError,
     RecieveError,
+    UnknownTransactionIdentifier(String),
 }
 
 impl Display for FrontendError {
@@ -21,6 +22,9 @@ impl Display for FrontendError {
             }
             FrontendError::SendError => write!(formatter, "Error sending request to backend"),
             FrontendError::RecieveError => write!(formatter, "Error recieving from backend"),
+            FrontendError::UnknownTransactionIdentifier(identifier) => {
+                write!(formatter, "Unknown transaction identifier {}", identifier)
+            }
         }
     }
 }
