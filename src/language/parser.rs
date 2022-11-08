@@ -23,8 +23,8 @@ impl Parser {
         }
     }
 
-    fn parse_input(mut self, input: &impl Read) -> Result<Vec<Expression>, ParseError> {
-        let buf = [0u8; 1];
+    fn parse_input(mut self, input: &mut impl Read) -> Result<Vec<Expression>, ParseError> {
+        let mut buf = [0u8; 1];
         loop {
             input.read_exact(&mut buf).map_err(ParseError::ReadError)?;
             let byte = buf[0];
@@ -165,7 +165,7 @@ impl Parser {
     }
 }
 
-pub fn parse(input: &impl Read) -> Result<Vec<Expression>, ParseError> {
+pub fn parse(input: &mut impl Read) -> Result<Vec<Expression>, ParseError> {
     let parser = Parser::new();
     parser.parse_input(input)
 }

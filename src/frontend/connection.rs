@@ -27,7 +27,7 @@ impl Connection {
 
     pub fn listen(&mut self) {
         loop {
-            let response = parse(&BufReader::new(&self.stream))
+            let response = parse(&mut BufReader::new(&mut self.stream))
                 .map_err(FrontendError::LanguageError)
                 .and_then(|tokens| build_statement(&tokens).map_err(FrontendError::LanguageError))
                 .and_then(|statement| self.execute_statement(statement));
