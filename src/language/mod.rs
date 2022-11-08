@@ -7,4 +7,5 @@ mod statement;
 #[cfg(test)]
 mod tests;
 
+pub use response::Response;
 pub use statement::Statement;
