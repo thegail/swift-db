@@ -1,5 +1,5 @@
-use super::lifecycle_error::LifecycleError;
 use crate::backend::{Backend, Request};
+use crate::database::LifecycleError;
 use crate::frontend::Connection;
 use crate::schema::Schema;
 use std::net::TcpListener;

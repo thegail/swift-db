@@ -1,7 +1,6 @@
 use database::{Database, LifecycleError};
 use test_stuff::test_schema;
 
-// TODO rewrite all imports
 // TODO remove all clones
 mod archive;
 mod backend;
