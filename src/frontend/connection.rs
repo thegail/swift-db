@@ -36,9 +36,7 @@ impl Connection {
 
     fn open(&mut self, transaction: String) -> Result<(), FrontendError> {
         if self.transactions.contains_key(&transaction) {
-            return Err(FrontendError::Redeclaration {
-                identifier: transaction.clone(),
-            });
+            return Err(FrontendError::TransactionRedeclaration(transaction.clone()));
         }
         self.transactions.insert(transaction, Transaction::new());
         Ok(())
@@ -62,6 +60,13 @@ impl Connection {
         transaction: String,
         query: Query,
     ) -> Result<(), FrontendError> {
+        let transaction = self
+            .transactions
+            .get_mut(&transaction)
+            .ok_or(FrontendError::UnknownTransaction(transaction))?;
+        if transaction.selections.contains_key(&identifier) {
+            return Err(FrontendError::SelectionRedeclaration(identifier));
+        }
         let (returner, return_reciever) = channel();
         self.sender
             .send(Request {
@@ -73,6 +78,10 @@ impl Connection {
             .recv()
             .or(Err(FrontendError::RecieveError))?
             .map_err(FrontendError::OperationError)?;
+        transaction.selections.insert(
+            identifier,
+            result.get_selection().ok_or(FrontendError::RecieveError)?,
+        );
         Ok(())
     }
 
