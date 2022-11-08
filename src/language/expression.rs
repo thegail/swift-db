@@ -24,13 +24,6 @@ impl Expression {
         }
     }
 
-    pub fn get_literal(&self) -> Result<&String, ParseError> {
-        match self {
-            Expression::Literal(s) => Ok(s),
-            _ => Err(ParseError::UnexpectedToken),
-        }
-    }
-
     pub fn get_operator(&self) -> Result<char, ParseError> {
         match self {
             Expression::Operator(c) => Ok(*c),
