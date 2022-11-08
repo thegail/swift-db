@@ -1,9 +1,6 @@
-use super::operation_error::OperationError;
-use super::query::Query;
-use super::selection::Selection;
-use super::{Operation, Request, Response};
 use crate::archive::BlockFileIO;
 use crate::archive::{ArchiveParser, ParseError};
+use crate::backend::{Operation, OperationError, Query, Request, Response, Selection};
 use crate::schema::{Document, Schema};
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};

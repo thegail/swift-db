@@ -1,4 +1,4 @@
-use super::operation_error::OperationError;
+use crate::backend::OperationError;
 use crate::schema::{Document, FieldType, FieldValue};
 
 pub struct Query {

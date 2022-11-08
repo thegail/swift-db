@@ -1,5 +1,4 @@
-use super::OperationError;
-use super::{Query, Selection};
+use crate::backend::{OperationError, Query, Selection};
 use crate::schema::Document;
 use std::sync::mpsc::Sender;
 
