@@ -8,6 +8,7 @@ mod database;
 mod frontend;
 mod language;
 mod schema;
+mod transfer;
 mod util;
 
 fn main() -> Result<(), LifecycleError> {
