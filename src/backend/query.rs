@@ -8,7 +8,7 @@ pub struct Query {
 
 pub enum Condition {
     Equal(Expression, Expression),
-    NotEqual(Expression, Expression),
+    // NotEqual(Expression, Expression),
     GreaterThan(Expression, Expression),
     LessThan(Expression, Expression),
     Or(Box<Condition>, Box<Condition>),
@@ -69,25 +69,25 @@ impl Document {
                     FieldValue::Enum(_) => Err(OperationError::InvalidExpressionType),
                 }
             }
-            Condition::NotEqual(left, right) => {
-                let left_value = self.eval_expr(left)?;
-                let right_value = self.eval_expr(right)?;
-                let r = right_value;
-                match left_value {
-                    FieldValue::Int(l) => eval_match_arm!(Int, l, r, !=),
-                    FieldValue::UInt(l) => eval_match_arm!(UInt, l, r, !=),
-                    FieldValue::Long(l) => eval_match_arm!(Long, l, r, !=),
-                    FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, !=),
-                    FieldValue::Float(l) => eval_match_arm!(Float, l, r, !=),
-                    FieldValue::Bool(l) => eval_match_arm!(Bool, l, r, !=),
-                    FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, !=),
-                    FieldValue::String(l) => eval_match_arm!(String, l, r, !=),
-                    FieldValue::ByteArray(l) => eval_match_arm!(ByteArray, l, r, !=),
-                    FieldValue::Array(_) => Err(OperationError::InvalidExpressionType),
-                    FieldValue::Object(_) => Err(OperationError::InvalidExpressionType),
-                    FieldValue::Enum(_) => Err(OperationError::InvalidExpressionType),
-                }
-            }
+            // Condition::NotEqual(left, right) => {
+            //     let left_value = self.eval_expr(left)?;
+            //     let right_value = self.eval_expr(right)?;
+            //     let r = right_value;
+            //     match left_value {
+            //         FieldValue::Int(l) => eval_match_arm!(Int, l, r, !=),
+            //         FieldValue::UInt(l) => eval_match_arm!(UInt, l, r, !=),
+            //         FieldValue::Long(l) => eval_match_arm!(Long, l, r, !=),
+            //         FieldValue::ULong(l) => eval_match_arm!(ULong, l, r, !=),
+            //         FieldValue::Float(l) => eval_match_arm!(Float, l, r, !=),
+            //         FieldValue::Bool(l) => eval_match_arm!(Bool, l, r, !=),
+            //         FieldValue::DateTime(l) => eval_match_arm!(DateTime, l, r, !=),
+            //         FieldValue::String(l) => eval_match_arm!(String, l, r, !=),
+            //         FieldValue::ByteArray(l) => eval_match_arm!(ByteArray, l, r, !=),
+            //         FieldValue::Array(_) => Err(OperationError::InvalidExpressionType),
+            //         FieldValue::Object(_) => Err(OperationError::InvalidExpressionType),
+            //         FieldValue::Enum(_) => Err(OperationError::InvalidExpressionType),
+            //     }
+            // }
             Condition::GreaterThan(left, right) => {
                 let left_value = self.eval_expr(left)?;
                 let right_value = self.eval_expr(right)?;
