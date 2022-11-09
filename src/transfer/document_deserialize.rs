@@ -1,5 +1,6 @@
-use crate::schema::{Document, FieldInstance, FieldValue, Schema};
+use crate::schema::{Document, Field, FieldInstance, FieldType, FieldValue, Schema};
 use crate::transfer::DeserializationError;
+use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::de::Visitor;
 use serde::Deserialize;
 
@@ -187,7 +188,7 @@ impl Document {
                     .iter()
                     .find(|f| f.name == field.name)
                     .ok_or_else(|| DeserializationError::FieldNotFound(field.name.clone()))?;
-                let value = FieldValue::from_bare(field.value, schema)?;
+                let value = FieldValue::from_bare(field.value, &definition.field_type)?;
                 let instance = FieldInstance {
                     id: definition.id,
                     value,
@@ -204,7 +205,92 @@ impl Document {
 }
 
 impl FieldValue {
-    fn from_bare(bare: BareValue, schema: &Schema) -> Result<Self, DeserializationError> {
-        todo!()
+    fn from_bare(bare: BareValue, definition: &FieldType) -> Result<Self, DeserializationError> {
+        match definition {
+            crate::schema::FieldType::Int => match bare {
+                BareValue::Integer(i) => {
+                    if i < i32::MIN as i64 || i > i32::MAX as i64 {
+                        Ok(FieldValue::Int(i as i32))
+                    } else {
+                        return Err(DeserializationError::Overflow(i));
+                    }
+                }
+                _ => return Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::UInt => match bare {
+                BareValue::Integer(i) => {
+                    if i < u32::MIN as i64 || i > u32::MAX as i64 {
+                        Ok(FieldValue::Int(i as i32))
+                    } else {
+                        return Err(DeserializationError::Overflow(i));
+                    }
+                }
+                _ => return Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::Long => match bare {
+                BareValue::Integer(i) => Ok(FieldValue::Long(i)),
+                _ => return Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::ULong => match bare {
+                BareValue::Integer(i) => {
+                    if i < u64::MIN as i64 {
+                        Ok(FieldValue::ULong(i as u64))
+                    } else {
+                        return Err(DeserializationError::Overflow(i));
+                    }
+                }
+                _ => return Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::Float => match bare {
+                BareValue::Integer(i) => Ok(FieldValue::Float(i as f64)),
+                BareValue::Float(f) => Ok(FieldValue::Float(f)),
+                _ => return Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::Bool => match bare {
+                BareValue::Bool(b) => Ok(FieldValue::Bool(b)),
+                _ => return Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::DateTime => match bare {
+                BareValue::Integer(i) => {
+                    let naive_time = NaiveDateTime::from_timestamp(i, 0);
+                    Ok(FieldValue::DateTime(DateTime::from_utc(naive_time, Utc)))
+                }
+                _ => return Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::String => match bare {
+                BareValue::String(s) => Ok(FieldValue::String(s)),
+                _ => return Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::ByteArray => match bare {
+                BareValue::Array(a) => {
+                    let values: Result<Vec<u8>, DeserializationError> = a
+                        .into_iter()
+                        .map(|value| match value {
+                            BareValue::Integer(i) => {
+                                if i < u8::MIN as i64 || i > u8::MAX as i64 {
+                                    return Err(DeserializationError::Overflow(i));
+                                }
+                                Ok(i as u8)
+                            }
+                            _ => Err(DeserializationError::FieldTypeMismatch),
+                        })
+                        .collect();
+                    Ok(FieldValue::ByteArray(values?))
+                }
+                _ => Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::Array(array_type) => match bare {
+                BareValue::Array(a) => {
+                    let values: Result<Vec<FieldValue>, DeserializationError> = a
+                        .into_iter()
+                        .map(|value| FieldValue::from_bare(value, &*array_type))
+                        .collect();
+                    Ok(FieldValue::Array(values?))
+                }
+                _ => Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::Object(_) => {}
+            crate::schema::FieldType::Enum(_) => {}
+        }
     }
 }
