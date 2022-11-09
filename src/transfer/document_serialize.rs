@@ -1,6 +1,6 @@
 use crate::schema::{Document, FieldType, FieldValue};
 use serde::ser::{SerializeSeq, SerializeStruct};
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Serialize, Serializer};
 
 // TODO: Ugly hack but works
 struct ReferencedFieldValue {
@@ -72,13 +72,35 @@ impl Serialize for ReferencedFieldValue {
                     .iter()
                     .find(|c| c.id == e.case_id)
                     .ok_or_else(|| serde::ser::Error::custom("Enum case not found"))?;
-                object.serialize_field(&case.name, &AssociatedValue(e.associated_value));
+                let associated_value = AssociatedValue {
+                    field: e.associated_value,
+                    definition: case.associated_value,
+                };
+                object.serialize_field(&case.name, &associated_value);
                 object.end()
             }
         }
     }
 }
 
-struct AssociatedValue(Option<FieldValue>);
+struct AssociatedValue {
+    field: Option<FieldValue>,
+    definition: Option<FieldType>,
+}
 
-impl Serialize for AssociatedValue {}
+impl Serialize for AssociatedValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let object = serializer.serialize_struct("Values", 1)?;
+        if let Some(definition) = self.definition {
+            let field = self
+                .field
+                .ok_or(serde::ser::Error::custom("Field not found"))?;
+            let referenced_value = ReferencedFieldValue { field, definition };
+            object.serialize_field("_0", &referenced_value);
+        }
+        object.end()
+    }
+}
