@@ -40,7 +40,7 @@ impl Connection {
                 .and_then(|statement| self.execute_statement(statement));
             let mut writer = BufWriter::new(&mut self.stream);
             let write_result = match response {
-                Ok(response) => writeln!(writer, "{}", response.serialize()),
+                Ok(response) => response.serialize(&mut writer),
                 // TODO escape this somehow
                 Err(error) => writeln!(writer, "(error \"{}\")", error),
             };
