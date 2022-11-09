@@ -148,8 +148,8 @@ impl ArchiveParser {
 
     fn parse_datetime(&mut self) -> DateTime<Utc> {
         let timestamp = self.parse_int::<i64>();
-        let naieve_time = NaiveDateTime::from_timestamp(timestamp, 0);
-        DateTime::from_utc(naieve_time, Utc)
+        let naive_time = NaiveDateTime::from_timestamp(timestamp, 0);
+        DateTime::from_utc(naive_time, Utc)
     }
 
     fn parse_byte_array(&mut self) -> Vec<u8> {
