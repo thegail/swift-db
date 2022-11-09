@@ -2,7 +2,7 @@ use crate::schema::{Document, Field, FieldType, FieldValue};
 use std::io::Write;
 
 impl Document {
-    fn transfer_serialize(&self, out: &mut impl Write) -> Result<(), std::io::Error> {
+    pub fn transfer_serialize(&self, out: &mut impl Write) -> Result<(), std::io::Error> {
         write!(out, "{{")?;
         serialize_list(out, self.fields.iter(), |field, out| {
             let definition = self
