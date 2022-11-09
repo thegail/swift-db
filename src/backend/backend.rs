@@ -55,15 +55,23 @@ mod operations {
                     Ok(Response::Document(self.read(selection, fields)?))
                 }
                 Operation::Create { document } => {
-                    self.create(document)?;
-                    Ok(Response::Created)
+                    let selection = self.create(document)?;
+                    Ok(Response::Selection(selection))
                 }
             }
         }
 
-        fn create(&mut self, document: Document) -> Result<(), OperationError> {
+        fn create(&mut self, document: Document) -> Result<Selection, OperationError> {
             let bytes = document.serialize();
-            self.io.write_block(bytes).map_err(OperationError::IOError)
+            let position = self
+                .io
+                .write_block(bytes)
+                .map_err(OperationError::IOError)?;
+            let selection = Selection {
+                position,
+                schema: document.schema,
+            };
+            Ok(selection)
         }
 
         fn find_one(&mut self, query: Query) -> Result<Selection, OperationError> {
