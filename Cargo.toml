@@ -10,3 +10,5 @@ repository = "https://github.com/thegail/swift-db"
 
 [dependencies]
 chrono = { version = "0.4.19", default-features = false, features = ["std"] }
+serde = "1.0"
+serde_json = "1.0"
