@@ -1,4 +1,3 @@
-use crate::schema::Document;
 use serde::de::Visitor;
 use serde::Deserialize;
 
@@ -35,16 +34,13 @@ impl<'de> Visitor<'de> for DocumentVisitor {
         write!(formatter, "a map of key-value pairs")
     }
 
-    fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
     where
         A: serde::de::MapAccess<'de>,
     {
         let mut fields = Vec::with_capacity(map.size_hint().unwrap_or(0));
-        while let Some((key, value)) = map.next_entry()? {
-            fields.push(BareField {
-                name: key,
-                value: todo!(),
-            });
+        while let Some((name, value)) = map.next_entry::<String, BareValue>()? {
+            fields.push(BareField { name, value });
         }
         let document = BareDocument { fields };
         Ok(document)
