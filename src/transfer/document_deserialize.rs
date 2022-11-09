@@ -1,3 +1,5 @@
+use crate::schema::{Document, FieldInstance, FieldValue, Schema};
+use crate::transfer::DeserializationError;
 use serde::de::Visitor;
 use serde::Deserialize;
 
@@ -171,5 +173,38 @@ impl<'de> Deserialize<'de> for BareValue {
         D: serde::Deserializer<'de>,
     {
         deserializer.deserialize_any(ValueVisitor)
+    }
+}
+
+impl Document {
+    fn from_bare(bare: BareDocument, schema: &Schema) -> Result<Self, DeserializationError> {
+        let fields: Result<Vec<FieldInstance>, DeserializationError> = bare
+            .fields
+            .iter()
+            .map(|field| {
+                let definition = schema
+                    .fields
+                    .iter()
+                    .find(|f| f.name == field.name)
+                    .ok_or_else(|| DeserializationError::FieldNotFound(field.name.clone()))?;
+                let value = FieldValue::from_bare(field.value, schema)?;
+                let instance = FieldInstance {
+                    id: definition.id,
+                    value,
+                };
+                Ok(instance)
+            })
+            .collect();
+        let document = Document {
+            fields: fields?,
+            schema: schema.clone(),
+        };
+        Ok(document)
+    }
+}
+
+impl FieldValue {
+    fn from_bare(bare: BareValue, schema: &Schema) -> Result<Self, DeserializationError> {
+        todo!()
     }
 }
