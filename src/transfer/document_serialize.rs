@@ -25,7 +25,7 @@ impl Serialize for Document {
                 field: field.value,
                 definition: definition.field_type,
             };
-            object.serialize_field(&definition.name, &referenced_value);
+            object.serialize_field(&definition.name.clone(), &referenced_value);
         }
         object.end()
     }
