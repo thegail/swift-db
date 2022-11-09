@@ -6,6 +6,7 @@ pub enum DeserializationError {
     CaseNotFound(String),
     FieldTypeMismatch,
     Overflow(i64),
+    ParseError(serde_json::Error),
 }
 
 impl Display for DeserializationError {
@@ -15,6 +16,7 @@ impl Display for DeserializationError {
             DeserializationError::CaseNotFound(s) => write!(formatter, "Case {} not found", s),
             DeserializationError::FieldTypeMismatch => write!(formatter, "Incorrect type in field"),
             DeserializationError::Overflow(v) => write!(formatter, "Value {} overflows field", v),
+            DeserializationError::ParseError(e) => write!(formatter, "JSON parse error: {}", e),
         }
     }
 }
