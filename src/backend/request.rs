@@ -23,7 +23,6 @@ pub enum Operation {
 pub enum Response {
     Selection(Selection),
     Document(Document),
-    Created,
 }
 
 impl Response {
@@ -37,13 +36,6 @@ impl Response {
     pub fn get_document(self) -> Option<Document> {
         match self {
             Response::Document(d) => Some(d),
-            _ => None,
-        }
-    }
-
-    fn get_created(self) -> Option<()> {
-        match self {
-            Response::Created => Some(()),
             _ => None,
         }
     }
