@@ -180,7 +180,7 @@ impl Document {
     fn from_bare(bare: BareDocument, schema: &Schema) -> Result<Self, DeserializationError> {
         let fields: Result<Vec<FieldInstance>, DeserializationError> = bare
             .fields
-            .iter()
+            .into_iter()
             .map(|field| {
                 let definition = schema
                     .fields
