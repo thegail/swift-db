@@ -1,4 +1,5 @@
 use crate::schema::Document;
+use std::io::Write;
 
 pub enum Response {
     Opened,
@@ -7,12 +8,15 @@ pub enum Response {
 }
 
 impl Response {
-    pub fn serialize(self) -> String {
+    pub fn serialize(self, out: &mut impl Write) -> Result<(), std::io::Error> {
         match self {
-            Response::Opened => "(ok opened)",
-            Response::Selected => "(ok selected)",
-            Response::Document(_) => "(ok placeholder)",
+            Response::Opened => write!(out, "(ok open)")?,
+            Response::Selected => write!(out, "(ok select)")?,
+            Response::Document(doc) => {
+                write!(out, "(ok read)")?;
+                doc.transfer_serialize(out)?;
+            }
         }
-        .to_string()
+        Ok(())
     }
 }
