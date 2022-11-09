@@ -12,9 +12,9 @@ impl Document {
                 .find(|f| f.id == field.id)
                 .ok_or_else(|| todo!("field not found") as std::io::Error)?;
             write!(out, "\"{}\":", definition.name.escape_default())?;
-            field.value.transfer_serialize(out, definition);
+            field.value.transfer_serialize(out, definition)?;
             Ok(())
-        });
+        })?;
         write!(out, "}}")?;
         Ok(())
     }
