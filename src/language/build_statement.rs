@@ -1,11 +1,13 @@
 use super::expression::Expression;
 use crate::backend::{Condition, Expression as ValueExpression, Query};
 use crate::language::{ParseError, Statement};
-use crate::schema::{FieldValue, Schema};
+use crate::schema::{Document, FieldValue, Schema};
+use std::io::Read;
 
 pub fn build_statement(
     expression: &[Expression],
     collections: &[Schema],
+    reader: impl Read,
 ) -> Result<Statement, ParseError> {
     let keyword = expression
         .first()
@@ -17,6 +19,7 @@ pub fn build_statement(
         "commit" => build_commit(expression),
         "close" => build_close(expression),
         "select" => build_select(expression, collections),
+        "create" => build_create(expression, collections, reader),
         "readall" => build_read_all(expression),
         _ => Err(ParseError::UnexpectedToken),
     }
@@ -90,6 +93,37 @@ fn build_select(
             condition,
         },
     })
+}
+
+fn build_create(
+    expression: &[Expression],
+    collections: &[Schema],
+    reader: impl Read,
+) -> Result<Statement, ParseError> {
+    if expression.len() != 4 {
+        return Err(ParseError::ArgumentCount);
+    }
+    let identifier = expression[1].get_identifier()?;
+    let transaction = expression[2].get_identifier()?;
+    let collection_expression = expression[3].get_expression()?;
+    if collection_expression.len() != 2 {
+        return Err(ParseError::ArgumentCount);
+    }
+    if collection_expression[0].get_identifier()? != "coll" {
+        return Err(ParseError::UnexpectedToken);
+    }
+    let collection_name = collection_expression[1].get_identifier()?;
+    let schema = collections
+        .iter()
+        .find(|c| &c.name == collection_name)
+        .ok_or(ParseError::UnknownIdentifier(*collection_name))?;
+    let document = Document::from_reader(reader, schema).map_err(ParseError::TransferError)?;
+    let statement = Statement::Create {
+        identifier: *identifier,
+        transaction: *transaction,
+        document,
+    };
+    Ok(statement)
 }
 
 fn build_condition(expression: &[Expression], schema: &Schema) -> Result<Condition, ParseError> {
