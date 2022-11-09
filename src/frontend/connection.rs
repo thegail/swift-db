@@ -52,6 +52,8 @@ impl Connection {
 }
 
 mod execute_statement {
+    use crate::schema::Document;
+
     use super::*;
 
     impl Connection {
@@ -69,6 +71,11 @@ mod execute_statement {
                     transaction,
                     query,
                 } => self.select(identifier, transaction, query),
+                Statement::Create {
+                    identifier,
+                    transaction,
+                    document,
+                } => self.create(identifier, transaction, document),
                 Statement::ReadAll { selection } => self.read_all(selection),
                 // _ => todo!(),
             }
@@ -107,6 +114,37 @@ mod execute_statement {
             self.sender
                 .send(Request {
                     operation: Operation::FindOne { query },
+                    return_channel: returner,
+                })
+                .or(Err(FrontendError::SendError))?;
+            let result = return_reciever
+                .recv()
+                .or(Err(FrontendError::RecieveError))?
+                .map_err(FrontendError::OperationError)?;
+            let transaction = self
+                .transactions
+                .get_mut(&transaction)
+                .ok_or(FrontendError::UnknownTransaction(transaction))?;
+            transaction.selections.insert(
+                identifier,
+                result.get_selection().ok_or(FrontendError::RecieveError)?,
+            );
+            Ok(Response::Selected)
+        }
+
+        fn create(
+            &mut self,
+            identifier: String,
+            transaction: String,
+            document: Document,
+        ) -> Result<Response, FrontendError> {
+            if self.selection_map.contains_key(&identifier) {
+                return Err(FrontendError::SelectionRedeclaration(identifier));
+            }
+            let (returner, return_reciever) = channel();
+            self.sender
+                .send(Request {
+                    operation: Operation::Create { document },
                     return_channel: returner,
                 })
                 .or(Err(FrontendError::SendError))?;
