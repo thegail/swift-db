@@ -10,11 +10,12 @@ pub enum Response {
 impl Response {
     pub fn serialize(self, out: &mut impl Write) -> Result<(), std::io::Error> {
         match self {
-            Response::Opened => write!(out, "(ok open)")?,
-            Response::Selected => write!(out, "(ok select)")?,
+            Response::Opened => writeln!(out, "(ok opened)")?,
+            Response::Selected => writeln!(out, "(ok selected)")?,
             Response::Document(doc) => {
-                write!(out, "(ok read)")?;
+                writeln!(out, "(ok document)")?;
                 doc.transfer_serialize(out)?;
+                writeln!(out)?;
             }
         }
         Ok(())
