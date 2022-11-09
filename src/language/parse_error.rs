@@ -1,3 +1,4 @@
+use crate::transfer::DeserializationError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -8,6 +9,7 @@ pub enum ParseError {
     ArgumentCount,
     UnexpectedToken,
     UnknownIdentifier(String),
+    TransferError(DeserializationError),
 }
 
 impl Display for ParseError {
@@ -29,6 +31,7 @@ impl Display for ParseError {
             ParseError::UnknownIdentifier(identifier) => {
                 write!(formatter, "Unknown identifier {}", identifier)
             }
+            ParseError::TransferError(e) => write!(formatter, "Transfer parse error: {}", e),
         }
     }
 }
