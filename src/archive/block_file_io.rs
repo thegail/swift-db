@@ -48,13 +48,14 @@ impl BlockFileIO {
         Ok(())
     }
 
-    pub fn write_block(&mut self, block: Vec<u8>) -> Result<(), Error> {
+    pub fn write_block(&mut self, block: Vec<u8>) -> Result<usize, Error> {
         let mut block = block;
         self.writer.seek(SeekFrom::End(0))?;
+        let position = self.writer.stream_position()?;
         let mut buf = vec![69u8];
         buf.extend_from_slice(&(block.len() as u64).to_be_bytes());
         buf.append(&mut block);
         self.writer.write_all(&buf)?;
-        Ok(())
+        Ok(position as usize)
     }
 }
