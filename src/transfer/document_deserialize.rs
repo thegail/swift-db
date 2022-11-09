@@ -1,4 +1,4 @@
-use crate::schema::{Document, Field, FieldInstance, FieldType, FieldValue, Schema};
+use crate::schema::{Document, EnumValue, FieldInstance, FieldType, FieldValue, Schema};
 use crate::transfer::DeserializationError;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::de::Visitor;
@@ -289,8 +289,51 @@ impl FieldValue {
                 }
                 _ => Err(DeserializationError::FieldTypeMismatch),
             },
-            crate::schema::FieldType::Object(_) => {}
-            crate::schema::FieldType::Enum(_) => {}
+            crate::schema::FieldType::Object(sub_schema) => match bare {
+                BareValue::Object(o) => Ok(FieldValue::Object(Box::new(Document::from_bare(
+                    *o,
+                    &sub_schema,
+                )?))),
+                _ => Err(DeserializationError::FieldTypeMismatch),
+            },
+            crate::schema::FieldType::Enum(cases) => match bare {
+                BareValue::Object(mut o) => {
+                    if o.fields.len() != 1 {
+                        return Err(DeserializationError::FieldTypeMismatch);
+                    }
+                    let field = o.fields.pop().unwrap();
+                    let case = cases
+                        .iter()
+                        .find(|case| case.name == field.name)
+                        .ok_or(DeserializationError::CaseNotFound(field.name))?;
+                    let mut associated_object = match field.value {
+                        BareValue::Object(o) => o,
+                        _ => return Err(DeserializationError::FieldTypeMismatch),
+                    };
+                    let associated_value = if associated_object.fields.is_empty() {
+                        None
+                    } else {
+                        if associated_object.fields.len() != 1 {
+                            return Err(DeserializationError::FieldTypeMismatch);
+                        }
+                        let field = associated_object.fields.pop().unwrap();
+                        if field.name != "_0" {
+                            return Err(DeserializationError::FieldTypeMismatch);
+                        }
+                        Some(FieldValue::from_bare(
+                            field.value,
+                            case.associated_value
+                                .as_ref()
+                                .ok_or(DeserializationError::FieldTypeMismatch)?,
+                        )?)
+                    };
+                    Ok(FieldValue::Enum(Box::new(EnumValue {
+                        case_id: case.id,
+                        associated_value,
+                    })))
+                }
+                _ => Err(DeserializationError::FieldTypeMismatch),
+            },
         }
     }
 }
