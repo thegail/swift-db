@@ -34,7 +34,7 @@ impl Connection {
             let response = parse(&mut BufReader::new(&mut self.stream))
                 .map_err(FrontendError::LanguageError)
                 .and_then(|tokens| {
-                    build_statement(&tokens, &self.collections)
+                    build_statement(&tokens, &self.collections, self.stream.by_ref())
                         .map_err(FrontendError::LanguageError)
                 })
                 .and_then(|statement| self.execute_statement(statement));
