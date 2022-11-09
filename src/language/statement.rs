@@ -1,4 +1,5 @@
 use crate::backend::Query;
+use crate::schema::Document;
 
 pub enum Statement {
     Open {
@@ -18,6 +19,11 @@ pub enum Statement {
         transaction: String,
         // lock: LockType,
         query: Query,
+    },
+    Create {
+        identifier: String,
+        transaction: String,
+        document: Document,
     },
     // Read {
     //     selection: String,
