@@ -4,7 +4,7 @@ use crate::backend::{Operation, Query, Request};
 use crate::language::{build_statement, parse, Response, Statement};
 use crate::schema::Schema;
 use std::collections::HashMap;
-use std::io::{BufReader, Write};
+use std::io::{BufReader, BufWriter, Write};
 use std::net::TcpStream;
 use std::sync::mpsc::{channel, Sender};
 
@@ -38,12 +38,13 @@ impl Connection {
                         .map_err(FrontendError::LanguageError)
                 })
                 .and_then(|statement| self.execute_statement(statement));
+            let mut writer = BufWriter::new(&mut self.stream);
             let write_result = match response {
-                Ok(response) => writeln!(self.stream, "{}", response.serialize()),
+                Ok(response) => writeln!(writer, "{}", response.serialize()),
                 // TODO escape this somehow
-                Err(error) => writeln!(self.stream, "(error \"{}\")", error),
+                Err(error) => writeln!(writer, "(error \"{}\")", error),
             };
-            if write_result.is_err() {
+            if write_result.and_then(|_| writer.flush()).is_err() {
                 break;
             }
         }
