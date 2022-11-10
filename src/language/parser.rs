@@ -21,11 +21,9 @@ impl Parser {
         }
     }
 
-    fn parse_input(mut self, mut input: impl Read) -> Result<Vec<Expression>, ParseError> {
-        let mut buf = [0u8; 1];
-        loop {
-            input.read_exact(&mut buf).map_err(ParseError::ReadError)?;
-            let byte = buf[0];
+    fn parse_input(mut self, input: impl Read) -> Result<Vec<Expression>, ParseError> {
+        for byte in input.bytes() {
+            let byte = byte.map_err(ParseError::ReadError)?;
             if self.output.is_empty() {
                 match byte {
                     b' ' | b'\n' => continue,
