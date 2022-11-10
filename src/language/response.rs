@@ -1,5 +1,4 @@
 use crate::schema::Document;
-use serde_json::to_writer;
 use std::io::Write;
 
 pub enum Response {
@@ -15,7 +14,7 @@ impl Response {
             Response::Selected => writeln!(out, "(ok selected)")?,
             Response::Document(doc) => {
                 writeln!(out, "(ok document)")?;
-                to_writer(out.by_ref(), &doc)?;
+                doc.to_writer(out.by_ref());
                 writeln!(out)?;
             }
         }
