@@ -3,7 +3,6 @@ use crate::transfer::DeserializationError;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::de::Visitor;
 use serde::Deserialize;
-use serde_json::from_reader;
 use std::io::Read;
 
 impl Document {
@@ -11,7 +10,9 @@ impl Document {
         reader: impl Read,
         schema: &Schema,
     ) -> Result<Document, DeserializationError> {
-        let bare = from_reader(reader).map_err(DeserializationError::ParseError)?;
+        let mut deserializer = serde_json::Deserializer::from_reader(reader);
+        let bare = BareDocument::deserialize(&mut deserializer)
+            .map_err(DeserializationError::ParseError)?;
         Document::from_bare(bare, schema)
     }
 }
