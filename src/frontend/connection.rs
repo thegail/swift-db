@@ -104,7 +104,7 @@ mod execute_statement {
         fn select(
             &mut self,
             identifier: String,
-            transaction: String,
+            transaction_identifier: String,
             query: Query,
         ) -> Result<Response, FrontendError> {
             if self.selection_map.contains_key(&identifier) {
@@ -123,19 +123,21 @@ mod execute_statement {
                 .map_err(FrontendError::OperationError)?;
             let transaction = self
                 .transactions
-                .get_mut(&transaction)
-                .ok_or(FrontendError::UnknownTransaction(transaction))?;
+                .get_mut(&transaction_identifier)
+                .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
             transaction.selections.insert(
-                identifier,
+                identifier.clone(),
                 result.get_selection().ok_or(FrontendError::RecieveError)?,
             );
+            self.selection_map
+                .insert(identifier, transaction_identifier);
             Ok(Response::Selected)
         }
 
         fn create(
             &mut self,
             identifier: String,
-            transaction: String,
+            transaction_identifier: String,
             document: Document,
         ) -> Result<Response, FrontendError> {
             if self.selection_map.contains_key(&identifier) {
@@ -154,12 +156,14 @@ mod execute_statement {
                 .map_err(FrontendError::OperationError)?;
             let transaction = self
                 .transactions
-                .get_mut(&transaction)
-                .ok_or(FrontendError::UnknownTransaction(transaction))?;
+                .get_mut(&transaction_identifier)
+                .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
             transaction.selections.insert(
-                identifier,
+                identifier.clone(),
                 result.get_selection().ok_or(FrontendError::RecieveError)?,
             );
+            self.selection_map
+                .insert(identifier, transaction_identifier);
             Ok(Response::Selected)
         }
 
