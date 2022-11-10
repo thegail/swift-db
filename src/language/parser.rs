@@ -168,13 +168,20 @@ impl Parser {
     }
 }
 
-pub fn parse(input: impl Read) -> Result<Vec<Expression>, ParseError> {
-    let parser = Parser::new();
-    parser.parse_input(input)
-}
-
 enum CurrentType {
     Identifier,
     Numeric,
     Literal,
+}
+
+/// Read one s-expression from an input stream.
+///
+/// Returns a [`Vec<Expression>`] or a [`ParseError`]. The
+/// parsed expression should be passed to
+/// [`build_statement`][crate::language::build_statement] to
+/// generate an executable
+/// [`Statement`][crate::language::Statement].
+pub fn parse(input: impl Read) -> Result<Vec<Expression>, ParseError> {
+    let parser = Parser::new();
+    parser.parse_input(input)
 }
