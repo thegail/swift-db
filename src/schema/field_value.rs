@@ -1,6 +1,8 @@
 use crate::schema::{Document, FieldType, Schema};
 use chrono::{DateTime, Utc};
 
+/// An actual value stored in a
+/// [`FieldInstance`][crate::schema::FieldInstance].
 #[derive(Clone)]
 pub enum FieldValue {
     Int(i32),
@@ -17,13 +19,20 @@ pub enum FieldValue {
     Enum(Box<EnumValue>),
 }
 
+/// An instance of an enum case.
 #[derive(Clone)]
 pub struct EnumValue {
+    /// The ID of the case definition to which this
+    /// instance conforms.
     pub case_id: u16,
+    /// The value assocaited with this case instance.
     pub associated_value: Option<FieldValue>,
 }
 
 impl FieldValue {
+    /// Converts this field value to its corresponding
+    /// [`FieldType`], stripping array/object/enum subtype
+    /// information.
     pub fn simple_type(&self) -> FieldType {
         match self {
             Self::Int(_) => FieldType::Int,
