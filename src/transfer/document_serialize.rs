@@ -53,7 +53,7 @@ impl Document {
                     .ok_or_else(|| DeserializationError::FieldNotFound(field.id.to_string()))?;
                 Ok(BareField {
                     name: definition.name,
-                    value: field.value.to_bare()?,
+                    value: field.value.to_bare(definition.field_type)?,
                 })
             })
             .collect();
@@ -62,7 +62,7 @@ impl Document {
 }
 
 impl FieldValue {
-    fn to_bare(self) -> Result<BareValue, DeserializationError> {
+    fn to_bare(self, definition: FieldType) -> Result<BareValue, DeserializationError> {
         match self {
             FieldValue::Int(i) => Ok(BareValue::Integer(i as i64)),
             FieldValue::UInt(i) => Ok(BareValue::Integer(i as i64)),
@@ -87,7 +87,32 @@ impl FieldValue {
                 Ok(BareValue::Array(values?))
             }
             FieldValue::Object(o) => Ok(BareValue::Object(Box::new(o.to_bare()?))),
-            FieldValue::Enum(e) => todo!(),
+            FieldValue::Enum(e) => {
+                let cases = match definition {
+                    FieldType::Enum(cases) => cases,
+                    _ => return Err(DeserializationError::FieldTypeMismatch),
+                };
+                let case = cases
+                    .iter()
+                    .find(|c| c.id == e.case_id)
+                    .ok_or_else(|| DeserializationError::CaseNotFound(e.case_id.to_string()))?;
+                let associated_object = if let Some(associated_value) = e.associated_value {
+                    if let Some(associated_definition) = case.associated_value {
+                        let bare_value = associated_value.to_bare(associated_definition)?;
+                        BareDocument {
+                            fields: vec![BareField {
+                                name: "_0".to_string(),
+                                value: bare_value,
+                            }],
+                        }
+                    } else {
+                        return Err(DeserializationError::FieldTypeMismatch);
+                    }
+                } else {
+                    BareDocument { fields: Vec::new() }
+                };
+                Ok(BareValue::Object(Box::new(associated_object)))
+            }
         }
     }
 }
