@@ -3,6 +3,9 @@ use crate::language::ParseError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
+/// An error executing a statement.
+///
+/// `FrontendError`s are serialized and sent to the client.
 #[derive(Debug)]
 pub enum FrontendError {
     LanguageError(ParseError),
