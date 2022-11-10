@@ -10,8 +10,9 @@ use std::sync::mpsc::{channel, Sender};
 
 /// A manager for a network connection with a client.
 ///
-/// A `Connection` listens for data on its own thread, invokes the
-/// [`language`][crate::language] parser to build statements, then
+/// Instantiated by a [`Database`][crate::database::Database] instance's
+/// connection listener, a `Connection` listens for data on its own thread,
+/// invokes the [`language`][crate::language] parser to build statements, then
 /// executes them. The [`Transaction`] helper struct manages transaction
 /// state and helps in the execution of statements. Requests are passed
 /// to the backend via an MPSC channel, the response is serialized, and
