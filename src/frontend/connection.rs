@@ -71,11 +71,15 @@ impl Connection {
     }
 }
 
+/// Wrapper module for statement execution logic.
+///
+/// See [`execute_statement`][Document::execute_statement].
 mod execute_statement {
     use super::*;
     use crate::schema::Document;
 
     impl Connection {
+        /// Executes a language [`Statement`].
         pub fn execute_statement(
             &mut self,
             statement: Statement,
