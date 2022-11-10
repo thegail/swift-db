@@ -48,7 +48,9 @@ impl ArchiveParser {
 
     fn read_field(&mut self) -> Result<Option<FieldInstance>, ParseError> {
         let field_id = self.parse_int::<u16>();
-        let field = (&self.schema.fields)
+        let field = &self
+            .schema
+            .fields
             .iter()
             .find(|x| x.id == field_id)
             .ok_or(ParseError::UnknownFieldIdentifier)?
