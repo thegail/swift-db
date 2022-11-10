@@ -1,11 +1,17 @@
 use crate::backend::OperationError;
 use crate::schema::{Document, FieldType, FieldValue};
 
+/// A query in a select statement.
 pub struct Query {
+    /// The id of the collection to be queried.
     pub collection: u64,
+    /// The condition by which a document should be selected
+    /// by the query.
     pub condition: Condition,
 }
 
+/// A boolean condition which a [`Document`] either matches
+/// or does not match.
 pub enum Condition {
     Equal(Expression, Expression),
     // NotEqual(Expression, Expression),
@@ -16,6 +22,12 @@ pub enum Condition {
     Not(Box<Condition>),
 }
 
+/// A value expression which may be compared against
+/// another expression by a [`Condition`].
+///
+/// This may be either a literal value specified in the
+/// condition expression, or a reference to a field on
+/// the document, which evaluates to that field's value.
 pub enum Expression {
     Value(FieldValue),
     Field(u16),
@@ -35,19 +47,8 @@ macro_rules! eval_match_arm {
 }
 
 impl Document {
-    fn eval_expr<'a>(&'a self, expr: &'a Expression) -> Result<&'a FieldValue, OperationError> {
-        match expr {
-            Expression::Value(value) => Ok(value),
-            Expression::Field(field_id) => {
-                if let Some(field_instance) = self.fields.iter().find(|x| x.id == *field_id) {
-                    Ok(&field_instance.value)
-                } else {
-                    Err(OperationError::UnknownFieldIdentifier)
-                }
-            }
-        }
-    }
-
+    /// Evaluates whether this [`Document`] matches a
+    /// [`Condition`].
     pub fn evaluate(&self, condition: &Condition) -> Result<bool, OperationError> {
         match condition {
             Condition::Equal(left, right) => {
@@ -129,6 +130,19 @@ impl Document {
             Condition::Or(left, right) => Ok(self.evaluate(left)? || self.evaluate(right)?),
             Condition::And(left, right) => Ok(self.evaluate(left)? && self.evaluate(right)?),
             Condition::Not(condition) => Ok(!self.evaluate(condition)?),
+        }
+    }
+
+    fn eval_expr<'a>(&'a self, expr: &'a Expression) -> Result<&'a FieldValue, OperationError> {
+        match expr {
+            Expression::Value(value) => Ok(value),
+            Expression::Field(field_id) => {
+                if let Some(field_instance) = self.fields.iter().find(|x| x.id == *field_id) {
+                    Ok(&field_instance.value)
+                } else {
+                    Err(OperationError::UnknownFieldIdentifier)
+                }
+            }
         }
     }
 }
