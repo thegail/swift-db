@@ -1,12 +1,24 @@
 use std::fs::File;
 use std::io::{BufReader, Error, Read, Seek, SeekFrom, Write};
 
+/// A utility to read and write blocks of data to/from a storage file.
+///
+/// An instance of a `BlockFileIO` manager is owned by the
+/// [`Backend`][crate::backend::Backend], which calls
+/// [`next`][BlockFileIO#method.next],
+/// [`read_at_position`][BlockFileIO#method.read_at_position],
+/// and [`write_block`][BlockFileIO#method.write] to read and write
+/// [`Document`][crate::schema::Document]s.
 pub struct BlockFileIO {
     reader: BufReader<File>,
     writer: File,
 }
 
 impl BlockFileIO {
+    /// Creates a new [`BlockFileIO`] manager.
+    ///
+    /// Accepts two File instances, both pointing to the database's
+    /// storage file.
     pub fn new(read_file: File, write_file: File) -> Self {
         Self {
             reader: BufReader::new(read_file),
@@ -14,6 +26,9 @@ impl BlockFileIO {
         }
     }
 
+    /// Reads the next block in the file.
+    ///
+    /// Returns the position of the block and the block data.
     pub fn next(&mut self) -> Result<(usize, Vec<u8>), Error> {
         loop {
             let mut buf = [0u8; 1];
@@ -38,16 +53,21 @@ impl BlockFileIO {
         Ok(buffer)
     }
 
+    /// Read the data of a block at a certain position.
     pub fn read_at_position(&mut self, position: u64) -> Result<Vec<u8>, Error> {
         self.reader.seek(SeekFrom::Start(position))?;
         self.read_block()
     }
 
+    /// Seek to the beginning of the file.
     pub fn reset_position(&mut self) -> Result<(), Error> {
         self.reader.seek(SeekFrom::Start(0))?;
         Ok(())
     }
 
+    /// Write a block, appending it to the end of the file.
+    ///
+    /// Returns the position at which the block was written.
     pub fn write_block(&mut self, block: Vec<u8>) -> Result<usize, Error> {
         let mut block = block;
         self.writer.seek(SeekFrom::End(0))?;
