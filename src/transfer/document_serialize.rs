@@ -3,6 +3,15 @@ use super::DeserializationError;
 use crate::schema::{Document, FieldType, FieldValue};
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Serialize, Serializer};
+use serde_json::to_writer;
+use std::io::Write;
+
+impl Document {
+    pub fn to_writer(self, writer: impl Write) -> Result<(), DeserializationError> {
+        let bare = self.to_bare()?;
+        to_writer(writer, &bare).map_err(DeserializationError::ParseError)
+    }
+}
 
 impl Serialize for BareDocument {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
