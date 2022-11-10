@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter};
 
+/// An error while serializing or deserializing a
+/// [`Document`][crate::schema::Document].
 #[derive(Debug)]
 pub enum DeserializationError {
     FieldNotFound(String),
