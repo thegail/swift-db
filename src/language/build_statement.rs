@@ -78,7 +78,6 @@ fn build_select(
     if collection_expression[0].get_identifier()? != "coll" {
         return Err(ParseError::UnexpectedToken);
     }
-    // TODO get collection id
     let collection_name = collection_expression[1].get_identifier()?;
     let collection = collections
         .iter()
