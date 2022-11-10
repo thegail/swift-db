@@ -1,3 +1,13 @@
+//! The `language` parser is responsible for transforming
+//! a byte stream into executable [`Statement`]s, and
+//! serializing [`Response`]s.
+//!
+//! The [`parse`] function yields parses incoming s-expressions,
+//! yeilding a [`Vec<Expression>`], which then is assembled into
+//! an executable [`Statement`] by the [`build_statement`] function.
+//! Additionally, the [`frontend`][crate::frontend]'s [`Response`]
+//! statements are serialized into s-expressions with
+//! [`Response::serialize`] and returned to the client.
 mod build_statement;
 mod expression;
 mod parse_error;
