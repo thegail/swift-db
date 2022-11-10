@@ -1,6 +1,13 @@
 use crate::backend::Query;
 use crate::schema::Document;
 
+/// An executable statement.
+///
+/// This is parsed from recieved bytes by
+/// [`parse`][crate::language::parse] and
+/// [`build_statement`][crate::language::build_statement],
+/// then returned to the [`frontend`][crate::frontend] to
+/// be executed.
 pub enum Statement {
     Open {
         transaction: String,
