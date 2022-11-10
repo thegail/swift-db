@@ -2,6 +2,12 @@ use crate::transfer::DeserializationError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
+/// An error raised when transforming a byte stream into a
+/// [`Statement`][crate::language::Statement].
+///
+/// This gets wrapped in a
+/// [`FrontendError`][crate::frontend::frontend_error::FrontendError]
+/// before being passed back to the client.
 #[derive(Debug)]
 pub enum ParseError {
     ReadError(std::io::Error),
