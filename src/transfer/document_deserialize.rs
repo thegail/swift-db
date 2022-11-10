@@ -1,3 +1,4 @@
+use super::bare_document::{BareDocument, BareField, BareValue};
 use crate::schema::{Document, EnumValue, FieldInstance, FieldType, FieldValue, Schema};
 use crate::transfer::DeserializationError;
 use chrono::{DateTime, NaiveDateTime, Utc};
@@ -15,24 +16,6 @@ impl Document {
             .map_err(DeserializationError::ParseError)?;
         Document::from_bare(bare, schema)
     }
-}
-
-struct BareDocument {
-    fields: Vec<BareField>,
-}
-
-struct BareField {
-    name: String,
-    value: BareValue,
-}
-
-enum BareValue {
-    Integer(i64),
-    Float(f64),
-    Bool(bool),
-    String(String),
-    Array(Vec<BareValue>),
-    Object(Box<BareDocument>),
 }
 
 struct DocumentVisitor;
