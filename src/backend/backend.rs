@@ -7,6 +7,16 @@ use std::fs::{File, OpenOptions};
 use std::io;
 use std::sync::mpsc::Receiver;
 
+/// The core of the databse's read/write logic.
+///
+/// Each [`Database`][crate::database::Database] instance creates
+/// and owns one `Backend`, which responds to [`Request`]s from
+/// various [`frontend`][crate::frontend]s via an MPSC channel. A
+/// `Backend`'s interface with the disk is through a [`BlockFileIO`]
+/// manager, which reads and writes blocks (documents) from the
+/// data file. The `Backend` uses [`ArchiveParser`]s to parse
+/// documents in the [`archive`][crate::archive] binary
+/// serialization format.
 pub struct Backend {
     io: BlockFileIO,
     collections: Vec<Schema>,
@@ -15,6 +25,11 @@ pub struct Backend {
 }
 
 impl Backend {
+    /// Creates a new [`Backend`] instance.
+    ///
+    /// Accepts a list of [`Schema`] definitions, a path at which
+    /// the data file is stored, and the recieving end of the
+    /// channel for recieving [`Request`]s.
     pub fn new(
         path: String,
         collections: Vec<Schema>,
@@ -31,6 +46,13 @@ impl Backend {
         })
     }
 
+    /// Begins the [`Backend`]'s request execution cycle.
+    ///
+    /// When a [`Database`][crate::database::Database] calls this function,
+    /// the [`Backend`] instance will continuously recieve [`Request`]s from
+    /// its channel reciever, execute them (see [`Backend::execute_operation`]),
+    /// and return a [`Response`] back to the [`frontend`][crate::frontend]
+    /// through the return channel.
     pub fn listen(&mut self) {
         while let Ok(request) = self.reciever.recv() {
             let result = self.execute_operation(request.operation);
@@ -42,9 +64,15 @@ impl Backend {
     }
 }
 
+/// Execute [`Operation`]s from [`Request`]s.
+///
+/// See [`Backend::execute_operation`][`Backend#method.execute_operation`].
 mod operations {
     use super::*;
     impl Backend {
+        /// Execute an [`Operation`] from a [`Request`].
+        ///
+        /// Returns a [`Response`] or an [`OperationError`].
         pub fn execute_operation(
             &mut self,
             operation: Operation,
