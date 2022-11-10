@@ -9,10 +9,10 @@ use std::thread::spawn;
 /// Implements SwiftDB's main logic.
 ///
 /// On creation, a `Database` loads its configuration and creates
-/// a [`Backend`]. When [`start()`] is called, it creates a new
-/// thread which the backend listens on, then starts a TCP listener,
-/// creating a thread with a [`Connection`] for each incoming
-/// connection.
+/// a [`Backend`]. When [`start()`][Database::start()] is called,
+/// it creates a new thread which the backend listens on, then
+/// starts a TCP listener, creating a thread with a [`Connection`]
+/// for each incoming connection.
 pub struct Database {
     backend: Backend,
     sender: Sender<Request>,

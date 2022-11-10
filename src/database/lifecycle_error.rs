@@ -1,7 +1,8 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-/// An error during the startup of a [`Database`].
+/// An error during the startup of a
+/// [`Database`][crate::database::Database].
 ///
 /// A lifecycle error cannot be recovered from and
 /// should case the process to exit.
