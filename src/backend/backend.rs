@@ -67,7 +67,6 @@ mod operations {
                 .io
                 .write_block(bytes)
                 .map_err(OperationError::IOError)?;
-            let position = position + 8;
             let selection = Selection {
                 position,
                 schema: document.schema,
@@ -84,7 +83,6 @@ mod operations {
             self.io.reset_position().map_err(OperationError::IOError)?;
             loop {
                 let (position, block) = self.io.next().map_err(OperationError::IOError)?;
-                let position = position + 8;
                 let mut parser = ArchiveParser::new(
                     schema.clone(),
                     block,
