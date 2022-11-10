@@ -7,6 +7,12 @@ use serde::Deserialize;
 use std::io::Read;
 
 impl Document {
+    /// Reads a JSON serialized [`Document`] from
+    /// a [`Read`].
+    ///
+    /// First deserializes a [`BareDocument`] with a
+    /// [`serde_json::Deserializer`], then converts that
+    /// into a [`Document`].
     pub fn from_reader(
         reader: impl Read,
         schema: &Schema,
