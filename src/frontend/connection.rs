@@ -74,7 +74,7 @@ impl Connection {
 
 /// Wrapper module for statement execution logic.
 ///
-/// See [`execute_statement`][Document::execute_statement].
+/// See [`execute_statement`][crate::schema::Document#method.execute_statement].
 mod execute_statement {
     use super::*;
     use crate::schema::Document;

@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
 /// An error raised while executing a backend
-/// [`Request`][crate::backend::request].
+/// [`Request`][crate::backend::Request].
 ///
 /// This gets wrapped in a
 /// [`FrontendError`][crate::frontend::frontend_error::FrontendError]
