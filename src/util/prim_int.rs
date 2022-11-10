@@ -1,5 +1,6 @@
 use std::mem::size_of;
 
+/// A trait for arrays that can be instantiated from a u8 slice.
 pub trait FromByteSlice {
     fn from_slice(bytes: &[u8]) -> Self;
 }
@@ -20,6 +21,8 @@ from_byte_slice_impl!([u8; 2]);
 from_byte_slice_impl!([u8; 4]);
 from_byte_slice_impl!([u8; 8]);
 
+/// A trait for primitive integers which can be instantiated
+/// from a u8 slice.
 pub trait PrimInt {
     type Array: FromByteSlice;
 
