@@ -7,6 +7,8 @@ use std::collections::HashMap;
 /// whenever a new transaction is opened. Helper methods are
 /// used when running queries on this transaction.
 pub struct Transaction {
+    /// A map between selection identifiers and their
+    /// corresponding [`Selection`]s.
     pub selections: HashMap<String, Selection>,
 }
 
