@@ -45,12 +45,16 @@ impl Document {
             .fields
             .into_iter()
             .map(|field| {
-                let field_name = self
+                let definition = self
                     .schema
                     .fields
                     .iter()
                     .find(|f| f.id == field.id)
                     .ok_or_else(|| DeserializationError::FieldNotFound(field.id.to_string()))?;
+                Ok(BareField {
+                    name: definition.name,
+                    value: field.value.to_bare()?,
+                })
             })
             .collect();
         Ok(BareDocument { fields: fields? })
