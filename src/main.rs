@@ -3,6 +3,7 @@ use test_stuff::test_schema;
 
 // TODO remove all clones
 // TODO take ownership of reads and writes
+// TODO pointer type aliases
 mod archive;
 mod backend;
 mod database;
