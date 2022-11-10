@@ -1,3 +1,12 @@
+//! The `schema` module defines both the definitions
+//! and instances of stored values.
+//!
+//! | Definition    | Instance          |
+//! |---------------|-------------------|
+//! | [`Schema`]    | [`Document`]      |
+//! | [`Field`]     | [`FieldInstance`] |
+//! | [`FieldType`] | [`FieldValue`]    |
+//! | [`EnumCase`]  | [`EnumValue`]     |
 mod document;
 mod field;
 mod field_instance;
