@@ -27,6 +27,10 @@ pub struct Connection {
 }
 
 impl Connection {
+    /// Creates a new [`Connection`] from a network stream.
+    ///
+    /// Takes a sender for sending requests to the backend and
+    /// information about the Database's collections.
     pub fn new(stream: TcpStream, sender: Sender<Request>, collections: Vec<Schema>) -> Self {
         Self {
             stream,
@@ -37,6 +41,13 @@ impl Connection {
         }
     }
 
+    /// Starts listening for data over the stream.
+    ///
+    /// Data is parsed via the [`language`][crate::language]
+    /// parser and expression builder, then executing it via
+    /// [`execute_statement`]. The response is then recieved
+    /// from the backend, transformed and serialized to be
+    /// sent back to the client over the network stream.
     pub fn listen(&mut self) {
         loop {
             let response = parse(&mut BufReader::new(&mut self.stream))
@@ -61,9 +72,8 @@ impl Connection {
 }
 
 mod execute_statement {
-    use crate::schema::Document;
-
     use super::*;
+    use crate::schema::Document;
 
     impl Connection {
         pub fn execute_statement(
