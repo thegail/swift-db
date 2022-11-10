@@ -4,6 +4,11 @@ use crate::language::{ParseError, Statement};
 use crate::schema::{Document, FieldValue, Schema};
 use std::io::Read;
 
+/// Builds a [`Statement`] from a parsed expression.
+///
+/// Also takes schema information to correctly parse collection and field
+/// references, and a [`Read`] in order to parse additional information,
+/// such as document JSON.
 pub fn build_statement(
     expression: &[Expression],
     collections: &[Schema],
