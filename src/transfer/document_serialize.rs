@@ -1,7 +1,7 @@
 use super::bare_document::{BareDocument, BareField, BareValue};
 use super::DeserializationError;
 use crate::schema::{Document, FieldType, FieldValue};
-use serde::ser::{SerializeMap, SerializeSeq, SerializeStruct};
+use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Serialize, Serializer};
 
 impl Serialize for BareDocument {
@@ -82,8 +82,12 @@ impl FieldValue {
                 b.iter().map(|b| BareValue::Integer(*b as i64)).collect(),
             )),
             FieldValue::Array(a) => {
+                let subtype = match definition {
+                    FieldType::Array(s) => s,
+                    _ => return Err(DeserializationError::FieldTypeMismatch),
+                };
                 let values: Result<Vec<BareValue>, DeserializationError> =
-                    a.iter().map(|v| v.to_bare()).collect();
+                    a.iter().map(|v| v.to_bare(*subtype)).collect();
                 Ok(BareValue::Array(values?))
             }
             FieldValue::Object(o) => Ok(BareValue::Object(Box::new(o.to_bare()?))),
