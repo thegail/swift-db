@@ -56,6 +56,6 @@ impl BlockFileIO {
         buf.extend_from_slice(&(block.len() as u64).to_be_bytes());
         buf.append(&mut block);
         self.writer.write_all(&buf)?;
-        Ok(position as usize)
+        Ok(position as usize + 1)
     }
 }
