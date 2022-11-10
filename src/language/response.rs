@@ -13,7 +13,7 @@ impl Response {
             Response::Opened => writeln!(out, "(ok opened)")?,
             Response::Selected => writeln!(out, "(ok selected)")?,
             Response::Document(doc) => {
-                let write_result = doc.to_writer(out.by_ref());
+                let write_result = doc.into_writer(out.by_ref());
                 if let Err(error) = write_result {
                     writeln!(out, "Serialization error: {}", error)?;
                 }

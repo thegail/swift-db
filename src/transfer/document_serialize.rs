@@ -7,8 +7,8 @@ use serde_json::to_writer;
 use std::io::Write;
 
 impl Document {
-    pub fn to_writer(self, mut writer: impl Write) -> Result<(), DeserializationError> {
-        let bare = self.to_bare()?;
+    pub fn into_writer(self, mut writer: impl Write) -> Result<(), DeserializationError> {
+        let bare = self.into_bare()?;
         writeln!(writer, "(ok document)").unwrap_or(());
         to_writer(writer, &bare).map_err(DeserializationError::ParseError)
     }
@@ -50,7 +50,7 @@ impl Serialize for BareValue {
 }
 
 impl Document {
-    fn to_bare(self) -> Result<BareDocument, DeserializationError> {
+    fn into_bare(self) -> Result<BareDocument, DeserializationError> {
         let fields: Result<Vec<BareField>, DeserializationError> = self
             .fields
             .into_iter()
@@ -100,7 +100,7 @@ impl FieldValue {
                     a.into_iter().map(|v| v.to_bare(&*subtype)).collect();
                 Ok(BareValue::Array(values?))
             }
-            FieldValue::Object(o) => Ok(BareValue::Object(Box::new(o.to_bare()?))),
+            FieldValue::Object(o) => Ok(BareValue::Object(Box::new(o.into_bare()?))),
             FieldValue::Enum(e) => {
                 let cases = match definition {
                     FieldType::Enum(cases) => cases,
