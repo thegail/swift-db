@@ -3,6 +3,7 @@ mod field;
 mod field_instance;
 mod field_type;
 mod field_value;
+#[allow(clippy::module_inception)]
 mod schema;
 
 pub use document::Document;
