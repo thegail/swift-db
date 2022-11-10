@@ -26,8 +26,12 @@ impl Parser {
         loop {
             input.read_exact(&mut buf).map_err(ParseError::ReadError)?;
             let byte = buf[0];
-            if self.output.is_empty() && byte != b'(' {
-                return Err(ParseError::UnexpectedToken);
+            if self.output.is_empty() {
+                match byte {
+                    b' ' | b'\n' => continue,
+                    b'(' => (),
+                    _ => return Err(ParseError::UnexpectedToken),
+                }
             }
             if let Some(CurrentType::Literal) = self.current_type {
                 if self.is_escaped {
@@ -115,7 +119,7 @@ impl Parser {
                         })
                     }
                 },
-                b' ' => self.end_token(byte)?,
+                b' ' | b'\n' => self.end_token(byte)?,
                 b'"' => match self.current_type {
                     None => self.current_type = Some(CurrentType::Literal),
                     _ => {
