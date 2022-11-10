@@ -8,6 +8,14 @@ use std::io::{BufReader, BufWriter, Write};
 use std::net::TcpStream;
 use std::sync::mpsc::{channel, Sender};
 
+/// A manager for a network connection with a client.
+///
+/// A `Connection` listens for data on its own thread, invokes the
+/// [`language`][crate::language] parser to build statements, then
+/// executes them. The [`Transaction`] helper struct manages transaction
+/// state and helps in the execution of statements. Requests are passed
+/// to the backend via an MPSC channel, the response is serialized, and
+/// sent back over the network stream.
 pub struct Connection {
     stream: TcpStream,
     transactions: HashMap<String, Transaction>,
@@ -34,6 +42,7 @@ impl Connection {
             let response = parse(&mut BufReader::new(&mut self.stream))
                 .map_err(FrontendError::LanguageError)
                 .and_then(|tokens| {
+                    // TODO buffer this read
                     build_statement(&tokens, &self.collections, self.stream.by_ref())
                         .map_err(FrontendError::LanguageError)
                 })
