@@ -9,7 +9,7 @@ pub enum Response {
 }
 
 impl Response {
-    pub fn serialize(self, out: &mut impl Write) -> Result<(), std::io::Error> {
+    pub fn serialize(self, mut out: impl Write) -> Result<(), std::io::Error> {
         match self {
             Response::Opened => writeln!(out, "(ok opened)")?,
             Response::Selected => writeln!(out, "(ok selected)")?,
