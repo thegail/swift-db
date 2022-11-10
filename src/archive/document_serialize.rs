@@ -1,6 +1,8 @@
 use crate::schema::{Document, FieldValue};
 
 impl Document {
+    /// Serializes this [`Document`] to archive data, with
+    /// a schema identifier.
     pub fn serialize(&self) -> Vec<u8> {
         let mut vector = Vec::<u8>::new();
         let schema_bytes = self.schema.id.to_be_bytes();
@@ -9,6 +11,8 @@ impl Document {
         vector
     }
 
+    /// Serializes this [`Document`] to archive data, with
+    /// no schema identifier.
     pub fn serialize_subdocument(&self) -> Vec<u8> {
         let mut vector = Vec::<u8>::new();
         self.serialize_fields(&mut vector);
