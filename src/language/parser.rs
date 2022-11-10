@@ -26,10 +26,10 @@ impl Parser {
         loop {
             input.read_exact(&mut buf).map_err(ParseError::ReadError)?;
             let byte = buf[0];
+            if self.output.is_empty() && byte != b'(' {
+                return Err(ParseError::UnexpectedToken);
+            }
             if let Some(CurrentType::Literal) = self.current_type {
-                if self.output.is_empty() {
-                    return Err(ParseError::UnexpectedToken);
-                }
                 if self.is_escaped {
                     match byte {
                         b'"' | b'\\' => {
