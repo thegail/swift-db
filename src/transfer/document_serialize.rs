@@ -7,8 +7,9 @@ use serde_json::to_writer;
 use std::io::Write;
 
 impl Document {
-    pub fn to_writer(self, writer: impl Write) -> Result<(), DeserializationError> {
+    pub fn to_writer(self, mut writer: impl Write) -> Result<(), DeserializationError> {
         let bare = self.to_bare()?;
+        writeln!(writer, "(ok document)").unwrap_or(());
         to_writer(writer, &bare).map_err(DeserializationError::ParseError)
     }
 }
