@@ -116,7 +116,7 @@ fn build_create(
     let schema = collections
         .iter()
         .find(|c| &c.name == collection_name)
-        .ok_or(ParseError::UnknownIdentifier(collection_name.clone()))?;
+        .ok_or_else(|| ParseError::UnknownIdentifier(collection_name.clone()))?;
     let document = Document::from_reader(reader, schema).map_err(ParseError::TransferError)?;
     let statement = Statement::Create {
         identifier: identifier.clone(),

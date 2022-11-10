@@ -230,56 +230,56 @@ impl FieldValue {
             crate::schema::FieldType::Int => match bare {
                 BareValue::Integer(i) => {
                     if i < i32::MIN as i64 || i > i32::MAX as i64 {
-                        return Err(DeserializationError::Overflow(i));
+                        Err(DeserializationError::Overflow(i))
                     } else {
                         Ok(FieldValue::Int(i as i32))
                     }
                 }
-                _ => return Err(DeserializationError::FieldTypeMismatch),
+                _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::UInt => match bare {
                 BareValue::Integer(i) => {
                     if i < u32::MIN as i64 || i > u32::MAX as i64 {
-                        return Err(DeserializationError::Overflow(i));
+                        Err(DeserializationError::Overflow(i))
                     } else {
                         Ok(FieldValue::Int(i as i32))
                     }
                 }
-                _ => return Err(DeserializationError::FieldTypeMismatch),
+                _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::Long => match bare {
                 BareValue::Integer(i) => Ok(FieldValue::Long(i)),
-                _ => return Err(DeserializationError::FieldTypeMismatch),
+                _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::ULong => match bare {
                 BareValue::Integer(i) => {
                     if i < u64::MIN as i64 {
-                        return Err(DeserializationError::Overflow(i));
+                        Err(DeserializationError::Overflow(i))
                     } else {
                         Ok(FieldValue::ULong(i as u64))
                     }
                 }
-                _ => return Err(DeserializationError::FieldTypeMismatch),
+                _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::Float => match bare {
                 BareValue::Integer(i) => Ok(FieldValue::Float(i as f64)),
                 BareValue::Float(f) => Ok(FieldValue::Float(f)),
-                _ => return Err(DeserializationError::FieldTypeMismatch),
+                _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::Bool => match bare {
                 BareValue::Bool(b) => Ok(FieldValue::Bool(b)),
-                _ => return Err(DeserializationError::FieldTypeMismatch),
+                _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::DateTime => match bare {
                 BareValue::Integer(i) => {
                     let naive_time = NaiveDateTime::from_timestamp(i, 0);
                     Ok(FieldValue::DateTime(DateTime::from_utc(naive_time, Utc)))
                 }
-                _ => return Err(DeserializationError::FieldTypeMismatch),
+                _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::String => match bare {
                 BareValue::String(s) => Ok(FieldValue::String(s)),
-                _ => return Err(DeserializationError::FieldTypeMismatch),
+                _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::ByteArray => match bare {
                 BareValue::Array(a) => {
@@ -311,8 +311,7 @@ impl FieldValue {
             },
             crate::schema::FieldType::Object(sub_schema) => match bare {
                 BareValue::Object(o) => Ok(FieldValue::Object(Box::new(Document::from_bare(
-                    *o,
-                    &sub_schema,
+                    *o, sub_schema,
                 )?))),
                 _ => Err(DeserializationError::FieldTypeMismatch),
             },

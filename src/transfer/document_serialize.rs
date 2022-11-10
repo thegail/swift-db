@@ -20,7 +20,7 @@ impl Serialize for Document {
                 .fields
                 .iter()
                 .find(|f| f.id == field.id)
-                .ok_or(serde::ser::Error::custom("Field not found"))?;
+                .ok_or_else(|| serde::ser::Error::custom("Field not found"))?;
             let referenced_value = ReferencedFieldValue {
                 field: &field.value,
                 definition: &definition.field_type,
@@ -44,8 +44,8 @@ impl<'a> Serialize for ReferencedFieldValue<'a> {
             crate::schema::FieldValue::Float(f) => serializer.serialize_f64(*f),
             crate::schema::FieldValue::Bool(b) => serializer.serialize_bool(*b),
             crate::schema::FieldValue::DateTime(d) => serializer.serialize_i64(d.timestamp()),
-            crate::schema::FieldValue::String(s) => serializer.serialize_str(&s),
-            crate::schema::FieldValue::ByteArray(b) => serializer.serialize_bytes(&b),
+            crate::schema::FieldValue::String(s) => serializer.serialize_str(s),
+            crate::schema::FieldValue::ByteArray(b) => serializer.serialize_bytes(b),
             crate::schema::FieldValue::Array(array) => {
                 let mut list = serializer.serialize_seq(Some(array.len()))?;
                 let sub_definition = match self.definition {
@@ -98,11 +98,8 @@ impl<'a> Serialize for AssociatedValue<'a> {
             let field = self
                 .field
                 .as_ref()
-                .ok_or(serde::ser::Error::custom("Field not found"))?;
-            let referenced_value = ReferencedFieldValue {
-                field: &field,
-                definition: &definition,
-            };
+                .ok_or_else(|| serde::ser::Error::custom("Field not found"))?;
+            let referenced_value = ReferencedFieldValue { field, definition };
             object.serialize_field("_0", &referenced_value)?;
         }
         object.end()
