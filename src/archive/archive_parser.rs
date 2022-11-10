@@ -5,6 +5,12 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use std::iter::Iterator;
 use std::mem::size_of;
 
+/// A parser for the archive binary serialization format.
+///
+/// When used by the [`Backend`][crate::backend::Backend],
+/// an `ArchiveParser` takes a block of data produced by a
+/// [`BlockFileIO`][crate::archive::BlockFileIO] manager and
+/// deserializes a document from it.
 pub struct ArchiveParser {
     schema: Schema,
     data: Vec<u8>,
@@ -13,6 +19,8 @@ pub struct ArchiveParser {
 }
 
 impl ArchiveParser {
+    /// Creates a new [`ArchiveParser`] with a `Schema` and
+    /// some bytes of data.
     pub fn new(schema: Schema, data: Vec<u8>, fields_of_interest: Vec<u16>) -> Self {
         ArchiveParser {
             schema,
@@ -22,8 +30,9 @@ impl ArchiveParser {
         }
     }
 
+    /// Deserializes a [`Document`], checking the schema identifier
+    /// against the [`ArchiveParser`]'s provided schema.
     pub fn read_document(&mut self) -> Result<Document, ParseError> {
-        // Read document with a schema identifier
         let schema_id = self.parse_int::<u64>();
         if schema_id != self.schema.id {
             return Err(ParseError::SchemaMismatch);
@@ -31,6 +40,7 @@ impl ArchiveParser {
         self.read_subdocument()
     }
 
+    /// Deserializes a [`Document`] without a schema identifier.
     pub fn read_subdocument(&mut self) -> Result<Document, ParseError> {
         let length = self.data.len();
         let mut fields: Vec<FieldInstance> = vec![];
