@@ -3,6 +3,12 @@ use crate::schema::FieldType;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
+/// An error raised while executing a backend
+/// [`Request`][crate::backend::request].
+///
+/// This gets wrapped in a
+/// [`FrontendError`][crate::frontend::frontend_error::FrontendError]
+/// and sent to the client.
 #[derive(Debug)]
 pub enum OperationError {
     ParseError(ParseError),
