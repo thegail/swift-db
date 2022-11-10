@@ -174,11 +174,12 @@ mod execute_statement {
                 .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?]
             .selections[&selection];
             let (returner, return_reciever) = channel();
+            let all_fields = selection.schema.fields.iter().map(|f| f.id).collect();
             self.sender
                 .send(Request {
                     operation: Operation::Read {
                         selection: selection.clone(),
-                        fields: vec![],
+                        fields: all_fields,
                     },
                     return_channel: returner,
                 })
