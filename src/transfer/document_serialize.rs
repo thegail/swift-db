@@ -63,7 +63,7 @@ impl Document {
                     .ok_or_else(|| DeserializationError::FieldNotFound(field.id.to_string()))?;
                 Ok(BareField {
                     name: definition.name.clone(),
-                    value: field.value.to_bare(&definition.field_type)?,
+                    value: field.value.into_bare(&definition.field_type)?,
                 })
             })
             .collect();
@@ -72,7 +72,7 @@ impl Document {
 }
 
 impl FieldValue {
-    fn to_bare(self, definition: &FieldType) -> Result<BareValue, DeserializationError> {
+    fn into_bare(self, definition: &FieldType) -> Result<BareValue, DeserializationError> {
         match self {
             FieldValue::Int(i) => Ok(BareValue::Integer(i as i64)),
             FieldValue::UInt(i) => Ok(BareValue::Integer(i as i64)),
@@ -97,7 +97,7 @@ impl FieldValue {
                     _ => return Err(DeserializationError::FieldTypeMismatch),
                 };
                 let values: Result<Vec<BareValue>, DeserializationError> =
-                    a.into_iter().map(|v| v.to_bare(&*subtype)).collect();
+                    a.into_iter().map(|v| v.into_bare(&*subtype)).collect();
                 Ok(BareValue::Array(values?))
             }
             FieldValue::Object(o) => Ok(BareValue::Object(Box::new(o.into_bare()?))),
@@ -107,12 +107,12 @@ impl FieldValue {
                     _ => return Err(DeserializationError::FieldTypeMismatch),
                 };
                 let case = cases
-                    .into_iter()
+                    .iter()
                     .find(|c| c.id == e.case_id)
                     .ok_or_else(|| DeserializationError::CaseNotFound(e.case_id.to_string()))?;
                 let associated_object = if let Some(associated_value) = e.associated_value {
                     if let Some(associated_definition) = &case.associated_value {
-                        let bare_value = associated_value.to_bare(&associated_definition)?;
+                        let bare_value = associated_value.into_bare(associated_definition)?;
                         BareDocument {
                             fields: vec![BareField {
                                 name: "_0".to_string(),
