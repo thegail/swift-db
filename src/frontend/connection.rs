@@ -4,7 +4,7 @@ use crate::backend::{Operation, Query, Request, Response as BackendResponse};
 use crate::language::{build_statement, parse, Response, Statement};
 use crate::schema::Schema;
 use std::collections::HashMap;
-use std::io::{BufReader, BufWriter, Write};
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::net::TcpStream;
 use std::sync::mpsc::{channel, Sender};
 
@@ -25,7 +25,6 @@ pub struct Connection {
     transactions: Vec<Transaction>,
     selection_map: HashMap<String, (String, usize)>,
     sender: Sender<Request>,
-    // TODO something better here
     collections: Vec<Schema>,
 }
 
@@ -55,11 +54,12 @@ impl Connection {
     /// [`language`]: crate::language
     pub fn listen(&mut self) {
         loop {
-            let response = parse(&mut BufReader::new(&mut self.stream))
+            let mut reader = BufReader::new(&mut self.stream);
+            let response = parse(reader.by_ref())
                 .map_err(FrontendError::LanguageError)
                 .and_then(|tokens| {
                     // TODO buffer this read
-                    build_statement(&tokens, &self.collections, self.stream.by_ref())
+                    build_statement(&tokens, &self.collections, reader.by_ref())
                         .map_err(FrontendError::LanguageError)
                 })
                 .and_then(|statement| self.execute_statement(statement));
