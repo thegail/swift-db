@@ -12,6 +12,7 @@ pub enum FrontendError {
     OperationError(OperationError),
     SendError,
     RecieveError,
+    TransactionState,
     TransactionRedeclaration(String),
     UnknownTransaction(String),
     SelectionRedeclaration(String),
@@ -29,6 +30,10 @@ impl Display for FrontendError {
             }
             FrontendError::SendError => write!(formatter, "Error sending request to backend"),
             FrontendError::RecieveError => write!(formatter, "Error recieving from backend"),
+            FrontendError::TransactionState => write!(
+                formatter,
+                "Action not permitted in current transaction state"
+            ),
             FrontendError::TransactionRedeclaration(identifier) => {
                 write!(
                     formatter,
