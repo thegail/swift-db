@@ -22,9 +22,8 @@ use std::sync::mpsc::{channel, Sender};
 /// [`Database`]: crate::database::Database
 pub struct Connection {
     stream: TcpStream,
-    transactions: HashMap<String, Transaction>,
-    // TODO this is incredibly stupid but it works...im tired
-    selection_map: HashMap<String, String>,
+    transactions: Vec<Transaction>,
+    selection_map: HashMap<String, (String, usize)>,
     sender: Sender<Request>,
     // TODO something better here
     collections: Vec<Schema>,
@@ -38,7 +37,7 @@ impl Connection {
     pub fn new(stream: TcpStream, sender: Sender<Request>, collections: Vec<Schema>) -> Self {
         Self {
             stream,
-            transactions: HashMap::new(),
+            transactions: Vec::new(),
             selection_map: HashMap::new(),
             sender,
             collections,
@@ -84,7 +83,7 @@ impl Connection {
 /// [`execute_statement`]: crate::schema::Document#method.execute_statement
 mod execute_statement {
     use super::*;
-    use crate::schema::Document;
+    use crate::{backend::Selection, schema::Document};
 
     impl Connection {
         /// Executes a language [`Statement`].
@@ -113,10 +112,14 @@ mod execute_statement {
         }
 
         fn open(&mut self, transaction: String) -> Result<Response, FrontendError> {
-            if self.transactions.contains_key(&transaction) {
+            if self
+                .transactions
+                .iter()
+                .any(|t| t.identifier == transaction)
+            {
                 return Err(FrontendError::TransactionRedeclaration(transaction));
             }
-            self.transactions.insert(transaction, Transaction::new());
+            self.transactions.push(Transaction::new(transaction));
             Ok(Response::Opened)
         }
 
@@ -145,13 +148,7 @@ mod execute_statement {
                 .request(Operation::FindOne { query })?
                 .get_selection()
                 .ok_or(FrontendError::RecieveError)?;
-            let transaction = self
-                .transactions
-                .get_mut(&transaction_identifier)
-                .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
-            transaction.selections.insert(identifier.clone(), selection);
-            self.selection_map
-                .insert(identifier, transaction_identifier);
+            self.create_selection(transaction_identifier, selection, identifier)?;
             Ok(Response::Selected)
         }
 
@@ -168,22 +165,21 @@ mod execute_statement {
                 .request(Operation::Create { document })?
                 .get_selection()
                 .ok_or(FrontendError::RecieveError)?;
-            let transaction = self
-                .transactions
-                .get_mut(&transaction_identifier)
-                .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
-            transaction.selections.insert(identifier.clone(), selection);
-            self.selection_map
-                .insert(identifier, transaction_identifier);
+            self.create_selection(transaction_identifier, selection, identifier)?;
             Ok(Response::Selected)
         }
 
         fn read_all(&mut self, selection: String) -> Result<Response, FrontendError> {
-            let selection = &self.transactions[self
+            let location = self
                 .selection_map
                 .get(&selection)
-                .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?]
-            .selections[&selection];
+                .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?;
+            let selection = &self
+                .transactions
+                .iter()
+                .find(|f| f.identifier == location.0)
+                .unwrap()
+                .selections[location.1];
             let all_fields = selection.schema.fields.iter().map(|f| f.id).collect();
             let document = self
                 .request(Operation::Read {
@@ -208,6 +204,25 @@ mod execute_statement {
                 .or(Err(FrontendError::RecieveError))?
                 .map_err(FrontendError::OperationError)?;
             Ok(result)
+        }
+
+        fn create_selection(
+            &mut self,
+            transaction_identifier: String,
+            selection: Selection,
+            identifier: String,
+        ) -> Result<(), FrontendError> {
+            let transaction = self
+                .transactions
+                .iter_mut()
+                .find(|t| t.identifier == transaction_identifier)
+                .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
+            transaction.selections.push(selection);
+            self.selection_map.insert(
+                identifier,
+                (transaction_identifier, transaction.selections.len() - 1),
+            );
+            Ok(())
         }
     }
 }
