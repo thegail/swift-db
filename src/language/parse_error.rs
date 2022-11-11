@@ -4,11 +4,10 @@ use std::fmt::{Display, Formatter};
 
 /// An error raised when transforming a byte stream into a [`Statement`].
 ///
-/// This gets wrapped in a [`FrontendError`] before being passed back to
+/// This gets wrapped in a `FrontendError` before being passed back to
 /// the client.
 ///
 /// [`Statement`]: crate::language::Statement
-/// [`FrontendError`]: crate::frontend::frontend_error::FrontendError
 #[derive(Debug)]
 pub enum ParseError {
     ReadError(std::io::Error),
