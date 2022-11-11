@@ -1,6 +1,6 @@
 use super::frontend_error::FrontendError;
 use super::transaction::Transaction;
-use crate::backend::{Operation, Query, Request};
+use crate::backend::{Operation, Query, Request, Response as BackendResponse};
 use crate::language::{build_statement, parse, Response, Statement};
 use crate::schema::Schema;
 use std::collections::HashMap;
@@ -204,24 +204,30 @@ mod execute_statement {
                 .get(&selection)
                 .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?]
             .selections[&selection];
-            let (returner, return_reciever) = channel();
             let all_fields = selection.schema.fields.iter().map(|f| f.id).collect();
+            let document = self
+                .request(Operation::Read {
+                    selection: selection.clone(),
+                    fields: all_fields,
+                })?
+                .get_document()
+                .ok_or(FrontendError::RecieveError)?;
+            Ok(Response::Document(document))
+        }
+
+        fn request(&self, operation: Operation) -> Result<BackendResponse, FrontendError> {
+            let (returner, return_reciever) = channel();
             self.sender
                 .send(Request {
-                    operation: Operation::Read {
-                        selection: selection.clone(),
-                        fields: all_fields,
-                    },
+                    operation,
                     return_channel: returner,
                 })
-                .or(Err(FrontendError::SendError))?;
+                .or(Err(FrontendError::RecieveError))?;
             let result = return_reciever
                 .recv()
                 .or(Err(FrontendError::RecieveError))?
                 .map_err(FrontendError::OperationError)?;
-            Ok(Response::Document(
-                result.get_document().ok_or(FrontendError::RecieveError)?,
-            ))
+            Ok(result)
         }
     }
 }
