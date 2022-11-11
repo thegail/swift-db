@@ -1,5 +1,4 @@
 use crate::backend::Selection;
-use std::collections::HashMap;
 
 /// A helper struct for managing transaction state.
 ///
@@ -9,16 +8,24 @@ use std::collections::HashMap;
 ///
 /// [`Connection`]: crate::frontend::Connection
 pub struct Transaction {
-    /// A map between selection identifiers and their
-    /// corresponding [`Selection`]s.
-    pub selections: HashMap<String, Selection>,
+    /// The language identifier referring to this transaction.
+    pub identifier: String,
+    pub selections: Vec<Selection>,
+    state: State,
 }
 
 impl Transaction {
     /// Creates a new transaction.
-    pub fn new() -> Self {
-        Transaction {
-            selections: HashMap::new(),
+    pub fn new(identifier: String) -> Self {
+        Self {
+            identifier,
+            selections: Vec::new(),
+            state: State::Selection,
         }
     }
+}
+
+enum State {
+    Selection,
+    Action,
 }
