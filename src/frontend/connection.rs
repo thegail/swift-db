@@ -141,25 +141,15 @@ mod execute_statement {
             if self.selection_map.contains_key(&identifier) {
                 return Err(FrontendError::SelectionRedeclaration(identifier));
             }
-            let (returner, return_reciever) = channel();
-            self.sender
-                .send(Request {
-                    operation: Operation::FindOne { query },
-                    return_channel: returner,
-                })
-                .or(Err(FrontendError::SendError))?;
-            let result = return_reciever
-                .recv()
-                .or(Err(FrontendError::RecieveError))?
-                .map_err(FrontendError::OperationError)?;
+            let selection = self
+                .request(Operation::FindOne { query })?
+                .get_selection()
+                .ok_or(FrontendError::RecieveError)?;
             let transaction = self
                 .transactions
                 .get_mut(&transaction_identifier)
                 .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
-            transaction.selections.insert(
-                identifier.clone(),
-                result.get_selection().ok_or(FrontendError::RecieveError)?,
-            );
+            transaction.selections.insert(identifier.clone(), selection);
             self.selection_map
                 .insert(identifier, transaction_identifier);
             Ok(Response::Selected)
@@ -174,25 +164,15 @@ mod execute_statement {
             if self.selection_map.contains_key(&identifier) {
                 return Err(FrontendError::SelectionRedeclaration(identifier));
             }
-            let (returner, return_reciever) = channel();
-            self.sender
-                .send(Request {
-                    operation: Operation::Create { document },
-                    return_channel: returner,
-                })
-                .or(Err(FrontendError::SendError))?;
-            let result = return_reciever
-                .recv()
-                .or(Err(FrontendError::RecieveError))?
-                .map_err(FrontendError::OperationError)?;
+            let selection = self
+                .request(Operation::Create { document })?
+                .get_selection()
+                .ok_or(FrontendError::RecieveError)?;
             let transaction = self
                 .transactions
                 .get_mut(&transaction_identifier)
                 .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
-            transaction.selections.insert(
-                identifier.clone(),
-                result.get_selection().ok_or(FrontendError::RecieveError)?,
-            );
+            transaction.selections.insert(identifier.clone(), selection);
             self.selection_map
                 .insert(identifier, transaction_identifier);
             Ok(Response::Selected)
@@ -222,7 +202,7 @@ mod execute_statement {
                     operation,
                     return_channel: returner,
                 })
-                .or(Err(FrontendError::RecieveError))?;
+                .or(Err(FrontendError::SendError))?;
             let result = return_reciever
                 .recv()
                 .or(Err(FrontendError::RecieveError))?
