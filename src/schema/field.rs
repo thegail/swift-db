@@ -1,7 +1,8 @@
 use crate::schema::FieldType;
 
-/// A definition of a field which a
-/// [`Document`][crate::schema::Document] may have.
+/// A definition of a field which a [`Document`] may have.
+///
+/// [`Document`]: crate::schema::Document
 #[derive(Clone)]
 pub struct Field {
     /// The name of this field.

@@ -2,8 +2,9 @@ use crate::backend::{OperationError, Query, Selection};
 use crate::schema::Document;
 use std::sync::mpsc::Sender;
 
-/// A request for the [`Backend`][crate::backend::Backend] to execute
-/// some [`Operation`].
+/// A request for the [`Backend`] to execute some [`Operation`].
+///
+/// [`Backend`]: crate::backend::Backend
 pub struct Request {
     /// The [`Operation`] to execute.
     pub operation: Operation,
@@ -11,8 +12,9 @@ pub struct Request {
     pub return_channel: Sender<Result<Response, OperationError>>,
 }
 
-/// An operation for the [`Backend`][crate::backend::Backend] to
-/// execute.
+/// An operation for the [`Backend`] to execute.
+///
+/// [`Backend`]: crate::backend::Backend
 pub enum Operation {
     /// Find one [`Document`] in a collection.
     ///

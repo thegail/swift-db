@@ -10,13 +10,16 @@ use std::sync::mpsc::{channel, Sender};
 
 /// A manager for a network connection with a client.
 ///
-/// Instantiated by a [`Database`][crate::database::Database] instance's
-/// connection listener, a `Connection` listens for data on its own thread,
-/// invokes the [`language`][crate::language] parser to build statements, then
-/// executes them. The [`Transaction`] helper struct manages transaction
-/// state and helps in the execution of statements. Requests are passed
-/// to the backend via an MPSC channel, the response is serialized, and
-/// sent back over the network stream.
+/// Instantiated by a [`Database`] instance's connection listener, a
+/// `Connection` listens for data on its own thread, invokes the
+/// [`language`] parser to build statements, then executes them. The
+/// [`Transaction`] helper struct manages transaction state and helps in
+/// the execution of statements. Requests are passed to the backend via
+/// an MPSC channel, the response is serialized, and sent back over the
+/// network stream.
+///
+/// [`language`]: crate::language
+/// [`Database`]: crate::database::Database
 pub struct Connection {
     stream: TcpStream,
     transactions: HashMap<String, Transaction>,
@@ -44,11 +47,13 @@ impl Connection {
 
     /// Starts listening for data over the stream.
     ///
-    /// Data is parsed via the [`language`][crate::language]
-    /// parser and expression builder, then executing it via
-    /// [`execute_statement`]. The response is then recieved
-    /// from the backend, transformed and serialized to be
-    /// sent back to the client over the network stream.
+    /// Data is parsed via the [`language`] parser and expression
+    /// builder, then executing it via [`execute_statement`]. The
+    /// response is then recieved from the backend, transformed and
+    /// serialized to be sent back to the client over the network
+    /// stream.
+    ///
+    /// [`language`]: crate::language
     pub fn listen(&mut self) {
         loop {
             let response = parse(&mut BufReader::new(&mut self.stream))
@@ -74,7 +79,9 @@ impl Connection {
 
 /// Wrapper module for statement execution logic.
 ///
-/// See [`execute_statement`][crate::schema::Document#method.execute_statement].
+/// See [`execute_statement`].
+///
+/// [`execute_statement`]: crate::schema::Document#method.execute_statement
 mod execute_statement {
     use super::*;
     use crate::schema::Document;

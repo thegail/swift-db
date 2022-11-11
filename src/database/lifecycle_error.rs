@@ -1,11 +1,12 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-/// An error during the startup of a
-/// [`Database`][crate::database::Database].
+/// An error during the startup of a [`Database`].
 ///
 /// A lifecycle error cannot be recovered from and
-/// should case the process to exit.
+/// should cause the process to exit.
+///
+/// [`Database`]: crate::database::Database
 #[derive(Debug)]
 pub enum LifecycleError {
     BackendError(std::io::Error),

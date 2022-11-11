@@ -1,6 +1,8 @@
 use crate::schema::Schema;
 
-/// The type of a [`Field`][crate::schema::Field].
+/// The type of a [`Field`].
+///
+/// [`Field`]: crate::schema::Field
 #[derive(Clone)]
 pub enum FieldType {
     Int,

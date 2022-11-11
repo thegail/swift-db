@@ -1,10 +1,11 @@
 use std::fmt::{Display, Formatter};
 
-/// An error while serializing or deserializing a
-/// [`Document`][crate::schema::Document]. When thrown,
-/// this error is wrapped in a
-/// [`ParseError`][crate::language::ParseError] by
+/// An error while serializing or deserializing a [`Document`].
+/// When thrown, this error is wrapped in a [`ParseError`] by
 /// the language parser.
+///
+/// [`Document`]: crate::schema::Document
+/// [`ParseError`]: crate::language::ParseError
 #[derive(Debug)]
 pub enum DeserializationError {
     FieldNotFound(String),

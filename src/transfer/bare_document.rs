@@ -1,8 +1,9 @@
-/// An intermediate format for serializing and
-/// deserializing [`Document`][crate::schema::Document]s.
+/// An intermediate format for serializing and deserializing
+/// [`Document`]s.
 ///
-/// Implements [`serde::Serialize`] and
-/// [`serde::Deserialize`].
+/// Implements [`serde::Serialize`] and [`serde::Deserialize`].
+///
+/// [`Document`]: crate::schema::Document
 pub struct BareDocument {
     pub fields: Vec<BareField>,
 }
