@@ -1,3 +1,8 @@
+//! SwiftDB is a performant, ACID-compliant, stripped-down
+//! document database built to work easily with Swift.
+//!
+//! See [`Database`] for a description of the architecture
+//! of this program.
 use database::{Database, LifecycleError};
 use test_stuff::test_schema;
 
