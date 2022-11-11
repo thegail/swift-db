@@ -5,10 +5,9 @@ use std::fmt::{Debug, Display, Formatter};
 
 /// An error raised while executing a backend [`Request`].
 ///
-/// This gets wrapped in a [`FrontendError`] and sent to the client.
+/// This gets wrapped in a `FrontendError` and sent to the client.
 ///
 /// [`Request`]: crate::backend::Request
-/// [`FrontendError`]: crate::frontend::frontend_error::FrontendError
 #[derive(Debug)]
 pub enum OperationError {
     ParseError(ParseError),
