@@ -130,7 +130,12 @@ impl FieldValue {
                 } else {
                     BareDocument { fields: Vec::new() }
                 };
-                Ok(BareValue::Object(Box::new(associated_object)))
+                Ok(BareValue::Object(Box::new(BareDocument {
+                    fields: vec![BareField {
+                        name: case.name.clone(),
+                        value: BareValue::Object(Box::new(associated_object)),
+                    }],
+                })))
             }
         }
     }
