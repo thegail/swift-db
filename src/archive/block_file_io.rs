@@ -3,12 +3,15 @@ use std::io::{BufReader, Error, Read, Seek, SeekFrom, Write};
 
 /// A utility to read and write blocks of data to/from a storage file.
 ///
-/// An instance of a `BlockFileIO` manager is owned by the
-/// [`Backend`][crate::backend::Backend], which calls
-/// [`next`][BlockFileIO#method.next],
-/// [`read_at_position`][BlockFileIO#method.read_at_position],
-/// and [`write_block`][BlockFileIO#method.write] to read and write
-/// [`Document`][crate::schema::Document]s.
+/// An instance of a `BlockFileIO` manager is owned by the [`Backend`],
+/// which calls [`next`], [`read_at_position`], and [`write_block`] to
+/// read and write [`Document`]s.
+///
+/// [`Backend`]: crate::backend::Backend
+/// [`next`]: BlockFileIO#method.next
+/// [`read_at_position`]: BlockFileIO#method.read_at_position
+/// [`write_block`]: BlockFileIO#method.write
+/// [`Document`]: crate::schema::Document
 pub struct BlockFileIO {
     reader: BufReader<File>,
     writer: File,

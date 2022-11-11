@@ -7,10 +7,13 @@ use std::mem::size_of;
 
 /// A parser for the archive binary serialization format.
 ///
-/// When used by the [`Backend`][crate::backend::Backend],
+/// When used by the [`Backend`],
 /// an `ArchiveParser` takes a block of data produced by a
-/// [`BlockFileIO`][crate::archive::BlockFileIO] manager and
+/// [`BlockFileIO`] manager and
 /// deserializes a document from it.
+///
+/// [`Backend`]: crate::backend::Backend
+/// [`BlockFileIO`]: crate::archive::BlockFileIO
 pub struct ArchiveParser {
     schema: Schema,
     data: Vec<u8>,

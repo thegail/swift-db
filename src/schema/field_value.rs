@@ -2,7 +2,9 @@ use crate::schema::{Document, FieldType, Schema};
 use chrono::{DateTime, Utc};
 
 /// An actual value stored in a
-/// [`FieldInstance`][crate::schema::FieldInstance].
+/// [`FieldInstance`].
+///
+/// [`FieldInstance`]: crate::schema::FieldInstance
 #[derive(Clone)]
 pub enum FieldValue {
     Int(i32),

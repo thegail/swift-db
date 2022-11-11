@@ -5,9 +5,11 @@
 //! The [`parse`] function yields parses incoming s-expressions,
 //! yeilding a [`Vec<Expression>`], which then is assembled into
 //! an executable [`Statement`] by the [`build_statement()`] function.
-//! Additionally, the [`frontend`][crate::frontend]'s [`Response`]
-//! statements are serialized into s-expressions with
-//! [`Response::serialize`] and returned to the client.
+//! Additionally, the [`frontend`]'s [`Response`] statements are
+//! serialized into s-expressions with [`Response::serialize`] and
+//! returned to the client.
+//!
+//! [`frontend`]: crate::frontend
 mod build_statement;
 mod expression;
 mod parse_error;

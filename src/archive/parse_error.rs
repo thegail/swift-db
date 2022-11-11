@@ -1,11 +1,12 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-/// An error raised during parsing with an
-/// [`ArchiveParser`][crate::archive::ArchiveParser].
+/// An error raised during parsing with an [`ArchiveParser`].
 ///
-/// This error gets wrapped in an
-/// [`OperationError`][crate::backend::OperationError].
+/// This error gets wrapped in an [`OperationError`].
+///
+/// [`ArchiveParser`]: crate::archive::ArchiveParser
+/// [`OperationError`]: crate::backend::OperationError
 #[derive(Debug)]
 pub enum ParseError {
     SchemaMismatch,

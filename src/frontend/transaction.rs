@@ -3,9 +3,11 @@ use std::collections::HashMap;
 
 /// A helper struct for managing transaction state.
 ///
-/// Instantiated by a [`Connection`][crate::frontend::Connection]
-/// whenever a new transaction is opened. Helper methods are
-/// used when running queries on this transaction.
+/// Instantiated by a [`Connection`] whenever a new transaction
+/// is opened. Helper methods are used when running queries on
+/// this transaction.
+///
+/// [`Connection`]: crate::frontend::Connection
 pub struct Transaction {
     /// A map between selection identifiers and their
     /// corresponding [`Selection`]s.
