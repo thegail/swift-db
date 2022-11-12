@@ -1,3 +1,4 @@
+use super::frontend_error::FrontendError;
 use crate::backend::Selection;
 
 /// A helper struct for managing transaction state.
@@ -21,6 +22,26 @@ impl Transaction {
             identifier,
             selections: Vec::new(),
             state: State::Selection,
+        }
+    }
+
+    pub fn guard_selection(&self) -> Result<(), FrontendError> {
+        match self.state {
+            State::Selection => Ok(()),
+            _ => Err(FrontendError::TransactionState),
+        }
+    }
+
+    pub fn acquire(&mut self) -> Result<(), FrontendError> {
+        self.guard_selection()?;
+        self.state = State::Action;
+        Ok(())
+    }
+
+    pub fn guard_action(&self) -> Result<(), FrontendError> {
+        match self.state {
+            State::Action => Ok(()),
+            _ => Err(FrontendError::TransactionState),
         }
     }
 }
