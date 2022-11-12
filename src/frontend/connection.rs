@@ -123,8 +123,10 @@ mod execute_statement {
             Ok(Response::Opened)
         }
 
-        fn acquire(&mut self, _transaction: String) -> Result<Response, FrontendError> {
-            todo!()
+        fn acquire(&mut self, transaction_identifier: String) -> Result<Response, FrontendError> {
+            let transaction_index = self.get_transaction_index(&transaction_identifier)?;
+            self.transactions[transaction_index].acquire()?;
+            Ok(Response::Acquired)
         }
 
         fn commit(&mut self, _transaction: String) -> Result<Response, FrontendError> {
@@ -141,6 +143,8 @@ mod execute_statement {
             transaction_identifier: String,
             query: Query,
         ) -> Result<Response, FrontendError> {
+            let transaction_index = self.get_transaction_index(&transaction_identifier)?;
+            self.transactions[transaction_index].guard_selection()?;
             if self.selection_map.contains_key(&identifier) {
                 return Err(FrontendError::SelectionRedeclaration(identifier));
             }
@@ -148,7 +152,7 @@ mod execute_statement {
                 .request(Operation::FindOne { query })?
                 .get_selection()
                 .ok_or(FrontendError::RecieveError)?;
-            self.create_selection(transaction_identifier, selection, identifier)?;
+            self.create_selection(transaction_index, selection, identifier)?;
             Ok(Response::Selected)
         }
 
@@ -158,6 +162,8 @@ mod execute_statement {
             transaction_identifier: String,
             document: Document,
         ) -> Result<Response, FrontendError> {
+            let transaction_index = self.get_transaction_index(&transaction_identifier)?;
+            self.transactions[transaction_index].guard_action()?;
             if self.selection_map.contains_key(&identifier) {
                 return Err(FrontendError::SelectionRedeclaration(identifier));
             }
@@ -165,7 +171,7 @@ mod execute_statement {
                 .request(Operation::Create { document })?
                 .get_selection()
                 .ok_or(FrontendError::RecieveError)?;
-            self.create_selection(transaction_identifier, selection, identifier)?;
+            self.create_selection(transaction_index, selection, identifier)?;
             Ok(Response::Selected)
         }
 
@@ -174,12 +180,9 @@ mod execute_statement {
                 .selection_map
                 .get(&selection)
                 .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?;
-            let selection = &self
-                .transactions
-                .iter()
-                .find(|f| f.identifier == location.0)
-                .unwrap()
-                .selections[location.1];
+            let transaction_index = self.get_transaction_index(&location.0)?;
+            self.transactions[transaction_index].guard_action()?;
+            let selection = &self.transactions[transaction_index].selections[location.1];
             let all_fields = selection.schema.fields.iter().map(|f| f.id).collect();
             let document = self
                 .request(Operation::Read {
@@ -208,21 +211,32 @@ mod execute_statement {
 
         fn create_selection(
             &mut self,
-            transaction_identifier: String,
+            transaction_index: usize,
             selection: Selection,
             identifier: String,
         ) -> Result<(), FrontendError> {
-            let transaction = self
-                .transactions
-                .iter_mut()
-                .find(|t| t.identifier == transaction_identifier)
-                .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
+            let transaction = &mut self.transactions[transaction_index];
             transaction.selections.push(selection);
             self.selection_map.insert(
                 identifier,
-                (transaction_identifier, transaction.selections.len() - 1),
+                (
+                    transaction.identifier.clone(),
+                    transaction.selections.len() - 1,
+                ),
             );
             Ok(())
+        }
+
+        fn get_transaction_index(
+            &self,
+            transaction_identifier: &String,
+        ) -> Result<usize, FrontendError> {
+            let index = self
+                .transactions
+                .iter()
+                .position(|t| &t.identifier == transaction_identifier)
+                .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
+            Ok(index)
         }
     }
 }
