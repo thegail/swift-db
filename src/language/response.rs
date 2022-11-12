@@ -9,6 +9,7 @@ use std::io::Write;
 /// [`frontend`]: crate::frontend
 pub enum Response {
     Opened,
+    Acquired,
     Selected,
     Document(Document),
 }
@@ -18,6 +19,7 @@ impl Response {
     pub fn serialize(self, mut out: impl Write) -> Result<(), std::io::Error> {
         match self {
             Response::Opened => writeln!(out, "(ok opened)")?,
+            Response::Acquired => writeln!(out, "(ok acquired)")?,
             Response::Selected => writeln!(out, "(ok selected)")?,
             Response::Document(doc) => {
                 let write_result = doc.into_writer(out.by_ref());
