@@ -10,6 +10,7 @@ use std::io::Write;
 pub enum Response {
     Opened,
     Acquired,
+    Closed,
     Selected,
     Document(Document),
 }
@@ -20,6 +21,7 @@ impl Response {
         match self {
             Response::Opened => writeln!(out, "(ok opened)")?,
             Response::Acquired => writeln!(out, "(ok acquired)")?,
+            Response::Closed => writeln!(out, "(ok closed)")?,
             Response::Selected => writeln!(out, "(ok selected)")?,
             Response::Document(doc) => {
                 let write_result = doc.into_writer(out.by_ref());
