@@ -38,6 +38,8 @@ impl BlockFileIO {
             self.reader.read_exact(&mut buf)?;
             if buf[0] == 69 {
                 break Ok((self.reader.stream_position()? as usize, self.read_block()?));
+            } else if buf[0] == 68 {
+                self.skip_block()?;
             } else if buf[0] != 0 {
                 break Err(Error::new(std::io::ErrorKind::InvalidData, "Invalid byte"));
             }
@@ -54,6 +56,15 @@ impl BlockFileIO {
         handle.read_to_end(&mut buffer)?;
 
         Ok(buffer)
+    }
+
+    fn skip_block(&mut self) -> Result<(), Error> {
+        let mut length_bytes = [0u8; 8];
+        self.reader.read_exact(&mut length_bytes)?;
+        let block_length = u64::from_be_bytes(length_bytes);
+
+        self.reader.seek(SeekFrom::Current(block_length as i64))?;
+        Ok(())
     }
 
     /// Read the data of a block at a certain position.
@@ -80,5 +91,12 @@ impl BlockFileIO {
         buf.append(&mut block);
         self.writer.write_all(&buf)?;
         Ok(position as usize + 1)
+    }
+
+    /// Marks a block as removed
+    pub fn remove_block(&mut self, position: usize) -> Result<(), Error> {
+        self.reader.seek(SeekFrom::Start(position as u64))?;
+        self.writer.write_all(&[68u8])?;
+        Ok(())
     }
 }
