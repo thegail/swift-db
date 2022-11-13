@@ -14,7 +14,6 @@ The following top level functions are available:
 -   [`(close)`](#close)
 -   [`(select)`](#select)
 -   [`(selects)`](#select)
--   [`(acquire)`](#acquire)
 -   [`(create)`](#create)
 -   [`(read)`](#read)
 -   [`(update)`](#update)
