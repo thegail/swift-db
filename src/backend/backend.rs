@@ -1,7 +1,6 @@
-use crate::archive::BlockFileIO;
-use crate::archive::{ArchiveParser, ParseError};
+use crate::archive::{ArchiveParser, BlockFileIO, ParseError};
 use crate::backend::{Operation, OperationError, Query, Request, Response, Selection};
-use crate::schema::{Document, Schema};
+use crate::schema::{Document, FieldInstance, Schema};
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io;
@@ -73,6 +72,7 @@ impl Backend {
 /// See [`Backend::execute_operation`].
 mod operations {
     use super::*;
+
     impl Backend {
         /// Execute an [`Operation`] from a [`Request`].
         ///
@@ -83,12 +83,20 @@ mod operations {
         ) -> Result<Response, OperationError> {
             match operation {
                 Operation::FindOne { query } => Ok(Response::Selection(self.find_one(query)?)),
-                Operation::Read { selection, fields } => {
-                    Ok(Response::Document(self.read(selection, fields)?))
-                }
                 Operation::Create { document } => {
                     let selection = self.create(document)?;
                     Ok(Response::Selection(selection))
+                }
+                Operation::Read { selection, fields } => {
+                    Ok(Response::Document(self.read(selection, fields)?))
+                }
+                Operation::Update { selection, fields } => {
+                    self.update(selection, fields)?;
+                    Ok(Response::Ok)
+                }
+                Operation::Delete { selection } => {
+                    self.delete(selection)?;
+                    Ok(Response::Ok)
                 }
             }
         }
@@ -216,5 +224,26 @@ mod operations {
         //         })
         //         .collect()
         // }
+
+        fn update(
+            &mut self,
+            selection: Selection,
+            fields: Vec<FieldInstance>,
+        ) -> Result<(), OperationError> {
+            // TODO optimize
+            self.delete(selection.clone())?;
+            self.create(Document {
+                schema: selection.schema,
+                fields,
+            })?;
+            Ok(())
+        }
+
+        fn delete(&mut self, selection: Selection) -> Result<(), OperationError> {
+            self.io
+                .remove_block(selection.position)
+                .map_err(OperationError::IOError)?;
+            Ok(())
+        }
     }
 }
