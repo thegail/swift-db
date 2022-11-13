@@ -129,12 +129,23 @@ mod execute_statement {
             Ok(Response::Acquired)
         }
 
-        fn commit(&mut self, _transaction: String) -> Result<Response, FrontendError> {
-            todo!()
+        fn commit(&mut self, transaction: String) -> Result<Response, FrontendError> {
+            self.close(transaction)
         }
 
-        fn close(&mut self, _transaction: String) -> Result<Response, FrontendError> {
-            todo!()
+        fn close(&mut self, transaction: String) -> Result<Response, FrontendError> {
+            let index = self.get_transaction_index(&transaction)?;
+            self.transactions.remove(index);
+            // TODO optimize
+            let keys_to_remove: Vec<String> = self
+                .selection_map
+                .iter()
+                .filter_map(|(k, (t, _))| (t == &transaction).then_some(k.clone()))
+                .collect();
+            for key in keys_to_remove {
+                self.selection_map.remove(&key);
+            }
+            Ok(Response::Closed)
         }
 
         fn select(
