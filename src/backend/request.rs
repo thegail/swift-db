@@ -1,5 +1,5 @@
 use crate::backend::{OperationError, Query, Selection};
-use crate::schema::Document;
+use crate::schema::{Document, FieldInstance};
 use std::sync::mpsc::Sender;
 
 /// A request for the [`Backend`] to execute some [`Operation`].
@@ -33,12 +33,25 @@ pub enum Operation {
         selection: Selection,
         fields: Vec<u16>,
     },
+    /// Update the [`Document`] referred to by `selection`,
+    /// replacing its existin fields with new [`FieldInstance`]s.
+    ///
+    /// Returns a [`Response::Ok`].
+    Update {
+        selection: Selection,
+        fields: Vec<FieldInstance>,
+    },
+    /// Delete the [`Document`] referred to by `selection`.
+    ///
+    /// Returns a [`Response::Ok`].
+    Delete { selection: Selection },
 }
 
 /// A response to a [`Request`].
 pub enum Response {
     Selection(Selection),
     Document(Document),
+    Ok,
 }
 
 impl Response {
