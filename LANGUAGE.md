@@ -88,6 +88,30 @@ database.
 
 A [query condition](#query-conditions) expression.
 
+### Create
+
+`(create [identifier] [transaction] [collection])`
+
+A JSON-serialized document to create should be sent over the stream, after the
+create statement.
+
+#### `[identifier]`
+
+The identifier to which the selection reference to the created document will be
+stored. This cannot be a reserved keyword or an already existing identifier.
+This reference can later be used in read and write operations.
+
+#### `[transaction]`
+
+The identifier for the transaction on which the document will be created. This
+must be a transaction which has already been opened and acquired.
+
+#### `[collection]`
+
+The collection on which the document will be created. The document must match
+the collection's schema. This must be an expression matching `(coll [name])`,
+where `[name]` is the name of a collection on the database.
+
 ### Read All
 
 `(readall [selection])`
