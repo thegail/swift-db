@@ -115,6 +115,7 @@ mod execute_statement {
                     selection,
                     document,
                 } => self.update_all(selection, document),
+                Statement::Delete { selection } => self.delete(selection),
                 // _ => todo!(),
             }
         }
@@ -232,6 +233,22 @@ mod execute_statement {
             .get_ok()
             .ok_or(FrontendError::RecieveError)?;
             Ok(Response::Updated)
+        }
+
+        fn delete(&mut self, selection: String) -> Result<Response, FrontendError> {
+            let location = self
+                .selection_map
+                .get(&selection)
+                .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?;
+            let transaction_index = self.get_transaction_index(&location.0)?;
+            self.transactions[transaction_index].guard_action()?;
+            let selection = &self.transactions[transaction_index].selections[location.1];
+            self.request(Operation::Delete {
+                selection: selection.clone(),
+            })?
+            .get_ok()
+            .ok_or(FrontendError::RecieveError)?;
+            Ok(Response::Deleted)
         }
 
         fn request(&self, operation: Operation) -> Result<BackendResponse, FrontendError> {
