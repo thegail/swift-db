@@ -41,4 +41,11 @@ pub enum Statement {
     ReadAll {
         selection: String,
     },
+    UpdateAll {
+        selection: String,
+        document: Document,
+    },
+    Delete {
+        selection: String,
+    },
 }

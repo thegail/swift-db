@@ -54,13 +54,17 @@ impl Connection {
     /// [`language`]: crate::language
     pub fn listen(&mut self) {
         loop {
-            let mut reader = BufReader::new(&mut self.stream);
+            let mut reader = BufReader::new(&self.stream);
             let response = parse(reader.by_ref())
                 .map_err(FrontendError::LanguageError)
                 .and_then(|tokens| {
-                    // TODO buffer this read
-                    build_statement(&tokens, &self.collections, reader.by_ref())
-                        .map_err(FrontendError::LanguageError)
+                    build_statement(
+                        &tokens,
+                        &self.collections,
+                        self.get_selection_map()?,
+                        reader.by_ref(),
+                    )
+                    .map_err(FrontendError::LanguageError)
                 })
                 .and_then(|statement| self.execute_statement(statement));
             let mut writer = BufWriter::new(&mut self.stream);
@@ -107,6 +111,10 @@ mod execute_statement {
                     document,
                 } => self.create(identifier, transaction, document),
                 Statement::ReadAll { selection } => self.read_all(selection),
+                Statement::UpdateAll {
+                    selection,
+                    document,
+                } => self.update_all(selection, document),
                 // _ => todo!(),
             }
         }
@@ -205,6 +213,27 @@ mod execute_statement {
             Ok(Response::Document(document))
         }
 
+        fn update_all(
+            &mut self,
+            selection: String,
+            document: Document,
+        ) -> Result<Response, FrontendError> {
+            let location = self
+                .selection_map
+                .get(&selection)
+                .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?;
+            let transaction_index = self.get_transaction_index(&location.0)?;
+            self.transactions[transaction_index].guard_action()?;
+            let selection = &self.transactions[transaction_index].selections[location.1];
+            self.request(Operation::Update {
+                selection: selection.clone(),
+                fields: document.fields,
+            })?
+            .get_ok()
+            .ok_or(FrontendError::RecieveError)?;
+            Ok(Response::Updated)
+        }
+
         fn request(&self, operation: Operation) -> Result<BackendResponse, FrontendError> {
             let (returner, return_reciever) = channel();
             self.sender
@@ -248,6 +277,21 @@ mod execute_statement {
                 .position(|t| &t.identifier == transaction_identifier)
                 .ok_or_else(|| FrontendError::UnknownTransaction(transaction_identifier.clone()))?;
             Ok(index)
+        }
+
+        pub fn get_selection_map(&self) -> Result<HashMap<String, &Selection>, FrontendError> {
+            let entries: Result<HashMap<String, &Selection>, FrontendError> = self
+                .selection_map
+                .iter()
+                .map(|(key, (transaction_id, index))| {
+                    Ok((
+                        key.clone(),
+                        &self.transactions[self.get_transaction_index(transaction_id)?].selections
+                            [*index],
+                    ))
+                })
+                .collect();
+            Ok(entries?)
         }
     }
 }

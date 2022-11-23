@@ -72,4 +72,11 @@ impl Response {
             _ => None,
         }
     }
+
+    pub fn get_ok(self) -> Option<()> {
+        match self {
+            Response::Ok => Some(()),
+            _ => None,
+        }
+    }
 }
