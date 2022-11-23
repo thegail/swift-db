@@ -1,7 +1,8 @@
 use super::expression::Expression;
-use crate::backend::{Condition, Expression as ValueExpression, Query};
+use crate::backend::{Condition, Expression as ValueExpression, Query, Selection};
 use crate::language::{ParseError, Statement};
 use crate::schema::{Document, FieldValue, Schema};
+use std::collections::HashMap;
 use std::io::Read;
 
 /// Builds a [`Statement`] from a parsed expression.
@@ -12,6 +13,7 @@ use std::io::Read;
 pub fn build_statement(
     expression: &[Expression],
     collections: &[Schema],
+    selections: HashMap<String, &Selection>,
     reader: impl Read,
 ) -> Result<Statement, ParseError> {
     let keyword = expression
@@ -26,6 +28,8 @@ pub fn build_statement(
         "select" => build_select(expression, collections),
         "create" => build_create(expression, collections, reader),
         "readall" => build_read_all(expression),
+        "updateall" => build_update_all(expression, selections, reader),
+        "delete" => build_delete(expression),
         _ => Err(ParseError::UnexpectedToken),
     }
 }
@@ -252,4 +256,36 @@ fn build_read_all(expression: &[Expression]) -> Result<Statement, ParseError> {
     Ok(Statement::ReadAll {
         selection: selection.clone(),
     })
+}
+
+fn build_update_all(
+    expression: &[Expression],
+    selections: HashMap<String, &Selection>,
+    reader: impl Read,
+) -> Result<Statement, ParseError> {
+    if expression.len() != 2 {
+        return Err(ParseError::ArgumentCount);
+    }
+    let identifier = expression[1].get_identifier()?;
+    let selection = selections
+        .get(identifier)
+        .ok_or(ParseError::UnknownIdentifier(identifier.clone()))?;
+    let document =
+        Document::from_reader(reader, &selection.schema).map_err(ParseError::TransferError)?;
+    let statement = Statement::UpdateAll {
+        selection: identifier.clone(),
+        document,
+    };
+    Ok(statement)
+}
+
+fn build_delete(expression: &[Expression]) -> Result<Statement, ParseError> {
+    if expression.len() != 2 {
+        return Err(ParseError::ArgumentCount);
+    }
+    let identifier = expression[1].get_identifier()?;
+    let statement = Statement::Delete {
+        selection: identifier.clone(),
+    };
+    Ok(statement)
 }

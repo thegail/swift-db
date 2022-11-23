@@ -13,6 +13,7 @@ pub enum Response {
     Closed,
     Selected,
     Document(Document),
+    Updated,
 }
 
 impl Response {
@@ -30,6 +31,7 @@ impl Response {
                 }
                 writeln!(out)?;
             }
+            Response::Updated => writeln!(out, "(ok updated)")?,
         }
         Ok(())
     }
