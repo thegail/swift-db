@@ -14,6 +14,7 @@ pub enum Response {
     Selected,
     Document(Document),
     Updated,
+    Deleted,
 }
 
 impl Response {
@@ -32,6 +33,7 @@ impl Response {
                 writeln!(out)?;
             }
             Response::Updated => writeln!(out, "(ok updated)")?,
+            Response::Deleted => writeln!(out, "(ok deleted)")?,
         }
         Ok(())
     }
