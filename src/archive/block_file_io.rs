@@ -95,7 +95,7 @@ impl BlockFileIO {
 
     /// Marks a block as removed
     pub fn remove_block(&mut self, position: usize) -> Result<(), Error> {
-        self.reader.seek(SeekFrom::Start(position as u64))?;
+        self.writer.seek(SeekFrom::Start(position as u64 - 1))?;
         self.writer.write_all(&[68u8])?;
         Ok(())
     }
