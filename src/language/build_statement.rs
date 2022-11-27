@@ -241,6 +241,42 @@ fn build_value_expression(
                     // TODO support subscripts in ValueExpression
                     todo!()
                 }
+                "num" => {
+                    if expression.len() != 3 {
+                        return Err(ParseError::ArgumentCount);
+                    }
+                    let numeric_type = expression[3].get_identifier()?;
+                    let numeric_string = expression[2].get_numeric()?;
+                    let field_value = match numeric_type.as_str() {
+                        "Int" => FieldValue::Int(
+                            numeric_string
+                                .parse()
+                                .map_err(|_| ParseError::NumericParseError)?,
+                        ),
+                        "UInt" => FieldValue::UInt(
+                            numeric_string
+                                .parse()
+                                .map_err(|_| ParseError::NumericParseError)?,
+                        ),
+                        "Long" => FieldValue::Long(
+                            numeric_string
+                                .parse()
+                                .map_err(|_| ParseError::NumericParseError)?,
+                        ),
+                        "ULong" => FieldValue::ULong(
+                            numeric_string
+                                .parse()
+                                .map_err(|_| ParseError::NumericParseError)?,
+                        ),
+                        "Float" => FieldValue::Float(
+                            numeric_string
+                                .parse()
+                                .map_err(|_| ParseError::NumericParseError)?,
+                        ),
+                        _ => return Err(ParseError::UnexpectedToken),
+                    };
+                    Ok(ValueExpression::Value(field_value))
+                }
                 _ => Err(ParseError::UnexpectedToken),
             }
         }
