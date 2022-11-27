@@ -43,4 +43,13 @@ impl Expression {
             _ => Err(ParseError::UnexpectedToken),
         }
     }
+
+    /// Returns Ok(&String) if this `Expression` is a
+    /// numeric, or Err(ParseError::UnexpectedToken) otherwise.
+    pub fn get_numeric(&self) -> Result<&String, ParseError> {
+        match self {
+            Expression::Numeric(s) => Ok(s),
+            _ => Err(ParseError::UnexpectedToken),
+        }
+    }
 }
