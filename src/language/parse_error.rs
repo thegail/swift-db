@@ -39,6 +39,7 @@ impl Display for ParseError {
                 write!(formatter, "Unknown identifier {}", identifier)
             }
             ParseError::TransferError(e) => write!(formatter, "Transfer parse error: {}", e),
+            ParseError::NumericParseError => write!(formatter, "Error parsing numeric"),
         }
     }
 }
