@@ -16,6 +16,7 @@ pub enum ParseError {
     UnexpectedToken,
     UnknownIdentifier(String),
     TransferError(DeserializationError),
+    NumericParseError,
 }
 
 impl Display for ParseError {
