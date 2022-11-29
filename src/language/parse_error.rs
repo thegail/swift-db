@@ -16,7 +16,7 @@ pub enum ParseError {
     UnexpectedToken,
     UnknownIdentifier(String),
     TransferError(DeserializationError),
-    NumericParseError,
+    NumericError,
 }
 
 impl Display for ParseError {
@@ -39,7 +39,7 @@ impl Display for ParseError {
                 write!(formatter, "Unknown identifier {}", identifier)
             }
             ParseError::TransferError(e) => write!(formatter, "Transfer parse error: {}", e),
-            ParseError::NumericParseError => write!(formatter, "Error parsing numeric"),
+            ParseError::NumericError => write!(formatter, "Error parsing numeric"),
         }
     }
 }

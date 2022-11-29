@@ -251,27 +251,27 @@ fn build_value_expression(
                         "Int" => FieldValue::Int(
                             numeric_string
                                 .parse()
-                                .map_err(|_| ParseError::NumericParseError)?,
+                                .map_err(|_| ParseError::NumericError)?,
                         ),
                         "UInt" => FieldValue::UInt(
                             numeric_string
                                 .parse()
-                                .map_err(|_| ParseError::NumericParseError)?,
+                                .map_err(|_| ParseError::NumericError)?,
                         ),
                         "Long" => FieldValue::Long(
                             numeric_string
                                 .parse()
-                                .map_err(|_| ParseError::NumericParseError)?,
+                                .map_err(|_| ParseError::NumericError)?,
                         ),
                         "ULong" => FieldValue::ULong(
                             numeric_string
                                 .parse()
-                                .map_err(|_| ParseError::NumericParseError)?,
+                                .map_err(|_| ParseError::NumericError)?,
                         ),
                         "Float" => FieldValue::Float(
                             numeric_string
                                 .parse()
-                                .map_err(|_| ParseError::NumericParseError)?,
+                                .map_err(|_| ParseError::NumericError)?,
                         ),
                         _ => return Err(ParseError::UnexpectedToken),
                     };
@@ -305,7 +305,7 @@ fn build_update_all(
     let identifier = expression[1].get_identifier()?;
     let selection = selections
         .get(identifier)
-        .ok_or(ParseError::UnknownIdentifier(identifier.clone()))?;
+        .ok_or_else(|| ParseError::UnknownIdentifier(identifier.clone()))?;
     let document =
         Document::from_reader(reader, &selection.schema).map_err(ParseError::TransferError)?;
     let statement = Statement::UpdateAll {

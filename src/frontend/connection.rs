@@ -308,7 +308,7 @@ mod execute_statement {
                     ))
                 })
                 .collect();
-            Ok(entries?)
+            entries
         }
     }
 }
