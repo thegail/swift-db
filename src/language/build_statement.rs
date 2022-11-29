@@ -245,8 +245,8 @@ fn build_value_expression(
                     if expression.len() != 3 {
                         return Err(ParseError::ArgumentCount);
                     }
-                    let numeric_type = expression[3].get_identifier()?;
-                    let numeric_string = expression[2].get_numeric()?;
+                    let numeric_type = expression[2].get_identifier()?;
+                    let numeric_string = expression[1].get_numeric()?;
                     let field_value = match numeric_type.as_str() {
                         "Int" => FieldValue::Int(
                             numeric_string
