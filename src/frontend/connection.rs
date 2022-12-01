@@ -134,7 +134,29 @@ mod execute_statement {
 
         fn acquire(&mut self, transaction_identifier: String) -> Result<Response, FrontendError> {
             let transaction_index = self.get_transaction_index(&transaction_identifier)?;
-            self.transactions[transaction_index].acquire()?;
+            let transaction = &mut self.transactions[transaction_index];
+            let mut return_channels = Vec::with_capacity(transaction.selections.len());
+            for selection in &transaction.selections {
+                let (return_channel, return_reciever) = channel();
+                self.sender
+                    .send(Request {
+                        operation: Operation::Acquire {
+                            selection: selection.clone(),
+                        },
+                        return_channel,
+                    })
+                    .or(Err(FrontendError::SendError))?;
+                return_channels.push(return_reciever);
+            }
+            for reciever in return_channels {
+                reciever
+                    .recv()
+                    .or(Err(FrontendError::RecieveError))?
+                    .map_err(FrontendError::OperationError)?
+                    .get_ok()
+                    .ok_or(FrontendError::RecieveError)?;
+            }
+            transaction.acquire()?;
             Ok(Response::Acquired)
         }
 
