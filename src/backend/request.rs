@@ -20,6 +20,10 @@ pub enum Operation {
     ///
     /// See [`Query`]. Returns a [`Response::Selection`].
     FindOne { query: Query },
+    /// Wait to acquire a lock on a [`Selection`]. Takes the
+    /// selection to wait for the lock on. Returns a
+    /// [`Response::Ok`].
+    Acquire { selection: Selection },
     /// Create a [`Document`] on a collection.
     ///
     /// Returns a [`Response::Selection`].

@@ -4,7 +4,7 @@ use crate::schema::{Document, FieldInstance, Schema};
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io;
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, Sender};
 
 /// The core of the databse's read/write logic.
 ///
@@ -22,6 +22,7 @@ pub struct Backend {
     io: BlockFileIO,
     collections: Vec<Schema>,
     document_cache: HashMap<usize, Document>,
+    locks: HashMap<usize, Vec<Sender<Result<Response, OperationError>>>>,
     reciever: Receiver<Request>,
 }
 
@@ -43,6 +44,7 @@ impl Backend {
             ),
             collections,
             document_cache: HashMap::new(),
+            locks: HashMap::new(),
             reciever,
         })
     }
@@ -58,10 +60,14 @@ impl Backend {
     /// [`frontend`]: crate::frontend
     pub fn listen(&mut self) {
         while let Ok(request) = self.reciever.recv() {
-            let result = self.execute_operation(request.operation);
-            let send_result = request.return_channel.send(result);
-            if let Err(error) = send_result {
-                println!("Send error: {}", error);
+            if let Operation::Acquire { selection } = request.operation {
+                self.acquire(&selection, request.return_channel);
+            } else {
+                let result = self.execute_operation(request.operation);
+                let send_result = request.return_channel.send(result);
+                if let Err(error) = send_result {
+                    println!("Send error: {}", error);
+                }
             }
         }
     }
@@ -83,6 +89,7 @@ mod operations {
         ) -> Result<Response, OperationError> {
             match operation {
                 Operation::FindOne { query } => Ok(Response::Selection(self.find_one(query)?)),
+                Operation::Acquire { selection: _ } => unreachable!(),
                 Operation::Create { document } => {
                     let selection = self.create(document)?;
                     Ok(Response::Selection(selection))
@@ -98,6 +105,25 @@ mod operations {
                     self.delete(selection)?;
                     Ok(Response::Ok)
                 }
+            }
+        }
+
+        /// Executes an acquisition operation.
+        ///
+        /// Returns a [`Response::Ok`] after acquisition.
+        pub fn acquire(
+            &mut self,
+            selection: &Selection,
+            return_sender: Sender<Result<Response, OperationError>>,
+        ) {
+            // TODO optimize order of acquisition
+            // TODO optimize queueing system (linked list?)
+            let current = self.locks.get_mut(&selection.position);
+            if let Some(current) = current {
+                current.push(return_sender);
+            } else {
+                self.locks.insert(selection.position, Vec::new());
+                return_sender.send(Ok(Response::Ok)).unwrap_or(());
             }
         }
 
