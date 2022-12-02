@@ -166,6 +166,11 @@ mod execute_statement {
 
         fn close(&mut self, transaction: String) -> Result<Response, FrontendError> {
             let index = self.get_transaction_index(&transaction)?;
+            for selection in &self.transactions[index].selections {
+                self.request(Operation::Release {
+                    selection: selection.clone(),
+                })?;
+            }
             self.transactions.remove(index);
             // TODO optimize
             let keys_to_remove: Vec<String> = self
