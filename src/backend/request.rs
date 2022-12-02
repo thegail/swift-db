@@ -49,6 +49,8 @@ pub enum Operation {
     ///
     /// Returns a [`Response::Ok`].
     Delete { selection: Selection },
+    /// Release the lock on [`Selection`].
+    Release { selection: Selection },
 }
 
 /// A response to a [`Request`].
