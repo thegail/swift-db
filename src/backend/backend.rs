@@ -105,6 +105,10 @@ mod operations {
                     self.delete(selection)?;
                     Ok(Response::Ok)
                 }
+                Operation::Release { selection } => {
+                    self.release(selection);
+                    Ok(Response::Ok)
+                }
             }
         }
 
@@ -124,6 +128,16 @@ mod operations {
             } else {
                 self.locks.insert(selection.position, Vec::new());
                 return_sender.send(Ok(Response::Ok)).unwrap_or(());
+            }
+        }
+
+        fn release(&mut self, selection: Selection) {
+            let entry = self.locks.get_mut(&selection.position).unwrap();
+            if entry.is_empty() {
+                self.locks.remove(&selection.position);
+            } else {
+                let sender = entry.remove(0);
+                sender.send(Ok(Response::Ok)).unwrap_or(());
             }
         }
 
