@@ -137,7 +137,8 @@ mod operations {
             if let Some(current) = current {
                 current.queue(return_sender, is_blocking);
             } else {
-                self.locks.insert(selection.position, Lock::new());
+                self.locks
+                    .insert(selection.position, Lock::new(is_blocking));
                 return_sender.send(Ok(Response::Ok)).unwrap_or(());
             }
         }
