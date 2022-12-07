@@ -1,4 +1,4 @@
-use crate::backend::{OperationError, Query, Selection};
+use crate::backend::{OperationError, Query, Reference};
 use crate::schema::{Document, FieldInstance};
 use std::sync::mpsc::Sender;
 
@@ -23,7 +23,7 @@ pub enum Operation {
     /// Wait to acquire a lock on a [`Selection`]. Takes the
     /// selection to wait for the lock on. Returns a
     /// [`Response::Ok`].
-    Acquire { selection: Selection },
+    Acquire { selection: Reference },
     /// Create a [`Document`] on a collection.
     ///
     /// Returns a [`Response::Selection`].
@@ -34,7 +34,7 @@ pub enum Operation {
     /// Takes a list of the field IDs to read. Returns a
     /// [`Response::Document`].
     Read {
-        selection: Selection,
+        selection: Reference,
         fields: Vec<u16>,
     },
     /// Update the [`Document`] referred to by `selection`,
@@ -42,20 +42,20 @@ pub enum Operation {
     ///
     /// Returns a [`Response::Ok`].
     Update {
-        selection: Selection,
+        selection: Reference,
         fields: Vec<FieldInstance>,
     },
     /// Delete the [`Document`] referred to by `selection`.
     ///
     /// Returns a [`Response::Ok`].
-    Delete { selection: Selection },
+    Delete { selection: Reference },
     /// Release the lock on [`Selection`].
-    Release { selection: Selection },
+    Release { selection: Reference },
 }
 
 /// A response to a [`Request`].
 pub enum Response {
-    Selection(Selection),
+    Selection(Reference),
     Document(Document),
     Ok,
 }
@@ -63,7 +63,7 @@ pub enum Response {
 impl Response {
     /// Returns Some(Selection) if this [`Response`] is a
     /// [`Response::Selection`], or None otherwise.
-    pub fn get_selection(self) -> Option<Selection> {
+    pub fn get_selection(self) -> Option<Reference> {
         match self {
             Response::Selection(s) => Some(s),
             _ => None,

@@ -1,5 +1,5 @@
 use crate::archive::{ArchiveParser, BlockFileIO, ParseError};
-use crate::backend::{Operation, OperationError, Query, Request, Response, Selection};
+use crate::backend::{Operation, OperationError, Query, Reference, Request, Response};
 use crate::schema::{Document, FieldInstance, Schema};
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
@@ -117,7 +117,7 @@ mod operations {
         /// Returns a [`Response::Ok`] after acquisition.
         pub fn acquire(
             &mut self,
-            selection: &Selection,
+            selection: &Reference,
             return_sender: Sender<Result<Response, OperationError>>,
         ) {
             // TODO optimize order of acquisition
@@ -131,7 +131,7 @@ mod operations {
             }
         }
 
-        fn release(&mut self, selection: Selection) {
+        fn release(&mut self, selection: Reference) {
             let entry = self.locks.get_mut(&selection.position).unwrap();
             if entry.is_empty() {
                 self.locks.remove(&selection.position);
@@ -141,20 +141,20 @@ mod operations {
             }
         }
 
-        fn create(&mut self, document: Document) -> Result<Selection, OperationError> {
+        fn create(&mut self, document: Document) -> Result<Reference, OperationError> {
             let bytes = document.serialize();
             let position = self
                 .io
                 .write_block(bytes)
                 .map_err(OperationError::IOError)?;
-            let selection = Selection {
+            let selection = Reference {
                 position,
                 schema: document.schema,
             };
             Ok(selection)
         }
 
-        fn find_one(&mut self, query: Query) -> Result<Selection, OperationError> {
+        fn find_one(&mut self, query: Query) -> Result<Reference, OperationError> {
             let schema = self
                 .collections
                 .iter()
@@ -177,7 +177,7 @@ mod operations {
                         let matches = document.evaluate(&query.condition)?;
                         if matches {
                             self.document_cache.insert(position, document);
-                            return Ok(Selection {
+                            return Ok(Reference {
                                 position,
                                 schema: schema.clone(),
                             });
@@ -230,7 +230,7 @@ mod operations {
 
         fn read(
             &mut self,
-            selection: Selection,
+            selection: Reference,
             fields: Vec<u16>,
         ) -> Result<Document, OperationError> {
             let block = self
@@ -267,7 +267,7 @@ mod operations {
 
         fn update(
             &mut self,
-            selection: Selection,
+            selection: Reference,
             fields: Vec<FieldInstance>,
         ) -> Result<(), OperationError> {
             // TODO optimize
@@ -279,7 +279,7 @@ mod operations {
             Ok(())
         }
 
-        fn delete(&mut self, selection: Selection) -> Result<(), OperationError> {
+        fn delete(&mut self, selection: Reference) -> Result<(), OperationError> {
             self.io
                 .remove_block(selection.position)
                 .map_err(OperationError::IOError)?;

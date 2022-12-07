@@ -14,4 +14,4 @@ pub use backend::Backend;
 pub use operation_error::OperationError;
 pub use query::{Condition, Expression, Query};
 pub use request::{Operation, Request, Response};
-pub use selection::Selection;
+pub use selection::Reference;
