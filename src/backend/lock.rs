@@ -9,9 +9,10 @@ pub struct Lock {
 }
 
 impl Lock {
-    pub fn new() -> Self {
+    pub fn new(blocking: bool) -> Self {
+        let retain_count = if blocking { None } else { Some(0) };
         Self {
-            retain_count: None,
+            retain_count,
             waiting: Vec::new(),
         }
     }
