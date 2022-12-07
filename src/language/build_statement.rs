@@ -1,6 +1,6 @@
 use super::expression::Expression;
-use crate::backend::{Condition, Expression as ValueExpression, Query, Selection};
-use crate::language::{ParseError, Statement};
+use crate::backend::{Condition, Expression as ValueExpression, Query, Reference};
+use crate::language::{LockType, ParseError, Statement};
 use crate::schema::{Document, FieldValue, Schema};
 use std::collections::HashMap;
 use std::io::Read;
@@ -13,7 +13,7 @@ use std::io::Read;
 pub fn build_statement(
     expression: &[Expression],
     collections: &[Schema],
-    selections: HashMap<String, &Selection>,
+    selections: HashMap<String, &Reference>,
     reader: impl Read,
 ) -> Result<Statement, ParseError> {
     let keyword = expression
@@ -79,7 +79,13 @@ fn build_select(
     }
     let identifier = expression[1].get_identifier()?;
     let transaction = expression[2].get_identifier()?;
-    let _lock_type = expression[3].get_identifier()?;
+    let lock_type_name = expression[3].get_identifier()?;
+    let lock_type = match lock_type_name.as_str() {
+        "r" => LockType::Read,
+        "wn" => LockType::Write,
+        "wb" => LockType::BlockingWrite,
+        _ => return Err(ParseError::UnexpectedToken),
+    };
     let collection_expression = expression[4].get_expression()?;
     if collection_expression.len() != 2 {
         return Err(ParseError::ArgumentCount);
@@ -96,6 +102,7 @@ fn build_select(
     Ok(Statement::Select {
         identifier: identifier.clone(),
         transaction: transaction.clone(),
+        lock: lock_type,
         query: Query {
             collection: collection.id,
             condition,
@@ -296,7 +303,7 @@ fn build_read_all(expression: &[Expression]) -> Result<Statement, ParseError> {
 
 fn build_update_all(
     expression: &[Expression],
-    selections: HashMap<String, &Selection>,
+    selections: HashMap<String, &Reference>,
     reader: impl Read,
 ) -> Result<Statement, ParseError> {
     if expression.len() != 2 {
