@@ -43,8 +43,8 @@ impl Lock {
     }
 
     fn get_next(&mut self, terminate_on_empty: bool) -> bool {
-        if self.waiting.is_empty() && terminate_on_empty {
-            return true;
+        if self.waiting.is_empty() {
+            return terminate_on_empty;
         }
         let next = self.waiting.remove(0);
         next.0.send(Ok(Response::Ok)).unwrap_or(());
