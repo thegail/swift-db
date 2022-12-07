@@ -3,6 +3,7 @@
 //! See [`Backend`].
 #[allow(clippy::module_inception)]
 mod backend;
+mod lock;
 mod operation_error;
 mod query;
 mod request;
