@@ -1,7 +1,8 @@
 use super::frontend_error::FrontendError;
+use super::selection::Selection;
 use super::transaction::Transaction;
 use crate::backend::{Operation, Query, Request, Response as BackendResponse};
-use crate::language::{build_statement, parse, Response, Statement};
+use crate::language::{build_statement, parse, LockType, Response, Statement};
 use crate::schema::Schema;
 use std::collections::HashMap;
 use std::io::{BufReader, BufWriter, Read, Write};
@@ -87,7 +88,7 @@ impl Connection {
 /// [`execute_statement`]: crate::schema::Document#method.execute_statement
 mod execute_statement {
     use super::*;
-    use crate::{backend::Selection, schema::Document};
+    use crate::{backend::Reference, schema::Document};
 
     impl Connection {
         /// Executes a language [`Statement`].
@@ -103,8 +104,9 @@ mod execute_statement {
                 Statement::Select {
                     identifier,
                     transaction,
+                    lock,
                     query,
-                } => self.select(identifier, transaction, query),
+                } => self.select(identifier, transaction, lock, query),
                 Statement::Create {
                     identifier,
                     transaction,
@@ -116,7 +118,6 @@ mod execute_statement {
                     document,
                 } => self.update_all(selection, document),
                 Statement::Delete { selection } => self.delete(selection),
-                // _ => todo!(),
             }
         }
 
@@ -141,7 +142,7 @@ mod execute_statement {
                 self.sender
                     .send(Request {
                         operation: Operation::Acquire {
-                            selection: selection.clone(),
+                            selection: selection.reference.clone(),
                         },
                         return_channel,
                     })
@@ -168,7 +169,7 @@ mod execute_statement {
             let index = self.get_transaction_index(&transaction)?;
             for selection in &self.transactions[index].selections {
                 self.request(Operation::Release {
-                    selection: selection.clone(),
+                    selection: selection.reference.clone(),
                 })?;
             }
             self.transactions.remove(index);
@@ -188,6 +189,7 @@ mod execute_statement {
             &mut self,
             identifier: String,
             transaction_identifier: String,
+            lock: LockType,
             query: Query,
         ) -> Result<Response, FrontendError> {
             let transaction_index = self.get_transaction_index(&transaction_identifier)?;
@@ -195,10 +197,11 @@ mod execute_statement {
             if self.selection_map.contains_key(&identifier) {
                 return Err(FrontendError::SelectionRedeclaration(identifier));
             }
-            let selection = self
+            let reference = self
                 .request(Operation::FindOne { query })?
                 .get_selection()
                 .ok_or(FrontendError::RecieveError)?;
+            let selection = Selection { reference, lock };
             self.create_selection(transaction_index, selection, identifier)?;
             Ok(Response::Selected)
         }
@@ -214,10 +217,14 @@ mod execute_statement {
             if self.selection_map.contains_key(&identifier) {
                 return Err(FrontendError::SelectionRedeclaration(identifier));
             }
-            let selection = self
+            let reference = self
                 .request(Operation::Create { document })?
                 .get_selection()
                 .ok_or(FrontendError::RecieveError)?;
+            let selection = Selection {
+                reference,
+                lock: LockType::Write,
+            };
             self.create_selection(transaction_index, selection, identifier)?;
             Ok(Response::Selected)
         }
@@ -230,10 +237,16 @@ mod execute_statement {
             let transaction_index = self.get_transaction_index(&location.0)?;
             self.transactions[transaction_index].guard_action()?;
             let selection = &self.transactions[transaction_index].selections[location.1];
-            let all_fields = selection.schema.fields.iter().map(|f| f.id).collect();
+            let all_fields = selection
+                .reference
+                .schema
+                .fields
+                .iter()
+                .map(|f| f.id)
+                .collect();
             let document = self
                 .request(Operation::Read {
-                    selection: selection.clone(),
+                    selection: selection.reference.clone(),
                     fields: all_fields,
                 })?
                 .get_document()
@@ -254,7 +267,7 @@ mod execute_statement {
             self.transactions[transaction_index].guard_action()?;
             let selection = &self.transactions[transaction_index].selections[location.1];
             self.request(Operation::Update {
-                selection: selection.clone(),
+                selection: selection.reference.clone(),
                 fields: document.fields,
             })?
             .get_ok()
@@ -271,7 +284,7 @@ mod execute_statement {
             self.transactions[transaction_index].guard_action()?;
             let selection = &self.transactions[transaction_index].selections[location.1];
             self.request(Operation::Delete {
-                selection: selection.clone(),
+                selection: selection.reference.clone(),
             })?
             .get_ok()
             .ok_or(FrontendError::RecieveError)?;
@@ -323,15 +336,16 @@ mod execute_statement {
             Ok(index)
         }
 
-        pub fn get_selection_map(&self) -> Result<HashMap<String, &Selection>, FrontendError> {
-            let entries: Result<HashMap<String, &Selection>, FrontendError> = self
+        pub fn get_selection_map(&self) -> Result<HashMap<String, &Reference>, FrontendError> {
+            let entries: Result<HashMap<String, &Reference>, FrontendError> = self
                 .selection_map
                 .iter()
                 .map(|(key, (transaction_id, index))| {
                     Ok((
                         key.clone(),
                         &self.transactions[self.get_transaction_index(transaction_id)?].selections
-                            [*index],
+                            [*index]
+                            .reference,
                     ))
                 })
                 .collect();

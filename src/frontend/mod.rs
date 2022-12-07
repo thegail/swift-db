@@ -7,6 +7,7 @@
 //! [`Transaction`]: transaction::Transaction
 mod connection;
 mod frontend_error;
+mod selection;
 mod transaction;
 
 pub use connection::Connection;
