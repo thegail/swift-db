@@ -26,7 +26,7 @@ pub enum Statement {
     Select {
         identifier: String,
         transaction: String,
-        // lock: LockType,
+        lock: LockType,
         query: Query,
     },
     Create {
@@ -48,4 +48,11 @@ pub enum Statement {
     Delete {
         selection: String,
     },
+}
+
+#[derive(Clone)]
+pub enum LockType {
+    Read,
+    Write,
+    BlockingWrite,
 }
