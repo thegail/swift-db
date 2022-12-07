@@ -143,6 +143,7 @@ mod execute_statement {
                     .send(Request {
                         operation: Operation::Acquire {
                             selection: selection.reference.clone(),
+                            lock: selection.lock.clone(),
                         },
                         return_channel,
                     })

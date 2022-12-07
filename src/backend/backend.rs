@@ -1,5 +1,7 @@
+use super::lock::Lock;
 use crate::archive::{ArchiveParser, BlockFileIO, ParseError};
 use crate::backend::{Operation, OperationError, Query, Reference, Request, Response};
+use crate::language::LockType;
 use crate::schema::{Document, FieldInstance, Schema};
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
@@ -22,7 +24,7 @@ pub struct Backend {
     io: BlockFileIO,
     collections: Vec<Schema>,
     document_cache: HashMap<usize, Document>,
-    locks: HashMap<usize, Vec<Sender<Result<Response, OperationError>>>>,
+    locks: HashMap<usize, Lock>,
     reciever: Receiver<Request>,
 }
 
@@ -60,8 +62,8 @@ impl Backend {
     /// [`frontend`]: crate::frontend
     pub fn listen(&mut self) {
         while let Ok(request) = self.reciever.recv() {
-            if let Operation::Acquire { selection } = request.operation {
-                self.acquire(&selection, request.return_channel);
+            if let Operation::Acquire { selection, lock } = request.operation {
+                self.acquire(&selection, lock, request.return_channel);
             } else {
                 let result = self.execute_operation(request.operation);
                 let send_result = request.return_channel.send(result);
@@ -89,7 +91,10 @@ mod operations {
         ) -> Result<Response, OperationError> {
             match operation {
                 Operation::FindOne { query } => Ok(Response::Selection(self.find_one(query)?)),
-                Operation::Acquire { selection: _ } => unreachable!(),
+                Operation::Acquire {
+                    selection: _,
+                    lock: _,
+                } => unreachable!(),
                 Operation::Create { document } => {
                     let selection = self.create(document)?;
                     Ok(Response::Selection(selection))
@@ -118,27 +123,28 @@ mod operations {
         pub fn acquire(
             &mut self,
             selection: &Reference,
+            lock: LockType,
             return_sender: Sender<Result<Response, OperationError>>,
         ) {
             // TODO optimize order of acquisition
             // TODO optimize queueing system (linked list?)
             let current = self.locks.get_mut(&selection.position);
+            let is_blocking = match lock {
+                LockType::Read => false,
+                LockType::Write => true,
+                LockType::BlockingWrite => true,
+            };
             if let Some(current) = current {
-                current.push(return_sender);
+                current.queue(return_sender, is_blocking);
             } else {
-                self.locks.insert(selection.position, Vec::new());
+                self.locks.insert(selection.position, Lock::new());
                 return_sender.send(Ok(Response::Ok)).unwrap_or(());
             }
         }
 
         fn release(&mut self, selection: Reference) {
             let entry = self.locks.get_mut(&selection.position).unwrap();
-            if entry.is_empty() {
-                self.locks.remove(&selection.position);
-            } else {
-                let sender = entry.remove(0);
-                sender.send(Ok(Response::Ok)).unwrap_or(());
-            }
+            entry.release();
         }
 
         fn create(&mut self, document: Document) -> Result<Reference, OperationError> {

@@ -1,4 +1,5 @@
 use crate::backend::{OperationError, Query, Reference};
+use crate::language::LockType;
 use crate::schema::{Document, FieldInstance};
 use std::sync::mpsc::Sender;
 
@@ -23,7 +24,10 @@ pub enum Operation {
     /// Wait to acquire a lock on a [`Selection`]. Takes the
     /// selection to wait for the lock on. Returns a
     /// [`Response::Ok`].
-    Acquire { selection: Reference },
+    Acquire {
+        selection: Reference,
+        lock: LockType,
+    },
     /// Create a [`Document`] on a collection.
     ///
     /// Returns a [`Response::Selection`].
