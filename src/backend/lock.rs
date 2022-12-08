@@ -22,7 +22,8 @@ impl Lock {
             self.waiting.push((return_sender, true));
         } else {
             if let Some(ref mut retain_count) = self.retain_count {
-                *retain_count += 1
+                *retain_count += 1;
+                return_sender.send(Ok(Response::Ok)).unwrap_or(());
             } else {
                 self.waiting.push((return_sender, false));
             }
