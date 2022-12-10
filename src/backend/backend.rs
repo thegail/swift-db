@@ -1,8 +1,8 @@
 use super::lock::Lock;
 use crate::archive::{ArchiveParser, BlockFileIO, ParseError};
 use crate::backend::{Operation, OperationError, Query, Reference, Request, Response};
-use crate::language::LockType;
 use crate::schema::{Document, FieldInstance, Schema};
+use crate::util::LockType;
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io;

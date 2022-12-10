@@ -1,7 +1,8 @@
 use super::expression::Expression;
 use crate::backend::{Condition, Expression as ValueExpression, Query, Reference};
-use crate::language::{LockType, ParseError, Statement};
+use crate::language::{ParseError, Statement};
 use crate::schema::{Document, FieldValue, Schema};
+use crate::util::LockType;
 use std::collections::HashMap;
 use std::io::Read;
 

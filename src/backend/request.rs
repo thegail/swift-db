@@ -1,6 +1,6 @@
 use crate::backend::{OperationError, Query, Reference};
-use crate::language::LockType;
 use crate::schema::{Document, FieldInstance};
+use crate::util::LockType;
 use std::sync::mpsc::Sender;
 
 /// A request for the [`Backend`] to execute some [`Operation`].

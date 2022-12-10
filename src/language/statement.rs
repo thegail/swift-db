@@ -1,5 +1,6 @@
 use crate::backend::Query;
 use crate::schema::Document;
+use crate::util::LockType;
 
 /// An executable statement.
 ///
@@ -48,11 +49,4 @@ pub enum Statement {
     Delete {
         selection: String,
     },
-}
-
-#[derive(Clone)]
-pub enum LockType {
-    Read,
-    Write,
-    BlockingWrite,
 }

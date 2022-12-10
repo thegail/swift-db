@@ -1,5 +1,5 @@
 use crate::backend::Reference;
-use crate::language::LockType;
+use crate::util::LockType;
 
 pub struct Selection {
     pub reference: Reference,
