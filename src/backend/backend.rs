@@ -131,7 +131,7 @@ mod operations {
             let current = self.locks.get_mut(&selection.position);
             let is_blocking = match lock {
                 LockType::Read => false,
-                LockType::Write => true,
+                LockType::Write => false,
                 LockType::BlockingWrite => true,
             };
             if let Some(current) = current {
