@@ -172,6 +172,7 @@ mod execute_statement {
             for selection in &self.transactions[index].selections {
                 self.request(Operation::Release {
                     selection: selection.reference.clone(),
+                    lock: selection.lock.clone(),
                 })?;
             }
             self.transactions.remove(index);

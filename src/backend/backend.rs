@@ -139,7 +139,7 @@ mod operations {
 
         fn release(&mut self, selection: Reference, lock: LockType) {
             let entry = self.locks.get_mut(&selection.position).unwrap();
-            entry.release(lock);
+            entry.release(&lock);
         }
 
         fn create(&mut self, document: Document) -> Result<Reference, OperationError> {
