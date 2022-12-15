@@ -8,7 +8,7 @@ use crate::schema::Schema;
 /// [`Request`]: crate::backend::Request
 /// [`Backend`]: crate::backend::Backend
 #[derive(Clone)]
-pub struct Selection {
+pub struct Reference {
     /// The [`Schema`] describing the [`Document`] pointed
     /// to by this selection.
     ///

@@ -17,6 +17,7 @@ pub enum ParseError {
     UnknownIdentifier(String),
     TransferError(DeserializationError),
     NumericError,
+    UnexpectedEndOfInput,
 }
 
 impl Display for ParseError {
@@ -40,6 +41,7 @@ impl Display for ParseError {
             }
             ParseError::TransferError(e) => write!(formatter, "Transfer parse error: {}", e),
             ParseError::NumericError => write!(formatter, "Error parsing numeric"),
+            ParseError::UnexpectedEndOfInput => write!(formatter, "Unexpected end of input"),
         }
     }
 }

@@ -1,10 +1,12 @@
+use super::lock::Lock;
 use crate::archive::{ArchiveParser, BlockFileIO, ParseError};
-use crate::backend::{Operation, OperationError, Query, Request, Response, Selection};
+use crate::backend::{Operation, OperationError, Query, Reference, Request, Response};
 use crate::schema::{Document, FieldInstance, Schema};
+use crate::util::LockType;
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io;
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, Sender};
 
 /// The core of the databse's read/write logic.
 ///
@@ -22,6 +24,7 @@ pub struct Backend {
     io: BlockFileIO,
     collections: Vec<Schema>,
     document_cache: HashMap<usize, Document>,
+    locks: HashMap<usize, Lock>,
     reciever: Receiver<Request>,
 }
 
@@ -43,6 +46,7 @@ impl Backend {
             ),
             collections,
             document_cache: HashMap::new(),
+            locks: HashMap::new(),
             reciever,
         })
     }
@@ -58,10 +62,14 @@ impl Backend {
     /// [`frontend`]: crate::frontend
     pub fn listen(&mut self) {
         while let Ok(request) = self.reciever.recv() {
-            let result = self.execute_operation(request.operation);
-            let send_result = request.return_channel.send(result);
-            if let Err(error) = send_result {
-                println!("Send error: {}", error);
+            if let Operation::Acquire { selection, lock } = request.operation {
+                self.acquire(&selection, lock, request.return_channel);
+            } else {
+                let result = self.execute_operation(request.operation);
+                let send_result = request.return_channel.send(result);
+                if let Err(error) = send_result {
+                    println!("Send error: {}", error);
+                }
             }
         }
     }
@@ -83,6 +91,10 @@ mod operations {
         ) -> Result<Response, OperationError> {
             match operation {
                 Operation::FindOne { query } => Ok(Response::Selection(self.find_one(query)?)),
+                Operation::Acquire {
+                    selection: _,
+                    lock: _,
+                } => unreachable!(),
                 Operation::Create { document } => {
                     let selection = self.create(document)?;
                     Ok(Response::Selection(selection))
@@ -98,23 +110,52 @@ mod operations {
                     self.delete(selection)?;
                     Ok(Response::Ok)
                 }
+                Operation::Release { selection, lock } => {
+                    self.release(selection, lock);
+                    Ok(Response::Ok)
+                }
             }
         }
 
-        fn create(&mut self, document: Document) -> Result<Selection, OperationError> {
+        /// Executes an acquisition operation.
+        ///
+        /// Returns a [`Response::Ok`] after acquisition.
+        pub fn acquire(
+            &mut self,
+            selection: &Reference,
+            lock: LockType,
+            return_sender: Sender<Result<Response, OperationError>>,
+        ) {
+            // TODO optimize order of acquisition
+            // TODO optimize queueing system (linked list?)
+            let current = self.locks.get_mut(&selection.position);
+            if let Some(current) = current {
+                current.queue(return_sender, lock);
+            } else {
+                self.locks.insert(selection.position, Lock::new(lock));
+                return_sender.send(Ok(Response::Ok)).unwrap_or(());
+            }
+        }
+
+        fn release(&mut self, selection: Reference, lock: LockType) {
+            let entry = self.locks.get_mut(&selection.position).unwrap();
+            entry.release(&lock);
+        }
+
+        fn create(&mut self, document: Document) -> Result<Reference, OperationError> {
             let bytes = document.serialize();
             let position = self
                 .io
                 .write_block(bytes)
                 .map_err(OperationError::IOError)?;
-            let selection = Selection {
+            let selection = Reference {
                 position,
                 schema: document.schema,
             };
             Ok(selection)
         }
 
-        fn find_one(&mut self, query: Query) -> Result<Selection, OperationError> {
+        fn find_one(&mut self, query: Query) -> Result<Reference, OperationError> {
             let schema = self
                 .collections
                 .iter()
@@ -137,7 +178,7 @@ mod operations {
                         let matches = document.evaluate(&query.condition)?;
                         if matches {
                             self.document_cache.insert(position, document);
-                            return Ok(Selection {
+                            return Ok(Reference {
                                 position,
                                 schema: schema.clone(),
                             });
@@ -190,7 +231,7 @@ mod operations {
 
         fn read(
             &mut self,
-            selection: Selection,
+            selection: Reference,
             fields: Vec<u16>,
         ) -> Result<Document, OperationError> {
             let block = self
@@ -227,7 +268,7 @@ mod operations {
 
         fn update(
             &mut self,
-            selection: Selection,
+            selection: Reference,
             fields: Vec<FieldInstance>,
         ) -> Result<(), OperationError> {
             // TODO optimize
@@ -239,7 +280,7 @@ mod operations {
             Ok(())
         }
 
-        fn delete(&mut self, selection: Selection) -> Result<(), OperationError> {
+        fn delete(&mut self, selection: Reference) -> Result<(), OperationError> {
             self.io
                 .remove_block(selection.position)
                 .map_err(OperationError::IOError)?;

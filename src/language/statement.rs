@@ -1,5 +1,6 @@
 use crate::backend::Query;
 use crate::schema::Document;
+use crate::util::LockType;
 
 /// An executable statement.
 ///
@@ -26,7 +27,7 @@ pub enum Statement {
     Select {
         identifier: String,
         transaction: String,
-        // lock: LockType,
+        lock: LockType,
         query: Query,
     },
     Create {

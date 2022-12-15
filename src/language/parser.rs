@@ -135,7 +135,11 @@ impl Parser {
                 }
             }
         }
-        Ok(self.output.pop().unwrap())
+        if self.output.is_empty() {
+            Err(ParseError::UnexpectedEndOfInput)
+        } else {
+            Ok(self.output.pop().unwrap())
+        }
     }
 
     fn end_token(&mut self, byte: u8) -> Result<(), ParseError> {

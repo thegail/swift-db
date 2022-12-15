@@ -1,5 +1,5 @@
 use super::frontend_error::FrontendError;
-use crate::backend::Selection;
+use super::selection::Selection;
 
 /// A helper struct for managing transaction state.
 ///
