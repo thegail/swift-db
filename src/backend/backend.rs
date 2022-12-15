@@ -110,8 +110,8 @@ mod operations {
                     self.delete(selection)?;
                     Ok(Response::Ok)
                 }
-                Operation::Release { selection } => {
-                    self.release(selection);
+                Operation::Release { selection, lock } => {
+                    self.release(selection, lock);
                     Ok(Response::Ok)
                 }
             }
@@ -129,23 +129,17 @@ mod operations {
             // TODO optimize order of acquisition
             // TODO optimize queueing system (linked list?)
             let current = self.locks.get_mut(&selection.position);
-            let is_blocking = match lock {
-                LockType::Read => false,
-                LockType::Write => false,
-                LockType::BlockingWrite => true,
-            };
             if let Some(current) = current {
-                current.queue(return_sender, is_blocking);
+                current.queue(return_sender, lock);
             } else {
-                self.locks
-                    .insert(selection.position, Lock::new(is_blocking));
+                self.locks.insert(selection.position, Lock::new(lock));
                 return_sender.send(Ok(Response::Ok)).unwrap_or(());
             }
         }
 
-        fn release(&mut self, selection: Reference) {
+        fn release(&mut self, selection: Reference, lock: LockType) {
             let entry = self.locks.get_mut(&selection.position).unwrap();
-            entry.release();
+            entry.release(lock);
         }
 
         fn create(&mut self, document: Document) -> Result<Reference, OperationError> {

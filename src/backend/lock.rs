@@ -1,44 +1,95 @@
 use crate::backend::{OperationError, Response};
+use crate::util::LockType;
 use std::sync::mpsc::Sender;
 
 type ResponseSender = Sender<Result<Response, OperationError>>;
 
+enum LockState {
+    ReadRetained(u32),
+    WriteRetained(u32),
+    Blocked,
+}
+
 pub struct Lock {
-    retain_count: Option<u32>,
-    waiting: Vec<(ResponseSender, bool)>,
+    state: LockState,
+    waiting: Vec<(ResponseSender, LockType)>,
 }
 
 impl Lock {
-    pub fn new(blocking: bool) -> Self {
-        let retain_count = if blocking { None } else { Some(0) };
+    pub fn new(lock: LockType) -> Self {
+        let state = match lock {
+            LockType::Read => LockState::ReadRetained(0),
+            LockType::Write => LockState::WriteRetained(0),
+            LockType::BlockingWrite => LockState::Blocked,
+        };
         Self {
-            retain_count,
+            state,
             waiting: Vec::new(),
         }
     }
 
-    pub fn queue(&mut self, return_sender: ResponseSender, blocking: bool) {
-        if blocking {
-            self.waiting.push((return_sender, true));
-        } else if let Some(ref mut retain_count) = self.retain_count {
-            *retain_count += 1;
-            return_sender.send(Ok(Response::Ok)).unwrap_or(());
+    pub fn queue(&mut self, return_sender: ResponseSender, lock: LockType) {
+        if !self.evaluate_state(lock) {
+            return_sender.send(Ok(Response::Ok));
         } else {
-            self.waiting.push((return_sender, false));
+            self.waiting.push((return_sender, lock));
         }
     }
 
-    pub fn release(&mut self) -> bool {
-        if let Some(ref mut retain_count) = self.retain_count {
-            *retain_count -= 1;
-            if *retain_count == 0 {
-                self.retain_count = None;
-                self.get_next(true)
-            } else {
-                false
+    pub fn release(&mut self, lock: LockType) -> bool {
+        match self.state {
+            LockState::ReadRetained(ref mut retain_count) => *retain_count -= 1,
+            LockState::WriteRetained(ref mut retain_count) => match lock {
+                LockType::Read => *retain_count -= 1,
+                LockType::Write => self.state = LockState::ReadRetained(*retain_count),
+                _ => unreachable!(),
+            },
+            LockState::Blocked => return self.get_next(true),
+        }
+        if let LockState::ReadRetained(0) = self.state {
+            return self.get_next(true);
+        }
+        false
+    }
+
+    fn evaluate_state(&self, lock: LockType) -> bool {
+        // Blocking cases
+        if let LockType::BlockingWrite = lock {
+            return false;
+        }
+        if let LockState::Blocked = self.state {
+            return false;
+        }
+        if let LockType::Write = lock {
+            if let LockState::WriteRetained(_) = self.state {
+                return false;
             }
-        } else {
-            self.get_next(true)
+        }
+        // Nonblocking cases
+        match lock {
+            LockType::Read => match self.state {
+                LockState::ReadRetained(ref mut retain_count) => *retain_count += 1,
+                LockState::WriteRetained(ref mut retain_count) => *retain_count += 1,
+                _ => unreachable!(),
+            },
+            LockType::Write => match self.state {
+                LockState::ReadRetained(retain_count) => {
+                    self.state = LockState::WriteRetained(retain_count)
+                }
+                _ => unreachable!(),
+            },
+            LockType::BlockingWrite => unreachable!(),
+        }
+        true
+    }
+
+    fn poll_next(&mut self) {
+        if self.waiting.is_empty() {
+            return;
+        }
+        let next = self.waiting[0];
+        if self.evaluate_state(next.1) {
+            next.0.send(Ok(Response::Ok));
         }
     }
 
@@ -48,10 +99,12 @@ impl Lock {
         }
         let next = self.waiting.remove(0);
         next.0.send(Ok(Response::Ok)).unwrap_or(());
-        if !next.1 {
-            self.retain_count = Some(1);
-            self.get_next(false);
-        }
+        self.state = match next.1 {
+            LockType::Read => LockState::ReadRetained(1),
+            LockType::Write => LockState::WriteRetained(0),
+            LockType::BlockingWrite => LockState::Blocked,
+        };
+        self.poll_next();
         false
     }
 }
