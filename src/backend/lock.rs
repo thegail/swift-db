@@ -29,14 +29,14 @@ impl Lock {
     }
 
     pub fn queue(&mut self, return_sender: ResponseSender, lock: LockType) {
-        if !self.evaluate_state(lock) {
-            return_sender.send(Ok(Response::Ok));
+        if !self.evaluate_state(&lock) {
+            return_sender.send(Ok(Response::Ok)).unwrap_or(());
         } else {
             self.waiting.push((return_sender, lock));
         }
     }
 
-    pub fn release(&mut self, lock: LockType) -> bool {
+    pub fn release(&mut self, lock: &LockType) -> bool {
         match self.state {
             LockState::ReadRetained(ref mut retain_count) => *retain_count -= 1,
             LockState::WriteRetained(ref mut retain_count) => match lock {
@@ -52,7 +52,7 @@ impl Lock {
         false
     }
 
-    fn evaluate_state(&self, lock: LockType) -> bool {
+    fn evaluate_state(&mut self, lock: &LockType) -> bool {
         // Blocking cases
         if let LockType::BlockingWrite = lock {
             return false;
@@ -87,9 +87,13 @@ impl Lock {
         if self.waiting.is_empty() {
             return;
         }
-        let next = self.waiting[0];
-        if self.evaluate_state(next.1) {
-            next.0.send(Ok(Response::Ok));
+        let next = &self.waiting[0].1.clone();
+        if self.evaluate_state(next) {
+            self.waiting
+                .remove(0)
+                .0
+                .send(Ok(Response::Ok))
+                .unwrap_or(());
         }
     }
 

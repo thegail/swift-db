@@ -54,7 +54,10 @@ pub enum Operation {
     /// Returns a [`Response::Ok`].
     Delete { selection: Reference },
     /// Release the lock on [`Selection`].
-    Release { selection: Reference },
+    Release {
+        selection: Reference,
+        lock: LockType,
+    },
 }
 
 /// A response to a [`Request`].
