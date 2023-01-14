@@ -204,7 +204,7 @@ mod execute_statement {
                 .request(Operation::FindOne { query })?
                 .get_selection()
                 .ok_or(FrontendError::RecieveError)?;
-            let selection = Selection { reference, lock };
+            let selection = Selection::new(reference, lock);
             self.create_selection(transaction_index, selection, identifier)?;
             Ok(Response::Selected)
         }
@@ -221,13 +221,12 @@ mod execute_statement {
                 return Err(FrontendError::SelectionRedeclaration(identifier));
             }
             let reference = self
-                .request(Operation::Create { document })?
+                .request(Operation::Create {
+                    document: document.clone(),
+                })?
                 .get_selection()
                 .ok_or(FrontendError::RecieveError)?;
-            let selection = Selection {
-                reference,
-                lock: LockType::Write,
-            };
+            let selection = Selection::new(reference, LockType::Write);
             self.create_selection(transaction_index, selection, identifier)?;
             Ok(Response::Selected)
         }
