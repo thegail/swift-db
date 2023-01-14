@@ -221,9 +221,7 @@ mod execute_statement {
                 return Err(FrontendError::SelectionRedeclaration(identifier));
             }
             let reference = self
-                .request(Operation::Create {
-                    document: document.clone(),
-                })?
+                .request(Operation::Create { document })?
                 .get_selection()
                 .ok_or(FrontendError::RecieveError)?;
             let selection = Selection::new(reference, LockType::Write);
