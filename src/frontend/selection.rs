@@ -26,4 +26,9 @@ impl Selection {
     pub fn cache(&mut self, document: Document) {
         self.new_cached = Some(document);
     }
+
+    pub fn delete_cache(&mut self) {
+        self.cached = None;
+        self.new_cached = None;
+    }
 }

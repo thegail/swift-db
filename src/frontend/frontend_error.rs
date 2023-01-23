@@ -17,7 +17,6 @@ pub enum FrontendError {
     UnknownTransaction(String),
     SelectionRedeclaration(String),
     UnknownSelection(String),
-    MissingCache,
 }
 
 impl Display for FrontendError {
@@ -54,9 +53,6 @@ impl Display for FrontendError {
             }
             FrontendError::UnknownSelection(identifier) => {
                 write!(formatter, "Unknown selection identifier {}", identifier)
-            }
-            FrontendError::MissingCache => {
-                write!(formatter, "Missing cached document")
             }
         }
     }

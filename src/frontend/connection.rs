@@ -122,6 +122,17 @@ mod execute_statement {
             }
         }
 
+        pub fn close_all(&mut self) {
+            let names: Vec<String> = self
+                .transactions
+                .iter()
+                .map(|t| t.identifier.clone())
+                .collect();
+            for transaction in names {
+                self.close(transaction).unwrap_or(Response::Closed);
+            }
+        }
+
         fn open(&mut self, transaction: String) -> Result<Response, FrontendError> {
             if self
                 .transactions
@@ -248,17 +259,17 @@ mod execute_statement {
             Ok(Response::Selected)
         }
 
-        fn read_all(&mut self, selection: String) -> Result<Response, FrontendError> {
+        fn read_all(&mut self, identifier: String) -> Result<Response, FrontendError> {
             let location = self
                 .selection_map
-                .get(&selection)
-                .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?;
+                .get(&identifier)
+                .ok_or_else(|| FrontendError::UnknownSelection(identifier.clone()))?;
             let transaction_index = self.get_transaction_index(&location.0)?;
             self.transactions[transaction_index].guard_action()?;
             let selection = &self.transactions[transaction_index].selections[location.1];
             let document = selection
                 .cached()
-                .ok_or(FrontendError::MissingCache)?
+                .ok_or(FrontendError::UnknownSelection(identifier))?
                 .clone();
             Ok(Response::Document(document))
         }
@@ -286,12 +297,8 @@ mod execute_statement {
                 .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?;
             let transaction_index = self.get_transaction_index(&location.0)?;
             self.transactions[transaction_index].guard_action()?;
-            let selection = &self.transactions[transaction_index].selections[location.1];
-            self.request(Operation::Delete {
-                selection: selection.reference.clone(),
-            })?
-            .get_ok()
-            .ok_or(FrontendError::RecieveError)?;
+            let selection = &mut self.transactions[transaction_index].selections[location.1];
+            selection.delete_cache();
             Ok(Response::Deleted)
         }
 
@@ -362,5 +369,11 @@ mod execute_statement {
                 .collect();
             entries
         }
+    }
+}
+
+impl Drop for Connection {
+    fn drop(&mut self) {
+        self.close_all();
     }
 }
