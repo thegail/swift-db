@@ -15,7 +15,7 @@ pub struct Transaction {
     state: State,
 }
 
-impl Transaction {
+impl<'conn> Transaction {
     /// Creates a new transaction.
     pub fn new(identifier: String) -> Self {
         Self {
@@ -32,17 +32,17 @@ impl Transaction {
         }
     }
 
-    pub fn acquire(&mut self) -> Result<(), FrontendError> {
-        self.guard_selection()?;
-        self.state = State::Action;
-        Ok(())
-    }
-
     pub fn guard_action(&self) -> Result<(), FrontendError> {
         match self.state {
             State::Action => Ok(()),
             _ => Err(FrontendError::TransactionState),
         }
+    }
+
+    pub fn acquire(&mut self) -> Result<(), FrontendError> {
+        self.guard_selection()?;
+        self.state = State::Action;
+        Ok(())
     }
 }
 
