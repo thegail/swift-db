@@ -160,6 +160,25 @@ mod execute_statement {
                     .ok_or(FrontendError::RecieveError)?;
             }
             transaction.acquire()?;
+            for selection in &mut transaction.selections {
+                let all_fields = selection
+                    .reference
+                    .schema
+                    .fields
+                    .iter()
+                    .map(|f| f.id)
+                    .collect();
+                let document = Connection::request_operation(
+                    &self.sender,
+                    Operation::Read {
+                        selection: selection.reference.clone(),
+                        fields: all_fields,
+                    },
+                )?
+                .get_document()
+                .ok_or(FrontendError::RecieveError)?;
+                selection.cache(document);
+            }
             Ok(Response::Acquired)
         }
 
@@ -237,20 +256,10 @@ mod execute_statement {
             let transaction_index = self.get_transaction_index(&location.0)?;
             self.transactions[transaction_index].guard_action()?;
             let selection = &self.transactions[transaction_index].selections[location.1];
-            let all_fields = selection
-                .reference
-                .schema
-                .fields
-                .iter()
-                .map(|f| f.id)
-                .collect();
-            let document = self
-                .request(Operation::Read {
-                    selection: selection.reference.clone(),
-                    fields: all_fields,
-                })?
-                .get_document()
-                .ok_or(FrontendError::RecieveError)?;
+            let document = selection
+                .cached()
+                .ok_or(FrontendError::MissingCache)?
+                .clone();
             Ok(Response::Document(document))
         }
 
@@ -265,13 +274,8 @@ mod execute_statement {
                 .ok_or_else(|| FrontendError::UnknownSelection(selection.clone()))?;
             let transaction_index = self.get_transaction_index(&location.0)?;
             self.transactions[transaction_index].guard_action()?;
-            let selection = &self.transactions[transaction_index].selections[location.1];
-            self.request(Operation::Update {
-                selection: selection.reference.clone(),
-                fields: document.fields,
-            })?
-            .get_ok()
-            .ok_or(FrontendError::RecieveError)?;
+            let selection = &mut self.transactions[transaction_index].selections[location.1];
+            selection.cache(document);
             Ok(Response::Updated)
         }
 
@@ -292,8 +296,15 @@ mod execute_statement {
         }
 
         fn request(&self, operation: Operation) -> Result<BackendResponse, FrontendError> {
+            Connection::request_operation(&self.sender, operation)
+        }
+
+        fn request_operation(
+            sender: &Sender<Request>,
+            operation: Operation,
+        ) -> Result<BackendResponse, FrontendError> {
             let (returner, return_reciever) = channel();
-            self.sender
+            sender
                 .send(Request {
                     operation,
                     return_channel: returner,

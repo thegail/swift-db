@@ -5,7 +5,8 @@ use crate::util::LockType;
 pub struct Selection {
     pub reference: Reference,
     pub lock: LockType,
-    pub cached: Option<Document>,
+    cached: Option<Document>,
+    new_cached: Option<Document>,
 }
 
 impl Selection {
@@ -14,6 +15,15 @@ impl Selection {
             reference,
             lock,
             cached: None,
+            new_cached: None,
         }
+    }
+
+    pub fn cached(&self) -> Option<&Document> {
+        self.new_cached.as_ref().or(self.cached.as_ref())
+    }
+
+    pub fn cache(&mut self, document: Document) {
+        self.new_cached = Some(document);
     }
 }
