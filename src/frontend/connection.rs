@@ -193,8 +193,24 @@ mod execute_statement {
             Ok(Response::Acquired)
         }
 
-        fn commit(&mut self, transaction: String) -> Result<Response, FrontendError> {
-            self.close(transaction)
+        fn commit(&mut self, identifier: String) -> Result<Response, FrontendError> {
+            let transaction = &self.transactions[self.get_transaction_index(&identifier)?];
+            for selection in &transaction.selections {
+                if let Some(new) = selection.new_cached() {
+                    if let Some(document) = new {
+                        self.request(Operation::Update {
+                            selection: selection.reference.clone(),
+                            fields: document.fields.clone(),
+                        })?;
+                    } else {
+                        self.request(Operation::Delete {
+                            selection: selection.reference.clone(),
+                        })?;
+                    }
+                }
+            }
+            self.close(identifier)?;
+            Ok(Response::Committed)
         }
 
         fn close(&mut self, transaction: String) -> Result<Response, FrontendError> {
