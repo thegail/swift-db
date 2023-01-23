@@ -15,7 +15,7 @@ pub struct Transaction {
     state: State,
 }
 
-impl<'conn> Transaction {
+impl Transaction {
     /// Creates a new transaction.
     pub fn new(identifier: String) -> Self {
         Self {

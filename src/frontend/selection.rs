@@ -23,6 +23,18 @@ impl Selection {
         self.new_cached.as_ref().or(self.cached.as_ref())
     }
 
+    pub fn new_cached(&self) -> Option<Option<&Document>> {
+        if self.cached.is_some() {
+            if let Some(ref new) = self.new_cached {
+                Some(Some(new))
+            } else {
+                None
+            }
+        } else {
+            Some(None)
+        }
+    }
+
     pub fn cache(&mut self, document: Document) {
         self.new_cached = Some(document);
     }
