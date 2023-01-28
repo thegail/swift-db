@@ -302,7 +302,7 @@ mod execute_statement {
             let transaction_index = self.get_transaction_index(&location.0)?;
             self.transactions[transaction_index].guard_action()?;
             let selection = &mut self.transactions[transaction_index].selections[location.1];
-            selection.cache(document);
+            selection.update_cache(document);
             Ok(Response::Updated)
         }
 

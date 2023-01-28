@@ -36,6 +36,10 @@ impl Selection {
     }
 
     pub fn cache(&mut self, document: Document) {
+        self.cached = Some(document);
+    }
+
+    pub fn update_cache(&mut self, document: Document) {
         self.new_cached = Some(document);
     }
 
