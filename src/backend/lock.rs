@@ -29,7 +29,7 @@ impl Lock {
     }
 
     pub fn queue(&mut self, return_sender: ResponseSender, lock: LockType) {
-        if !self.evaluate_state(&lock) {
+        if self.evaluate_state(&lock) {
             return_sender.send(Ok(Response::Ok)).unwrap_or(());
         } else {
             self.waiting.push((return_sender, lock));
