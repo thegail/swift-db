@@ -38,6 +38,7 @@ impl Lock {
 
     pub fn release(&mut self, lock: &LockType) -> bool {
         match self.state {
+            LockState::ReadRetained(0) => return self.get_next(true),
             LockState::ReadRetained(ref mut retain_count) => *retain_count -= 1,
             LockState::WriteRetained(ref mut retain_count) => match lock {
                 LockType::Read => *retain_count -= 1,
@@ -45,9 +46,6 @@ impl Lock {
                 _ => unreachable!(),
             },
             LockState::Blocked => return self.get_next(true),
-        }
-        if let LockState::ReadRetained(0) = self.state {
-            return self.get_next(true);
         }
         false
     }
