@@ -9,9 +9,11 @@
 //!
 //! [`Backend`]: crate::backend::Backend
 //! [`Connection`]: crate::frontend::Connection
+mod configuration;
 #[allow(clippy::module_inception)]
 mod database;
 mod lifecycle_error;
 
+pub use configuration::Configuration;
 pub use database::Database;
 pub use lifecycle_error::LifecycleError;

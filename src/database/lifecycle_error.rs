@@ -11,6 +11,8 @@ use std::fmt::{Display, Formatter};
 pub enum LifecycleError {
     BackendError(std::io::Error),
     NetworkError(std::io::Error),
+    ConfigurationFileError(std::io::Error),
+    ConfigurationError(serde_json::Error),
 }
 
 impl Display for LifecycleError {
@@ -20,6 +22,12 @@ impl Display for LifecycleError {
                 write!(formatter, "Backend construction error: {}", e)
             }
             LifecycleError::NetworkError(e) => write!(formatter, "Network error: {}", e),
+            LifecycleError::ConfigurationFileError(e) => {
+                write!(formatter, "Configuration file error: {}", e)
+            }
+            LifecycleError::ConfigurationError(e) => {
+                write!(formatter, "Configuration error: {}", e)
+            }
         }
     }
 }
