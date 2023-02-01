@@ -1,9 +1,10 @@
 use crate::schema::Schema;
+use serde::{Deserialize, Serialize};
 
 /// The type of a [`Field`].
 ///
 /// [`Field`]: crate::schema::Field
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub enum FieldType {
     Int,
     UInt,
@@ -20,7 +21,7 @@ pub enum FieldType {
 }
 
 /// A possible value for an enumerated field.
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct EnumCase {
     /// The name of this enum case.
     pub name: String,

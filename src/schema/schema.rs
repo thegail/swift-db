@@ -1,7 +1,8 @@
 use crate::schema::Field;
+use serde::{Deserialize, Serialize};
 
 /// A schema definition.
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Schema {
     /// The name of the collection this schema defines.
     pub name: String,
