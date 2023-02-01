@@ -9,6 +9,6 @@ repository = "https://github.com/thegail/swift-db"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4.19", default-features = false, features = ["std"] }
-serde = "1.0"
 serde_json = "1.0"
