@@ -117,10 +117,9 @@ impl<'de> Visitor<'de> for ValueVisitor {
     where
         E: serde::de::Error,
     {
-        if v > i64::MAX as u64 {
-            return Err(serde::de::Error::custom("u64 out of range"));
-        }
-        Ok(BareValue::Integer(v as i64))
+        Ok(BareValue::Integer(i64::try_from(v).map_err(|_| {
+            serde::de::Error::custom("u64 out of range")
+        })?))
     }
 
     fn visit_f32<E>(self, v: f32) -> Result<Self::Value, E>
@@ -217,23 +216,15 @@ impl FieldValue {
     fn from_bare(bare: BareValue, definition: &FieldType) -> Result<Self, DeserializationError> {
         match definition {
             crate::schema::FieldType::Int => match bare {
-                BareValue::Integer(i) => {
-                    if i < i32::MIN as i64 || i > i32::MAX as i64 {
-                        Err(DeserializationError::Overflow(i))
-                    } else {
-                        Ok(FieldValue::Int(i as i32))
-                    }
-                }
+                BareValue::Integer(i) => Ok(FieldValue::Int(
+                    i32::try_from(i).map_err(|_| DeserializationError::Overflow(i))?,
+                )),
                 _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::UInt => match bare {
-                BareValue::Integer(i) => {
-                    if i < u32::MIN as i64 || i > u32::MAX as i64 {
-                        Err(DeserializationError::Overflow(i))
-                    } else {
-                        Ok(FieldValue::Int(i as i32))
-                    }
-                }
+                BareValue::Integer(i) => Ok(FieldValue::UInt(
+                    u32::try_from(i).map_err(|_| DeserializationError::Overflow(i))?,
+                )),
                 _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::Long => match bare {
@@ -241,13 +232,9 @@ impl FieldValue {
                 _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::ULong => match bare {
-                BareValue::Integer(i) => {
-                    if i < u64::MIN as i64 {
-                        Err(DeserializationError::Overflow(i))
-                    } else {
-                        Ok(FieldValue::ULong(i as u64))
-                    }
-                }
+                BareValue::Integer(i) => Ok(FieldValue::ULong(
+                    u64::try_from(i).map_err(|_| DeserializationError::Overflow(i))?,
+                )),
                 _ => Err(DeserializationError::FieldTypeMismatch),
             },
             crate::schema::FieldType::Float => match bare {
@@ -272,18 +259,14 @@ impl FieldValue {
             },
             crate::schema::FieldType::ByteArray => match bare {
                 BareValue::Array(a) => {
-                    let values: Result<Vec<u8>, DeserializationError> = a
-                        .into_iter()
-                        .map(|value| match value {
-                            BareValue::Integer(i) => {
-                                if i < u8::MIN as i64 || i > u8::MAX as i64 {
-                                    return Err(DeserializationError::Overflow(i));
-                                }
-                                Ok(i as u8)
-                            }
-                            _ => Err(DeserializationError::FieldTypeMismatch),
-                        })
-                        .collect();
+                    let values: Result<Vec<u8>, DeserializationError> =
+                        a.into_iter()
+                            .map(|value| match value {
+                                BareValue::Integer(i) => Ok(u8::try_from(i)
+                                    .map_err(|_| DeserializationError::Overflow(i))?),
+                                _ => Err(DeserializationError::FieldTypeMismatch),
+                            })
+                            .collect();
                     Ok(FieldValue::ByteArray(values?))
                 }
                 _ => Err(DeserializationError::FieldTypeMismatch),

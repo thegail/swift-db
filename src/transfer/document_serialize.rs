@@ -82,13 +82,9 @@ impl FieldValue {
             FieldValue::Int(i) => Ok(BareValue::Integer(i as i64)),
             FieldValue::UInt(i) => Ok(BareValue::Integer(i as i64)),
             FieldValue::Long(i) => Ok(BareValue::Integer(i as i64)),
-            FieldValue::ULong(i) => {
-                if i > i64::MAX as u64 {
-                    Err(DeserializationError::Overflow(0))
-                } else {
-                    Ok(BareValue::Integer(i as i64))
-                }
-            }
+            FieldValue::ULong(i) => Ok(BareValue::Integer(
+                i64::try_from(i).map_err(|_| DeserializationError::Overflow(0))?,
+            )),
             FieldValue::Float(f) => Ok(BareValue::Float(f)),
             FieldValue::Bool(b) => Ok(BareValue::Bool(b)),
             FieldValue::DateTime(d) => Ok(BareValue::Integer(d.timestamp())),
