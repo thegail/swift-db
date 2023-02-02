@@ -1,4 +1,5 @@
 use crate::schema::FieldType;
+use crate::util::FieldID;
 use serde::{Deserialize, Serialize};
 
 /// A definition of a field which a [`Document`] may have.
@@ -9,7 +10,7 @@ pub struct Field {
     /// The name of this field.
     pub name: String,
     /// The ID of this field.
-    pub id: u16,
+    pub id: FieldID,
     /// The type of this field.
     pub field_type: FieldType,
 }

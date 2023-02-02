@@ -1,6 +1,6 @@
 use crate::backend::{OperationError, Query, Reference};
 use crate::schema::{Document, FieldInstance};
-use crate::util::LockType;
+use crate::util::{FieldID, LockType};
 use std::sync::mpsc::Sender;
 
 /// A request for the [`Backend`] to execute some [`Operation`].
@@ -39,7 +39,7 @@ pub enum Operation {
     /// [`Response::Document`].
     Read {
         selection: Reference,
-        fields: Vec<u16>,
+        fields: Vec<FieldID>,
     },
     /// Update the [`Document`] referred to by `selection`,
     /// replacing its existin fields with new [`FieldInstance`]s.

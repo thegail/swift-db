@@ -1,6 +1,6 @@
 use crate::archive::ParseError;
 use crate::schema::{Document, EnumCase, EnumValue, FieldInstance, FieldType, FieldValue, Schema};
-use crate::util::{FromByteSlice, PrimInt};
+use crate::util::{CaseID, FieldID, FieldLength, FromByteSlice, PrimInt, SchemaID};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use std::iter::Iterator;
 use std::mem::size_of;
@@ -18,13 +18,13 @@ pub struct ArchiveParser {
     schema: Schema,
     data: Vec<u8>,
     ptr: usize,
-    fields_of_interest: Vec<u16>,
+    fields_of_interest: Vec<FieldID>,
 }
 
 impl ArchiveParser {
     /// Creates a new [`ArchiveParser`] with a `Schema` and
     /// some bytes of data.
-    pub fn new(schema: Schema, data: Vec<u8>, fields_of_interest: Vec<u16>) -> Self {
+    pub fn new(schema: Schema, data: Vec<u8>, fields_of_interest: Vec<FieldID>) -> Self {
         ArchiveParser {
             schema,
             data,
@@ -36,7 +36,7 @@ impl ArchiveParser {
     /// Deserializes a [`Document`], checking the schema identifier
     /// against the [`ArchiveParser`]'s provided schema.
     pub fn read_document(&mut self) -> Result<Document, ParseError> {
-        let schema_id = self.parse_int::<u64>();
+        let schema_id = self.parse_int::<SchemaID>();
         if schema_id != self.schema.id {
             return Err(ParseError::SchemaMismatch);
         }
@@ -60,7 +60,7 @@ impl ArchiveParser {
     }
 
     fn read_field(&mut self) -> Result<Option<FieldInstance>, ParseError> {
-        let field_id = self.parse_int::<u16>();
+        let field_id = self.parse_int::<FieldID>();
         let field = &self
             .schema
             .fields
@@ -110,23 +110,23 @@ impl ArchiveParser {
             FieldType::Bool => self.ptr += size_of::<u8>(),
             FieldType::DateTime => self.ptr += size_of::<i64>(),
             FieldType::String => {
-                let length = self.parse_int::<u32>() as usize;
+                let length = self.parse_int::<FieldLength>() as usize;
                 self.ptr += length;
             }
             FieldType::ByteArray => {
-                let length = self.parse_int::<u32>() as usize;
+                let length = self.parse_int::<FieldLength>() as usize;
                 self.ptr += length;
             }
             FieldType::Array(_) => {
-                let length = self.parse_int::<u64>() as usize;
+                let length = self.parse_int::<FieldLength>() as usize;
                 self.ptr += length;
             }
             FieldType::Object(_) => {
-                let length = self.parse_int::<u64>() as usize;
+                let length = self.parse_int::<FieldLength>() as usize;
                 self.ptr += length;
             }
             FieldType::Enum(cases) => {
-                let case_id = self.parse_int::<u16>();
+                let case_id = self.parse_int::<CaseID>();
                 let enum_case = cases
                     .iter()
                     .find(|x| x.id == case_id)
@@ -168,7 +168,7 @@ impl ArchiveParser {
     }
 
     fn parse_byte_array(&mut self) -> Vec<u8> {
-        let length = self.parse_int::<u32>() as usize;
+        let length = self.parse_int::<FieldLength>() as usize;
         let value = (&self.data[self.ptr..(self.ptr + length)]).to_vec();
         self.ptr += length;
         value
@@ -179,7 +179,7 @@ impl ArchiveParser {
     }
 
     fn parse_array(&mut self, element: &FieldType) -> Result<Vec<FieldValue>, ParseError> {
-        let length = self.parse_int::<u32>() as usize;
+        let length = self.parse_int::<FieldLength>() as usize;
         let original_ptr = self.ptr;
         let mut values: Vec<FieldValue> = vec![];
         while self.ptr - original_ptr < length {
@@ -196,7 +196,7 @@ impl ArchiveParser {
     }
 
     fn parse_enum(&mut self, cases: &[EnumCase]) -> Result<EnumValue, ParseError> {
-        let case_id = self.parse_int::<u16>();
+        let case_id = self.parse_int::<CaseID>();
         let enum_case = cases
             .iter()
             .find(|x| x.id == case_id)

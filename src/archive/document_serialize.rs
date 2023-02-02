@@ -1,4 +1,5 @@
 use crate::schema::{Document, FieldValue};
+use crate::util::FieldLength;
 
 impl Document {
     /// Serializes this [`Document`] to archive data, with
@@ -46,12 +47,12 @@ impl FieldValue {
             FieldValue::DateTime(d) => d.timestamp().to_be_bytes().to_vec(),
             FieldValue::String(s) => {
                 let s_bytes = s.as_bytes();
-                let mut bytes = (s_bytes.len() as u32).to_be_bytes().to_vec();
+                let mut bytes = (s_bytes.len() as FieldLength).to_be_bytes().to_vec();
                 bytes.extend_from_slice(s_bytes);
                 bytes
             }
             FieldValue::ByteArray(b) => {
-                let mut bytes = (b.len() as u32).to_be_bytes().to_vec();
+                let mut bytes = (b.len() as FieldLength).to_be_bytes().to_vec();
                 bytes.extend_from_slice(b);
                 bytes
             }
@@ -60,13 +61,13 @@ impl FieldValue {
                 for val in a {
                     bytes.append(&mut val.serialize());
                 }
-                bytes.splice(0..4, (bytes.len() as u32 - 4).to_be_bytes());
+                bytes.splice(0..4, (bytes.len() as FieldLength - 4).to_be_bytes());
                 bytes
             }
             FieldValue::Object(o) => {
                 let mut bytes = [0u8; 4].to_vec();
                 bytes.append(&mut o.serialize_subdocument());
-                bytes.splice(0..4, (bytes.len() as u32 - 4).to_be_bytes());
+                bytes.splice(0..4, (bytes.len() as FieldLength - 4).to_be_bytes());
                 bytes
             }
             FieldValue::Enum(e) => {

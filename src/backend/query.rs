@@ -1,10 +1,11 @@
 use crate::backend::OperationError;
 use crate::schema::{Document, FieldType, FieldValue};
+use crate::util::{FieldID, SchemaID};
 
 /// A query in a select statement.
 pub struct Query {
     /// The id of the collection to be queried.
-    pub collection: u64,
+    pub collection: SchemaID,
     /// The condition by which a document should be selected
     /// by the query.
     pub condition: Condition,
@@ -30,7 +31,7 @@ pub enum Condition {
 /// the document, which evaluates to that field's value.
 pub enum Expression {
     Value(FieldValue),
-    Field(u16),
+    Field(FieldID),
 }
 
 macro_rules! eval_match_arm {

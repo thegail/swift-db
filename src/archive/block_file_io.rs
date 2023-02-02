@@ -1,3 +1,4 @@
+use crate::util::{BlockLength, BlockPosition};
 use std::fs::File;
 use std::io::{BufReader, Error, Read, Seek, SeekFrom, Write};
 
@@ -49,7 +50,7 @@ impl BlockFileIO {
     fn read_block(&mut self) -> Result<Vec<u8>, Error> {
         let mut length_bytes = [0u8; 8];
         self.reader.read_exact(&mut length_bytes)?;
-        let block_length = u64::from_be_bytes(length_bytes);
+        let block_length = BlockLength::from_be_bytes(length_bytes);
 
         let mut handle = self.reader.by_ref().take(block_length);
         let mut buffer: Vec<u8> = vec![];
@@ -61,14 +62,14 @@ impl BlockFileIO {
     fn skip_block(&mut self) -> Result<(), Error> {
         let mut length_bytes = [0u8; 8];
         self.reader.read_exact(&mut length_bytes)?;
-        let block_length = u64::from_be_bytes(length_bytes);
+        let block_length = BlockLength::from_be_bytes(length_bytes);
 
         self.reader.seek(SeekFrom::Current(block_length as i64))?;
         Ok(())
     }
 
     /// Read the data of a block at a certain position.
-    pub fn read_at_position(&mut self, position: u64) -> Result<Vec<u8>, Error> {
+    pub fn read_at_position(&mut self, position: BlockPosition) -> Result<Vec<u8>, Error> {
         self.reader.seek(SeekFrom::Start(position))?;
         self.read_block()
     }
@@ -87,7 +88,7 @@ impl BlockFileIO {
         self.writer.seek(SeekFrom::End(0))?;
         let position = self.writer.stream_position()?;
         let mut buf = vec![69u8];
-        buf.extend_from_slice(&(block.len() as u64).to_be_bytes());
+        buf.extend_from_slice(&(block.len() as BlockLength).to_be_bytes());
         buf.append(&mut block);
         self.writer.write_all(&buf)?;
         Ok(position as usize + 1)
@@ -95,7 +96,8 @@ impl BlockFileIO {
 
     /// Marks a block as removed
     pub fn remove_block(&mut self, position: usize) -> Result<(), Error> {
-        self.writer.seek(SeekFrom::Start(position as u64 - 1))?;
+        self.writer
+            .seek(SeekFrom::Start(position as BlockPosition - 1))?;
         self.writer.write_all(&[68u8])?;
         Ok(())
     }

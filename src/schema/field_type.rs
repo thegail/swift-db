@@ -1,4 +1,5 @@
 use crate::schema::Schema;
+use crate::util::CaseID;
 use serde::{Deserialize, Serialize};
 
 /// The type of a [`Field`].
@@ -26,7 +27,7 @@ pub struct EnumCase {
     /// The name of this enum case.
     pub name: String,
     /// The ID of this enum case.
-    pub id: u16,
+    pub id: CaseID,
     /// The associated type that is stored along
     /// with instances this caase.
     pub associated_value: Option<FieldType>,

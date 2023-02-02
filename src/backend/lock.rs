@@ -1,12 +1,12 @@
 use crate::backend::{OperationError, Response};
-use crate::util::LockType;
+use crate::util::{LockType, RetainCount};
 use std::sync::mpsc::Sender;
 
 type ResponseSender = Sender<Result<Response, OperationError>>;
 
 enum LockState {
-    ReadRetained(u32),
-    WriteRetained(u32),
+    ReadRetained(RetainCount),
+    WriteRetained(RetainCount),
     Blocked,
 }
 

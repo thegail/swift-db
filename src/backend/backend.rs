@@ -2,7 +2,7 @@ use super::lock::Lock;
 use crate::archive::{ArchiveParser, BlockFileIO, ParseError};
 use crate::backend::{Operation, OperationError, Query, Reference, Request, Response};
 use crate::schema::{Document, FieldInstance, Schema};
-use crate::util::LockType;
+use crate::util::{BlockPosition, FieldID, LockType};
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io;
@@ -232,11 +232,11 @@ mod operations {
         fn read(
             &mut self,
             selection: Reference,
-            fields: Vec<u16>,
+            fields: Vec<FieldID>,
         ) -> Result<Document, OperationError> {
             let block = self
                 .io
-                .read_at_position(selection.position as u64)
+                .read_at_position(selection.position as BlockPosition)
                 .map_err(OperationError::IOError)?;
             let document = ArchiveParser::new(selection.schema, block, fields)
                 .read_document()

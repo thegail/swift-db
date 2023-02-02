@@ -1,4 +1,5 @@
 use crate::schema::{Document, FieldType, Schema};
+use crate::util::CaseID;
 use chrono::{DateTime, Utc};
 
 /// An actual value stored in a
@@ -26,7 +27,7 @@ pub enum FieldValue {
 pub struct EnumValue {
     /// The ID of the case definition to which this
     /// instance conforms.
-    pub case_id: u16,
+    pub case_id: CaseID,
     /// The value assocaited with this case instance.
     pub associated_value: Option<FieldValue>,
 }
